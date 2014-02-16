@@ -28,7 +28,7 @@ var ws = new WebSocket(host);
 
 ws.onopen = function (event) {
     appendLine("connected!!");
-    ws.send((new PriceRequest("", [])).toString());
+    ws.send((new PriceRequest("bitstamp", {})).toString());
 };
 
 ws.onmessage = function (event) {

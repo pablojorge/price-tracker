@@ -21,14 +21,31 @@ wss.on('connection', function(ws) {
 
     ws.on('message', function(message) {
         console.log("message received: " + message);
-        var request = JSON.parse(message);
-        var factory = new HandlerFactory();
-        var handler = factory.getHandler(request);
-        handler.processRequest(function(response) {
-            ws.send(JSON.stringify(response), function() {
-                console.log("response sent");
+        try {
+            var request = JSON.parse(message);
+            var factory = new HandlerFactory();
+            var handler = factory.getHandler(request);
+            handler.processRequest(
+                function(response) {
+                    ws.send(JSON.stringify(response), function() {
+                        console.log("response sent");
+                    });
+                }, 
+                function(exception) {
+                    ret = {error:true, msg:exception.toString()};
+                    console.log("exception: " + exception);
+                    ws.send(JSON.stringify(ret), function() {
+                        console.log("error sent");
+                    });
+                }
+            );
+        } catch(e) {
+            ret = {error:true, msg:e.toString()};
+            console.log("exception: " + exception);
+            ws.send(JSON.stringify(ret), function() {
+                console.log("error sent");
             });
-        });
+        }
     });
 
     ws.on('close', function() {
@@ -56,20 +73,50 @@ function PriceRequestHandler(request) {
     this.request = request;
 }
 
-PriceRequestHandler.handles = "PriceRequest";
-HandlerFactory.addHandler(PriceRequestHandler.handles, PriceRequestHandler);
+PriceRequestHandler.requesters = {}
+PriceRequestHandler.addRequester = function(exchange, requester) {
+    PriceRequestHandler.requesters[exchange] = requester;
+}
 
-PriceRequestHandler.prototype.processRequest = function (callback) {
-    this.getBitstamp(callback);
+PriceRequestHandler.prototype.getRequester = function(exchange) {
+    var requester = PriceRequestHandler.requesters[exchange];
+    if (requester == undefined)
+        throw ("Unknown exchange: " + exchange);
+    return new requester();
+}
+
+PriceRequestHandler.prototype.processRequest = function (callback, errback) {
+    try {
+        var requester = this.getRequester(this.request.exchange);
+        requester.doRequest(callback);
+    } catch(e) {
+        errback(e);
+    }
 };
 
-PriceRequestHandler.prototype.bitstamp = function (callback) {
-    request('https://www.bitstamp.net/api/ticker/', 
+PriceRequestHandler.handles = "PriceRequest";
+HandlerFactory.addHandler(PriceRequestHandler.handles, 
+                          PriceRequestHandler);
+
+/**
+ * Bitstamp
+ */
+
+function BitstampPriceRequester() {}
+
+BitstampPriceRequester.handles = 'bitstamp';
+BitstampPriceRequester.main_url = 'https://www.bitstamp.net/api/ticker/';
+
+BitstampPriceRequester.prototype.doRequest = function (callback) {
+    request(BitstampPriceRequester.main_url, 
         function (error, response, body) {
             var price = JSON.parse(body).ask;
             callback({price: price});
         }
     );
 };
+
+PriceRequestHandler.addRequester(BitstampPriceRequester.handles, 
+                                 BitstampPriceRequester);
 /**/
 
