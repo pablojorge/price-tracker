@@ -15,7 +15,7 @@ Request.prototype.toString = function() {
                            request: this});
 }
 
-function PriceRequest(exchange, symbol, options) {
+function PriceRequest(exchange, options) {
     this.exchange = exchange;
     this.options = options;
 }
@@ -28,7 +28,7 @@ var ws = new WebSocket(host);
 
 ws.onopen = function (event) {
     appendLine("connected!!");
-    ws.send((new PriceRequest("bullionvault", {})).toString());
+    ws.send((new PriceRequest("ambito", {symbol: "USDARSB"})).toString());
 };
 
 ws.onmessage = function (event) {

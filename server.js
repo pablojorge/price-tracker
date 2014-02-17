@@ -161,3 +161,38 @@ PriceRequestHandler.addRequester(BullionVaultPriceRequester.handles,
                                  BullionVaultPriceRequester);
 /**/
 
+/**
+ * Ambito.com
+ */
+
+function AmbitoPriceRequester(options) {
+    this.options = options;
+}
+
+AmbitoPriceRequester.handles = 'ambito';
+AmbitoPriceRequester.main_url =
+    'http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=';
+
+AmbitoPriceRequester.prototype.doRequest = function (callback) {
+    var symbol_urlmap = {"USDARSB" : "ARSB=",
+                         "USDARS" : "ARSSCBRA"};
+    request(AmbitoPriceRequester.main_url + symbol_urlmap[this.options.symbol],
+        function (error, response, body) {
+            var $ = cheerio.load(body),
+                buy = parseFloat($('#compra > big').text().replace(',','.')),
+                sell = parseFloat($("#venta > big").text().replace(',','.')),
+                last_updated_on = $(".uact > b").text().trim();
+
+            callback({
+                price : {buy: buy, sell: sell},
+                'last-retrieved-on': null, // TODO: put current timestamp
+                'last-updated-on': last_updated_on, // TODO: parse date
+            });
+        }
+    );
+};
+
+PriceRequestHandler.addRequester(AmbitoPriceRequester.handles,
+                                 AmbitoPriceRequester);
+/**/
+
