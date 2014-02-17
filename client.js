@@ -28,7 +28,7 @@ var ws = new WebSocket(host);
 
 ws.onopen = function (event) {
     appendLine("connected!!");
-    ws.send((new PriceRequest("bitstamp", {})).toString());
+    ws.send((new PriceRequest("bullionvault", {})).toString());
 };
 
 ws.onmessage = function (event) {

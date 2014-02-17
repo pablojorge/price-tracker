@@ -2,6 +2,7 @@ var WebSocketServer = require('ws').Server
   , http = require('http')
   , express = require('express')
   , request = require('request')
+  , cheerio = require('cheerio')
   , app = express()
   , port = process.env.PORT || 5000;
 
@@ -78,11 +79,11 @@ PriceRequestHandler.addRequester = function(exchange, requester) {
     PriceRequestHandler.requesters[exchange] = requester;
 }
 
-PriceRequestHandler.prototype.getRequester = function(exchange) {
-    var requester = PriceRequestHandler.requesters[exchange];
+PriceRequestHandler.prototype.getRequester = function() {
+    var requester = PriceRequestHandler.requesters[this.request.exchange];
     if (requester == undefined)
         throw ("Unknown exchange: " + exchange);
-    return new requester();
+    return new requester(this.request.options);
 }
 
 PriceRequestHandler.prototype.processRequest = function (callback, errback) {
@@ -102,7 +103,9 @@ HandlerFactory.addHandler(PriceRequestHandler.handles,
  * Bitstamp
  */
 
-function BitstampPriceRequester() {}
+function BitstampPriceRequester(options) {
+    this.options = options;
+}
 
 BitstampPriceRequester.handles = 'bitstamp';
 BitstampPriceRequester.main_url = 'https://www.bitstamp.net/api/ticker/';
@@ -118,5 +121,43 @@ BitstampPriceRequester.prototype.doRequest = function (callback) {
 
 PriceRequestHandler.addRequester(BitstampPriceRequester.handles, 
                                  BitstampPriceRequester);
+/**/
+
+/**
+ * BullionVault
+ */
+
+function BullionVaultPriceRequester(options) {
+    this.options = options;
+}
+
+BullionVaultPriceRequester.handles = 'bullionvault';
+BullionVaultPriceRequester.main_url =
+    'https://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
+    '?considerationCurrency=USD';
+
+BullionVaultPriceRequester.prototype.doRequest = function (callback) {
+    request(BullionVaultPriceRequester.main_url,
+        function (error, response, body) {
+            var $ = cheerio.load(body),
+                prices = {gold: [], silver: []},
+                ret = {price: {}};
+            for (security in prices) {
+                var selector = "pitch[securityClassNarrative='" +
+                                security.toUpperCase() +
+                               "'] > sellPrices > price";
+                $(selector).each(function(index, elem){
+                    prices[security].push(elem.attribs.limit);
+                });
+                var price = Math.min.apply(null, prices[security]) / 32.15;
+                ret.price[security] = price;
+            }
+            callback(ret);
+        }
+    );
+};
+
+PriceRequestHandler.addRequester(BullionVaultPriceRequester.handles,
+                                 BullionVaultPriceRequester);
 /**/
 
