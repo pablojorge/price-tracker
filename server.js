@@ -174,19 +174,31 @@ AmbitoPriceRequester.main_url =
     'http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=';
 
 AmbitoPriceRequester.prototype.doRequest = function (callback) {
-    var symbol_urlmap = {"USDARSB" : "ARSB=",
-                         "USDARS" : "ARSSCBRA"};
+    var symbol_urlmap = {
+        "USDARSB" : "ARSB=",
+        "USDARS" : "ARSSCBRA"
+    };
+
     request(AmbitoPriceRequester.main_url + symbol_urlmap[this.options.symbol],
         function (error, response, body) {
             var $ = cheerio.load(body),
                 buy = parseFloat($('#compra > big').text().replace(',','.')),
                 sell = parseFloat($("#venta > big").text().replace(',','.')),
-                last_updated_on = $(".uact > b").text().trim();
+                uact_format = /(\d{2})\/(\d{2})\/(\d{4})(\d{2}):(\d{2})/,
+                match = uact_format.exec($(".uact > b").text().trim()),
+                updated_on = new Date(parseInt(match[3]),
+                                      parseInt(match[2]) - 1,
+                                      parseInt(match[1]),
+                                      parseInt(match[4]),
+                                      parseInt(match[5]));
 
             callback({
-                price : {buy: buy, sell: sell},
-                'last-retrieved-on': null, // TODO: put current timestamp
-                'last-updated-on': last_updated_on, // TODO: parse date
+                price : {
+                    buy: buy, 
+                    sell: sell
+                },
+                retrieved_on: new Date(), 
+                updated_on: updated_on,
             });
         }
     );
