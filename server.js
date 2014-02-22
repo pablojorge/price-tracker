@@ -3,6 +3,10 @@ var WebSocketServer = require('ws').Server
   , express = require('express')
   , request = require('request')
   , cheerio = require('cheerio')
+
+  // custom modules:
+  , messages = require('./messages.js')
+
   , app = express()
   , port = process.env.PORT || 5000;
 
@@ -23,8 +27,8 @@ wss.on('connection', function(ws) {
     ws.on('message', function(message) {
         console.log("message received: " + message);
         try {
-            var request = JSON.parse(message);
-            var factory = new HandlerFactory();
+            var request = messages.Request.fromString(message);
+            var factory = new RequestHandlerFactory();
             var handler = factory.getHandler(request);
             handler.processRequest(
                 function(response) {
@@ -40,8 +44,8 @@ wss.on('connection', function(ws) {
                     });
                 }
             );
-        } catch(e) {
-            ret = {error:true, msg:e.toString()};
+        } catch(exception) {
+            ret = {error:true, msg:exception.toString()};
             console.log("exception: " + exception);
             ws.send(JSON.stringify(ret), function() {
                 console.log("error sent");
@@ -56,25 +60,28 @@ wss.on('connection', function(ws) {
 
 /**
  */
-function HandlerFactory() {}
-HandlerFactory.handlers = {}
-HandlerFactory.addHandler = function(type, handler) {
-    HandlerFactory.handlers[type] = handler;
+function RequestHandlerFactory() {}
+RequestHandlerFactory.handlers = {}
+RequestHandlerFactory.addHandler = function(type, handler) {
+    RequestHandlerFactory.handlers[type] = handler;
 }
 
-HandlerFactory.prototype.getHandler = function(requestobj) {
-    var handler = HandlerFactory.handlers[requestobj.type];
+RequestHandlerFactory.prototype.getHandler = function(request) {
+    var handler = RequestHandlerFactory.handlers[request.__proto__.constructor.name];
     if (handler == undefined)
-        throw ("Invalid type: " + requestobj.type);
-    return new handler(requestobj.request);
+        throw ("Invalid type: " + request);
+    return new handler(request);
 }
 
-/**/
+/**
+ */
 function PriceRequestHandler(request) {
     this.request = request;
 }
 
 PriceRequestHandler.requesters = {}
+PriceRequestHandler.cache = new Cache(60);
+
 PriceRequestHandler.addRequester = function(exchange, requester) {
     PriceRequestHandler.requesters[exchange] = requester;
 }
@@ -82,13 +89,15 @@ PriceRequestHandler.addRequester = function(exchange, requester) {
 PriceRequestHandler.prototype.getRequester = function() {
     var requester = PriceRequestHandler.requesters[this.request.exchange];
     if (requester == undefined)
-        throw ("Unknown exchange: " + exchange);
-    return new requester(this.request.options);
+        throw ("Unknown exchange: " + this.request.exchange);
+    return new CachedPriceRequester(PriceRequestHandler.cache,
+                                    this.request,
+                                    new requester(this.request.options));
 }
 
 PriceRequestHandler.prototype.processRequest = function (callback, errback) {
     try {
-        var requester = this.getRequester(this.request.exchange);
+        var requester = this.getRequester();
         requester.doRequest(callback);
     } catch(e) {
         errback(e);
@@ -96,8 +105,87 @@ PriceRequestHandler.prototype.processRequest = function (callback, errback) {
 };
 
 PriceRequestHandler.handles = "PriceRequest";
-HandlerFactory.addHandler(PriceRequestHandler.handles, 
-                          PriceRequestHandler);
+RequestHandlerFactory.addHandler(PriceRequestHandler.handles, 
+                                 PriceRequestHandler);
+
+/**
+ */
+function Cache(ttl) {
+    this.ttl = ttl;
+    this.entries = {}
+}
+
+Cache.prototype.setEntry = function(entry, value) {
+    this.entries[entry] = {
+        timestamp: Date.now(),
+        age: function() {
+            return (Date.now() - this.timestamp) / 1000;
+        },
+        value: value
+    };
+    return value;
+}
+
+Cache.prototype.getEntry = function(entry) {
+    cached = this.entries[entry];
+
+    if (cached != undefined) {
+        if (cached.age() > this.ttl) {
+            console.log("Entry is too old, discarding: " + entry)
+            delete this.entries[entry];
+            return undefined;
+        }
+        console.log("Cached entry is valid: " + entry);
+        return cached.value;
+    } else {
+        console.log("Entry NOT found in cache: " + entry);
+        return undefined;
+    }
+}
+
+/**
+ * Decorator to cache prices
+ */
+
+function CachedPriceRequester(cache, request, requester) {
+    this.cache = cache;
+    this.request = request;
+    this.requester = requester;
+}
+
+CachedPriceRequester.prototype.doRequest = function (callback) {
+    cached = this.cache.getEntry(this.request.hash());
+
+    if (cached == undefined) {
+        var cache = this.cache,
+            request = this.request;
+
+        this.requester.doRequest(function (response) {
+            cache.setEntry(request.hash(), response);
+            callback(response);
+        });
+    } else {
+        callback(cached);
+    }
+}
+
+/**
+ * Dummy price requester
+ */
+
+function DummyPriceRequester(options) {
+    this.options = options;
+}
+
+DummyPriceRequester.handles = 'dummy';
+
+DummyPriceRequester.prototype.doRequest = function (callback) {
+    callback({price: "Dummy", retrieved_on: new Date()});
+};
+
+PriceRequestHandler.addRequester(DummyPriceRequester.handles, 
+                                 DummyPriceRequester);
+/**/
 
 /**
  * Bitstamp
