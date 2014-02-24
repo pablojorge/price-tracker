@@ -32,22 +32,22 @@ wss.on('connection', function(ws) {
             var handler = factory.getHandler(request);
             handler.processRequest(
                 function(response) {
-                    ws.send(JSON.stringify(response), function() {
+                    ws.send(response.toString(), function() {
                         console.log("response sent");
                     });
                 }, 
                 function(exception) {
-                    ret = {error:true, msg:exception.toString()};
+                    error = new messages.Error(exception.toString());
                     console.log("exception: " + exception);
-                    ws.send(JSON.stringify(ret), function() {
+                    ws.send(error.toString(), function() {
                         console.log("error sent");
                     });
                 }
             );
         } catch(exception) {
-            ret = {error:true, msg:exception.toString()};
+            error = new messages.Error(exception.toString());
             console.log("exception: " + exception);
-            ws.send(JSON.stringify(ret), function() {
+            ws.send(error.toString(), function() {
                 console.log("error sent");
             });
         }
@@ -131,14 +131,11 @@ Cache.prototype.getEntry = function(entry) {
 
     if (cached != undefined) {
         if (cached.age() > this.ttl) {
-            console.log("Entry is too old, discarding: " + entry)
             delete this.entries[entry];
             return undefined;
         }
-        console.log("Cached entry is valid: " + entry);
         return cached.value;
     } else {
-        console.log("Entry NOT found in cache: " + entry);
         return undefined;
     }
 }
@@ -180,7 +177,7 @@ function DummyPriceRequester(options) {
 DummyPriceRequester.handles = 'dummy';
 
 DummyPriceRequester.prototype.doRequest = function (callback) {
-    callback({price: "Dummy", retrieved_on: new Date()});
+    callback(new messages.Price("Dummy", 1234.56, 4321.12));
 };
 
 PriceRequestHandler.addRequester(DummyPriceRequester.handles, 
@@ -201,8 +198,10 @@ BitstampPriceRequester.main_url = 'https://www.bitstamp.net/api/ticker/';
 BitstampPriceRequester.prototype.doRequest = function (callback) {
     request(BitstampPriceRequester.main_url, 
         function (error, response, body) {
-            var price = JSON.parse(body).ask;
-            callback({price: price});
+            var object = JSON.parse(body),
+                buy = object.bid,
+                sell = object.ask;
+            callback(new messages.Price("BTCUSD", buy, sell));
         }
     );
 };
@@ -222,25 +221,29 @@ function BullionVaultPriceRequester(options) {
 BullionVaultPriceRequester.handles = 'bullionvault';
 BullionVaultPriceRequester.main_url =
     'https://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
-    '?considerationCurrency=USD';
+    '?considerationCurrency=USD&securityClassNarrative=';
 
 BullionVaultPriceRequester.prototype.doRequest = function (callback) {
-    request(BullionVaultPriceRequester.main_url,
+    var symbol_urlmap = {
+        "XAUUSD" : "GOLD",
+        "XAGUSD" : "SILVER"
+    };
+    var symbol = this.options.symbol;
+
+    request(BullionVaultPriceRequester.main_url + symbol_urlmap[symbol],
         function (error, response, body) {
             var $ = cheerio.load(body),
-                prices = {gold: [], silver: []},
-                ret = {price: {}};
-            for (security in prices) {
-                var selector = "pitch[securityClassNarrative='" +
-                                security.toUpperCase() +
-                               "'] > sellPrices > price";
-                $(selector).each(function(index, elem){
-                    prices[security].push(elem.attribs.limit);
-                });
-                var price = Math.min.apply(null, prices[security]) / 32.15;
-                ret.price[security] = price;
-            }
-            callback(ret);
+                get_price = function(op) {
+                    var prices = [];
+                    $(op + "Prices > price").each(function(index, elem){
+                        prices.push(elem.attribs.limit);
+                    });
+                    return Math.min.apply(null, prices) / 32.15;
+                },
+                buy = get_price("buy"),
+                sell = get_price("sell");
+
+            callback(new messages.Price(symbol, buy, sell));
         }
     );
 };
@@ -266,8 +269,9 @@ AmbitoPriceRequester.prototype.doRequest = function (callback) {
         "USDARSB" : "ARSB=",
         "USDARS" : "ARSSCBRA"
     };
+    var symbol = this.options.symbol;
 
-    request(AmbitoPriceRequester.main_url + symbol_urlmap[this.options.symbol],
+    request(AmbitoPriceRequester.main_url + symbol_urlmap[symbol],
         function (error, response, body) {
             var $ = cheerio.load(body),
                 buy = parseFloat($('#compra > big').text().replace(',','.')),
@@ -280,14 +284,7 @@ AmbitoPriceRequester.prototype.doRequest = function (callback) {
                                       parseInt(match[4]),
                                       parseInt(match[5]));
 
-            callback({
-                price : {
-                    buy: buy, 
-                    sell: sell
-                },
-                retrieved_on: new Date(), 
-                updated_on: updated_on,
-            });
+            callback(new messages.Price(symbol, buy, sell));
         }
     );
 };

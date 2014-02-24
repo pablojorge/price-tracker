@@ -13,7 +13,10 @@ var ws = new WebSocket(host);
 
 ws.onopen = function (event) {
     appendLine("connected!!");
-    ws.send((new PriceRequest("dummy", {symbol: "USDARSB"})).toString());
+    ws.send((new PriceRequest("dummy", {})).toString());
+    ws.send((new PriceRequest("bitstamp", {})).toString());
+    ws.send((new PriceRequest("ambito", {symbol: "USDARSB"})).toString());
+    ws.send((new PriceRequest("bullionvault", {symbol: "XAUUSD"})).toString());
 };
 
 ws.onmessage = function (event) {
