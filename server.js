@@ -12,6 +12,24 @@ var WebSocketServer = require('ws').Server
 
 app.use(express.static(__dirname + '/'));
 
+app.get("/request/price/:exchange/:symbol", function(req, res) {
+    var exchange = req.params.exchange,
+        symbol = req.params.symbol,
+        request = new messages.PriceRequest(exchange, {symbol: symbol}),
+        factory = new RequestHandlerFactory(),
+        handler = factory.getHandler(request);
+
+        handler.processRequest(
+            function(response) {
+                res.json(response);
+            },
+            function(exception) {
+                res.status(500);
+                res.json(new messages.Error(exception.toString()));
+            }
+        );
+});
+
 var server = http.createServer(app);
 server.listen(port);
 
@@ -98,7 +116,7 @@ PriceRequestHandler.prototype.getRequester = function() {
 PriceRequestHandler.prototype.processRequest = function (callback, errback) {
     try {
         var requester = this.getRequester();
-        requester.doRequest(callback);
+        requester.doRequest(callback, errback);
     } catch(e) {
         errback(e);
     }
@@ -150,7 +168,7 @@ function CachedPriceRequester(cache, request, requester) {
     this.requester = requester;
 }
 
-CachedPriceRequester.prototype.doRequest = function (callback) {
+CachedPriceRequester.prototype.doRequest = function (callback, errback) {
     cached = this.cache.getEntry(this.request.hash());
 
     if (cached == undefined) {
@@ -160,7 +178,7 @@ CachedPriceRequester.prototype.doRequest = function (callback) {
         this.requester.doRequest(function (response) {
             cache.setEntry(request.hash(), response);
             callback(response);
-        });
+        }, errback);
     } else {
         callback(cached);
     }
@@ -176,7 +194,7 @@ function DummyPriceRequester(options) {
 
 DummyPriceRequester.handles = 'dummy';
 
-DummyPriceRequester.prototype.doRequest = function (callback) {
+DummyPriceRequester.prototype.doRequest = function (callback, errback) {
     callback(new messages.Price("Dummy", 1234.56, 4321.12));
 };
 
@@ -195,13 +213,17 @@ function BitstampPriceRequester(options) {
 BitstampPriceRequester.handles = 'bitstamp';
 BitstampPriceRequester.main_url = 'https://www.bitstamp.net/api/ticker/';
 
-BitstampPriceRequester.prototype.doRequest = function (callback) {
+BitstampPriceRequester.prototype.doRequest = function (callback, errback) {
     request(BitstampPriceRequester.main_url, 
         function (error, response, body) {
-            var object = JSON.parse(body),
-                buy = object.bid,
-                sell = object.ask;
-            callback(new messages.Price("BTCUSD", buy, sell));
+            try {
+                var object = JSON.parse(body),
+                    buy = object.bid,
+                    sell = object.ask;
+                callback(new messages.Price("BTCUSD", buy, sell));
+            } catch(e) {
+                errback(e);
+            }
         }
     );
 };
@@ -223,7 +245,7 @@ BullionVaultPriceRequester.main_url =
     'https://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
     '?considerationCurrency=USD&securityClassNarrative=';
 
-BullionVaultPriceRequester.prototype.doRequest = function (callback) {
+BullionVaultPriceRequester.prototype.doRequest = function (callback, errback) {
     var symbol_urlmap = {
         "XAUUSD" : "GOLD",
         "XAGUSD" : "SILVER"
@@ -232,18 +254,25 @@ BullionVaultPriceRequester.prototype.doRequest = function (callback) {
 
     request(BullionVaultPriceRequester.main_url + symbol_urlmap[symbol],
         function (error, response, body) {
-            var $ = cheerio.load(body),
-                get_price = function(op) {
-                    var prices = [];
-                    $(op + "Prices > price").each(function(index, elem){
-                        prices.push(elem.attribs.limit);
-                    });
-                    return Math.min.apply(null, prices) / 32.15;
-                },
-                buy = get_price("buy"),
-                sell = get_price("sell");
+            try {
+                if (response.statusCode != 200) 
+                    throw ("Error, status code: " + response.statusCode);
 
-            callback(new messages.Price(symbol, buy, sell));
+                var $ = cheerio.load(body),
+                    get_price = function(op) {
+                        var prices = [];
+                        $(op + "Prices > price").each(function(index, elem){
+                            prices.push(elem.attribs.limit);
+                        });
+                        return Math.min.apply(null, prices) / 32.15;
+                    },
+                    buy = get_price("buy"),
+                    sell = get_price("sell");
+
+                callback(new messages.Price(symbol, buy, sell));
+            } catch(e) {
+                errback(e);
+            }
         }
     );
 };
@@ -264,27 +293,34 @@ AmbitoPriceRequester.handles = 'ambito';
 AmbitoPriceRequester.main_url =
     'http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=';
 
-AmbitoPriceRequester.prototype.doRequest = function (callback) {
+AmbitoPriceRequester.prototype.doRequest = function (callback, errback) {
     var symbol_urlmap = {
         "USDARSB" : "ARSB=",
-        "USDARS" : "ARSSCBRA"
+        "USDARS" : "ARSSCBCRA"
     };
     var symbol = this.options.symbol;
 
     request(AmbitoPriceRequester.main_url + symbol_urlmap[symbol],
         function (error, response, body) {
-            var $ = cheerio.load(body),
-                buy = parseFloat($('#compra > big').text().replace(',','.')),
-                sell = parseFloat($("#venta > big").text().replace(',','.')),
-                uact_format = /(\d{2})\/(\d{2})\/(\d{4})(\d{2}):(\d{2})/,
-                match = uact_format.exec($(".uact > b").text().trim()),
-                updated_on = new Date(parseInt(match[3]),
-                                      parseInt(match[2]) - 1,
-                                      parseInt(match[1]),
-                                      parseInt(match[4]),
-                                      parseInt(match[5]));
+            try {
+                if (response.statusCode != 200) 
+                    throw ("Error, status code: " + response.statusCode);
 
-            callback(new messages.Price(symbol, buy, sell));
+                var $ = cheerio.load(body),
+                    buy = parseFloat($('#compra > big').text().replace(',','.')),
+                    sell = parseFloat($("#venta > big").text().replace(',','.')),
+                    uact_format = /(\d{2})\/(\d{2})\/(\d{4})(\d{2}):(\d{2})/,
+                    match = uact_format.exec($(".uact > b").text().trim()),
+                    updated_on = new Date(parseInt(match[3]),
+                                          parseInt(match[2]) - 1,
+                                          parseInt(match[1]),
+                                          parseInt(match[4]),
+                                          parseInt(match[5]));
+
+                callback(new messages.Price(symbol, buy, sell));
+            } catch(e) {
+                errback(e);
+            }
         }
     );
 };

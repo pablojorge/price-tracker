@@ -15,7 +15,9 @@ ws.onopen = function (event) {
     appendLine("connected!!");
     ws.send((new PriceRequest("dummy", {})).toString());
     ws.send((new PriceRequest("bitstamp", {})).toString());
+    ws.send((new PriceRequest("ambito", {symbol: "USDARS"})).toString());
     ws.send((new PriceRequest("ambito", {symbol: "USDARSB"})).toString());
+    ws.send((new PriceRequest("bullionvault", {symbol: "XAGUSD"})).toString());
     ws.send((new PriceRequest("bullionvault", {symbol: "XAUUSD"})).toString());
 };
 
