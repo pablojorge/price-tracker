@@ -21,10 +21,12 @@ app.get("/request/price/:exchange/:symbol", function(req, res) {
 
         handler.processRequest(
             function(response) {
+                console.log("response sent: " + response);
                 res.json(response);
             },
             function(exception) {
                 res.status(500);
+                console.log("error sent: " + exception);
                 res.json(new messages.Error(exception.toString()));
             }
         );
@@ -100,8 +102,8 @@ function PriceRequestHandler(request) {
 PriceRequestHandler.requesters = {}
 PriceRequestHandler.cache = new Cache(60);
 
-PriceRequestHandler.addRequester = function(exchange, requester) {
-    PriceRequestHandler.requesters[exchange] = requester;
+PriceRequestHandler.addRequester = function(requester) {
+    PriceRequestHandler.requesters[requester.handles] = requester;
 }
 
 PriceRequestHandler.prototype.getRequester = function() {
@@ -128,6 +130,40 @@ RequestHandlerFactory.addHandler(PriceRequestHandler.handles,
 
 /**
  */
+function PriceRequester() {}
+
+PriceRequester.prototype.doRequest = function (callback, errback) {
+    var _prepareRequest = this.prepareRequest,
+        _processResponse = this.processResponse,
+        _this = this;
+
+    request(_prepareRequest.call(_this),
+        function (error, response, body) {
+            try {
+                if (error != undefined) {
+                    throw ("Error: " + error);
+                }
+                if (response.statusCode != 200) {
+                    throw ("Error, status code: " + response.statusCode);
+                }
+                callback(_processResponse.call(_this, response, body));
+            } catch(e) {
+                errback(e);
+            }
+        }
+    );
+};
+
+PriceRequester.prototype.prepareRequest = function() {
+    throw ("prepareRequest should be overriden!");
+}
+
+PriceRequester.prototype.processResponse = function(response, body) {
+    throw ("processResponse should be overriden!");
+}
+
+/**
+ */
 function Cache(ttl) {
     this.ttl = ttl;
     this.entries = {}
@@ -135,9 +171,9 @@ function Cache(ttl) {
 
 Cache.prototype.setEntry = function(entry, value) {
     this.entries[entry] = {
-        timestamp: Date.now(),
+        timestamp: new Date(),
         age: function() {
-            return (Date.now() - this.timestamp) / 1000;
+            return ((new Date()) - this.timestamp) / 1000;
         },
         value: value
     };
@@ -198,8 +234,7 @@ DummyPriceRequester.prototype.doRequest = function (callback, errback) {
     callback(new messages.Price("Dummy", 1234.56, 4321.12));
 };
 
-PriceRequestHandler.addRequester(DummyPriceRequester.handles, 
-                                 DummyPriceRequester);
+PriceRequestHandler.addRequester(DummyPriceRequester);
 /**/
 
 /**
@@ -211,25 +246,22 @@ function BitstampPriceRequester(options) {
 }
 
 BitstampPriceRequester.handles = 'bitstamp';
-BitstampPriceRequester.main_url = 'https://www.bitstamp.net/api/ticker/';
 
-BitstampPriceRequester.prototype.doRequest = function (callback, errback) {
-    request(BitstampPriceRequester.main_url, 
-        function (error, response, body) {
-            try {
-                var object = JSON.parse(body),
-                    buy = object.bid,
-                    sell = object.ask;
-                callback(new messages.Price("BTCUSD", buy, sell));
-            } catch(e) {
-                errback(e);
-            }
-        }
-    );
+BitstampPriceRequester.prototype = Object.create(PriceRequester.prototype);
+BitstampPriceRequester.prototype.constructor = BitstampPriceRequester;
+
+BitstampPriceRequester.prototype.prepareRequest = function() {
+    return 'https://www.bitstamp.net/api/ticker/';
+}
+
+BitstampPriceRequester.prototype.processResponse = function (response, body) {
+    var object = JSON.parse(body),
+        buy = object.bid,
+        sell = object.ask;
+    return new messages.Price("BTCUSD", buy, sell);
 };
 
-PriceRequestHandler.addRequester(BitstampPriceRequester.handles, 
-                                 BitstampPriceRequester);
+PriceRequestHandler.addRequester(BitstampPriceRequester);
 /**/
 
 /**
@@ -241,44 +273,41 @@ function BullionVaultPriceRequester(options) {
 }
 
 BullionVaultPriceRequester.handles = 'bullionvault';
-BullionVaultPriceRequester.main_url =
-    'https://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
-    '?considerationCurrency=USD&securityClassNarrative=';
 
-BullionVaultPriceRequester.prototype.doRequest = function (callback, errback) {
+BullionVaultPriceRequester.prototype = Object.create(PriceRequester.prototype);
+BullionVaultPriceRequester.prototype.constructor = BullionVaultPriceRequester;
+
+BullionVaultPriceRequester.prototype.prepareRequest = function() {
     var symbol_urlmap = {
         "XAUUSD" : "GOLD",
         "XAGUSD" : "SILVER"
     };
-    var symbol = this.options.symbol;
 
-    request(BullionVaultPriceRequester.main_url + symbol_urlmap[symbol],
-        function (error, response, body) {
-            try {
-                if (response.statusCode != 200) 
-                    throw ("Error, status code: " + response.statusCode);
+    if (!(this.options.symbol in symbol_urlmap)) {
+        throw ("Invalid symbol: " + this.options.symbol);
+    }
 
-                var $ = cheerio.load(body),
-                    get_price = function(op) {
-                        var prices = [];
-                        $(op + "Prices > price").each(function(index, elem){
-                            prices.push(elem.attribs.limit);
-                        });
-                        return Math.min.apply(null, prices) / 32.15;
-                    },
-                    buy = get_price("buy"),
-                    sell = get_price("sell");
+    return ('https://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
+            '?considerationCurrency=USD&securityClassNarrative=' + 
+            symbol_urlmap[this.options.symbol]);
+}
 
-                callback(new messages.Price(symbol, buy, sell));
-            } catch(e) {
-                errback(e);
-            }
-        }
-    );
+BullionVaultPriceRequester.prototype.processResponse = function (response, body) {
+    var $ = cheerio.load(body),
+        get_price = function(op) {
+            var prices = [];
+            $(op + "Prices > price").each(function(index, elem){
+                prices.push(elem.attribs.limit);
+            });
+            return Math.min.apply(null, prices) / 32.15;
+        },
+        buy = get_price("buy"),
+        sell = get_price("sell");
+    
+    return new messages.Price(this.options.symbol, buy, sell);
 };
 
-PriceRequestHandler.addRequester(BullionVaultPriceRequester.handles,
-                                 BullionVaultPriceRequester);
+PriceRequestHandler.addRequester(BullionVaultPriceRequester);
 /**/
 
 /**
@@ -290,42 +319,44 @@ function AmbitoPriceRequester(options) {
 }
 
 AmbitoPriceRequester.handles = 'ambito';
-AmbitoPriceRequester.main_url =
-    'http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=';
 
-AmbitoPriceRequester.prototype.doRequest = function (callback, errback) {
+AmbitoPriceRequester.prototype = Object.create(PriceRequester.prototype);
+AmbitoPriceRequester.prototype.constructor = AmbitoPriceRequester;
+
+AmbitoPriceRequester.prototype.prepareRequest = function() {
     var symbol_urlmap = {
         "USDARSB" : "ARSB=",
         "USDARS" : "ARSSCBCRA"
     };
-    var symbol = this.options.symbol;
 
-    request(AmbitoPriceRequester.main_url + symbol_urlmap[symbol],
-        function (error, response, body) {
-            try {
-                if (response.statusCode != 200) 
-                    throw ("Error, status code: " + response.statusCode);
+    if (!(this.options.symbol in symbol_urlmap)) {
+        throw ("Invalid symbol: " + this.options.symbol);
+    }
 
-                var $ = cheerio.load(body),
-                    buy = parseFloat($('#compra > big').text().replace(',','.')),
-                    sell = parseFloat($("#venta > big").text().replace(',','.')),
-                    uact_format = /(\d{2})\/(\d{2})\/(\d{4})(\d{2}):(\d{2})/,
-                    match = uact_format.exec($(".uact > b").text().trim()),
-                    updated_on = new Date(parseInt(match[3]),
-                                          parseInt(match[2]) - 1,
-                                          parseInt(match[1]),
-                                          parseInt(match[4]),
-                                          parseInt(match[5]));
+    return ('http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=' +
+            symbol_urlmap[this.options.symbol]);
+}
 
-                callback(new messages.Price(symbol, buy, sell));
-            } catch(e) {
-                errback(e);
-            }
-        }
-    );
+AmbitoPriceRequester.prototype.processResponse = function (response, body) {
+    var $ = cheerio.load(body),
+        buy = parseFloat($('#compra > big').text().replace(',','.')),
+        sell = parseFloat($("#venta > big").text().replace(',','.')),
+        retrieved_on = new Date(),
+        uact_format = /(\d{2})\/(\d{2})\/(\d{4})(\d{2}):(\d{2})/,
+        match = uact_format.exec($(".uact > b").text().trim()),
+        updated_on = new Date(parseInt(match[3]),
+                              parseInt(match[2]) - 1,
+                              parseInt(match[1]),
+                              parseInt(match[4]),
+                              parseInt(match[5]));
+    
+    return new messages.Price(this.options.symbol, 
+                              buy, 
+                              sell,
+                              retrieved_on,
+                              updated_on);
 };
 
-PriceRequestHandler.addRequester(AmbitoPriceRequester.handles,
-                                 AmbitoPriceRequester);
+PriceRequestHandler.addRequester(AmbitoPriceRequester);
 /**/
 

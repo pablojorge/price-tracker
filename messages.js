@@ -67,8 +67,8 @@ function Price(symbol, buy, sell, retrieved_on, updated_on) {
     this.symbol = symbol;
     this.buy = buy;
     this.sell = sell;
-    this.retrieved_on = retrieved_on || Date.now();
-    this.updated_on = updated_on || Date.now();
+    this.retrieved_on = retrieved_on || new Date();
+    this.updated_on = updated_on || new Date();
 }
 
 Price.prototype = Object.create(Response.prototype);
