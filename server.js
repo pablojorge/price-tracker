@@ -103,7 +103,7 @@ PriceRequestHandler.requesters = {}
 PriceRequestHandler.cache = new Cache(60);
 
 PriceRequestHandler.addRequester = function(requester) {
-    PriceRequestHandler.requesters[requester.handles] = requester;
+    PriceRequestHandler.requesters[requester.config.exchange] = requester;
 }
 
 PriceRequestHandler.prototype.getRequester = function() {
@@ -133,11 +133,10 @@ RequestHandlerFactory.addHandler(PriceRequestHandler.handles,
 function PriceRequester() {}
 
 PriceRequester.prototype.doRequest = function (callback, errback) {
-    var _prepareRequest = this.prepareRequest,
-        _processResponse = this.processResponse,
+    var _processResponse = this.processResponse,
         _this = this;
 
-    request(_prepareRequest.call(_this),
+    request(this.buildRequest(),
         function (error, response, body) {
             try {
                 if (error != undefined) {
@@ -154,8 +153,15 @@ PriceRequester.prototype.doRequest = function (callback, errback) {
     );
 };
 
-PriceRequester.prototype.prepareRequest = function() {
-    throw ("prepareRequest should be overriden!");
+PriceRequester.prototype.buildRequest = function() {
+    var _config = this.__proto__.constructor.config;
+
+    if (this.options.symbol && !(this.options.symbol in _config.symbol_map)) {
+        throw ("Invalid symbol: " + this.options.symbol);
+    }
+
+    return _config.url_template.replace("<<SYMBOL>>", 
+                                        _config.symbol_map[this.options.symbol]);
 }
 
 PriceRequester.prototype.processResponse = function(response, body) {
@@ -228,7 +234,9 @@ function DummyPriceRequester(options) {
     this.options = options;
 }
 
-DummyPriceRequester.handles = 'dummy';
+DummyPriceRequester.config = {
+    exchange: 'dummy',
+}
 
 DummyPriceRequester.prototype.doRequest = function (callback, errback) {
     callback(new messages.Price("Dummy", 1234.56, 4321.12));
@@ -245,14 +253,14 @@ function BitstampPriceRequester(options) {
     this.options = options;
 }
 
-BitstampPriceRequester.handles = 'bitstamp';
+BitstampPriceRequester.config = {
+    exchange: 'bitstamp',
+    symbol_map: {},
+    url_template: 'https://www.bitstamp.net/api/ticker/',
+};
 
 BitstampPriceRequester.prototype = Object.create(PriceRequester.prototype);
 BitstampPriceRequester.prototype.constructor = BitstampPriceRequester;
-
-BitstampPriceRequester.prototype.prepareRequest = function() {
-    return 'https://www.bitstamp.net/api/ticker/';
-}
 
 BitstampPriceRequester.prototype.processResponse = function (response, body) {
     var object = JSON.parse(body),
@@ -272,25 +280,20 @@ function BullionVaultPriceRequester(options) {
     this.options = options;
 }
 
-BullionVaultPriceRequester.handles = 'bullionvault';
+BullionVaultPriceRequester.config = {
+    exchange: 'bullionvault',
+    symbol_map: { 
+        "XAUUSD" : "GOLD", 
+        "XAGUSD" : "SILVER" 
+    },
+    url_template: (
+        'https://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
+        '?considerationCurrency=USD&securityClassNarrative=<<SYMBOL>>'
+    ),
+};
 
 BullionVaultPriceRequester.prototype = Object.create(PriceRequester.prototype);
 BullionVaultPriceRequester.prototype.constructor = BullionVaultPriceRequester;
-
-BullionVaultPriceRequester.prototype.prepareRequest = function() {
-    var symbol_urlmap = {
-        "XAUUSD" : "GOLD",
-        "XAGUSD" : "SILVER"
-    };
-
-    if (!(this.options.symbol in symbol_urlmap)) {
-        throw ("Invalid symbol: " + this.options.symbol);
-    }
-
-    return ('https://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
-            '?considerationCurrency=USD&securityClassNarrative=' + 
-            symbol_urlmap[this.options.symbol]);
-}
 
 BullionVaultPriceRequester.prototype.processResponse = function (response, body) {
     var $ = cheerio.load(body),
@@ -318,24 +321,19 @@ function AmbitoPriceRequester(options) {
     this.options = options;
 }
 
-AmbitoPriceRequester.handles = 'ambito';
+AmbitoPriceRequester.config = {
+    exchange: 'ambito',
+    symbol_map: {
+        "USDARSB" : "ARSB=",
+        "USDARS" : "ARSSCBCRA"
+    },
+    url_template: (
+        'http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=<<SYMBOL>>'
+    ),
+};
 
 AmbitoPriceRequester.prototype = Object.create(PriceRequester.prototype);
 AmbitoPriceRequester.prototype.constructor = AmbitoPriceRequester;
-
-AmbitoPriceRequester.prototype.prepareRequest = function() {
-    var symbol_urlmap = {
-        "USDARSB" : "ARSB=",
-        "USDARS" : "ARSSCBCRA"
-    };
-
-    if (!(this.options.symbol in symbol_urlmap)) {
-        throw ("Invalid symbol: " + this.options.symbol);
-    }
-
-    return ('http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=' +
-            symbol_urlmap[this.options.symbol]);
-}
 
 AmbitoPriceRequester.prototype.processResponse = function (response, body) {
     var $ = cheerio.load(body),
