@@ -12,24 +12,33 @@ var WebSocketServer = require('ws').Server
 
 app.use(express.static(__dirname + '/'));
 
+function serveRequest(request, req, res) {
+    var factory = new RequestHandlerFactory(),
+        handler = factory.getHandler(request);
+
+    handler.processRequest(
+        function(response) {
+            console.log("response sent: " + response);
+            res.json(response);
+        },
+        function(exception) {
+            res.status(500);
+            console.log("error sent: " + exception);
+            res.json(new messages.Error(exception.toString()));
+        }
+    );
+}
+
 app.get("/request/price/:exchange/:symbol", function(req, res) {
     var exchange = req.params.exchange,
         symbol = req.params.symbol,
-        request = new messages.PriceRequest(exchange, symbol),
-        factory = new RequestHandlerFactory(),
-        handler = factory.getHandler(request);
+        request = new messages.PriceRequest(exchange, symbol);
+    serveRequest(request, req, res);
+});
 
-        handler.processRequest(
-            function(response) {
-                console.log("response sent: " + response);
-                res.json(response);
-            },
-            function(exception) {
-                res.status(500);
-                console.log("error sent: " + exception);
-                res.json(new messages.Error(exception.toString()));
-            }
-        );
+app.get("/request/exchanges", function(req, res) {
+    var request = new messages.ExchangesRequest();
+    serveRequest(request, req, res);
 });
 
 var server = http.createServer(app);
@@ -128,6 +137,33 @@ PriceRequestHandler.prototype.processRequest = function (callback, errback) {
 PriceRequestHandler.handles = "PriceRequest";
 RequestHandlerFactory.addHandler(PriceRequestHandler.handles, 
                                  PriceRequestHandler);
+
+/**
+ */
+function ExchangesRequestHandler(request) {
+    this.request = request;
+}
+
+ExchangesRequestHandler.prototype.processRequest = function (callback, errback) {
+    try {
+        var exchanges = new messages.Exchanges()
+        for (exchange in PriceRequestHandler.requesters) {
+            var requester = PriceRequestHandler.requesters[exchange],
+                symbols = [];
+            for (symbol in requester.config.symbol_map) {
+                symbols.push(symbol);
+            }
+            exchanges.addExchange(requester.config.exchange, symbols);
+        }
+        callback(exchanges)
+    } catch(e) {
+        errback(e);
+    }
+};
+
+ExchangesRequestHandler.handles = "ExchangesRequest";
+RequestHandlerFactory.addHandler(ExchangesRequestHandler.handles, 
+                                 ExchangesRequestHandler);
 
 /**
  */

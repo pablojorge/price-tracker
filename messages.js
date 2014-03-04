@@ -36,6 +36,15 @@ PriceRequest.prototype.hash = function() {
 
 /**
  */
+function ExchangesRequest(options) {
+    this.options = options;
+}
+
+ExchangesRequest.prototype = Object.create(Request.prototype);
+ExchangesRequest.prototype.constructor = ExchangesRequest;
+
+/**
+ */
 function Response() {}
 
 Response.prototype.toString = function() {
@@ -76,13 +85,24 @@ function Price(exchange, symbol, buy, sell, retrieved_on, updated_on) {
 Price.prototype = Object.create(Response.prototype);
 Price.prototype.constructor = Price;
 
+function Exchanges() {}
+
+Exchanges.prototype = Object.create(Response.prototype);
+Exchanges.prototype.constructor = Exchanges;
+
+Exchanges.prototype.addExchange = function (exchange, symbols) {
+    this[exchange] = symbols;
+}
+
 /**
  */
 try {
     module.exports.Request = Request;
     module.exports.PriceRequest = PriceRequest;
+    module.exports.ExchangesRequest = ExchangesRequest;
     module.exports.Error = Error;
     module.exports.Price = Price;
+    module.exports.Exchanges = Exchanges;
 } catch(e) {
     console.log("Running outside node: " + e)
 }
