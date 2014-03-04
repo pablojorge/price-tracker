@@ -255,7 +255,9 @@ function BitstampPriceRequester(options) {
 
 BitstampPriceRequester.config = {
     exchange: 'bitstamp',
-    symbol_map: {},
+    symbol_map: {
+        "BTCUSD" : undefined
+    },
     url_template: 'https://www.bitstamp.net/api/ticker/',
 };
 
@@ -356,5 +358,137 @@ AmbitoPriceRequester.prototype.processResponse = function (response, body) {
 };
 
 PriceRequestHandler.addRequester(AmbitoPriceRequester);
+/**/
+
+/**
+ * Coinbase
+ */
+
+function CoinbasePriceRequester(options) {
+    this.options = options;
+}
+
+CoinbasePriceRequester.config = {
+    exchange: 'coinbase',
+    symbol_map: {
+        "BTCUSD" : undefined
+    },
+    url_template: 'https://coinbase.com/api/v1/prices/spot_rate',
+};
+
+CoinbasePriceRequester.prototype = Object.create(PriceRequester.prototype);
+CoinbasePriceRequester.prototype.constructor = CoinbasePriceRequester;
+
+CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
+    function processResponse(error, response, body) {
+        if (error != undefined) {
+            throw ("Error: " + error);
+        }
+        if (response.statusCode != 200) {
+            throw ("Error, status code: " + response.statusCode);
+        }
+        return JSON.parse(body).amount;
+    }
+
+    function getBuyPrice() {
+        request('https://coinbase.com/api/v1/prices/buy',
+            function (error, response, body) {
+                try {
+                    var buy = processResponse(error, response, body);
+                    getSellPrice(buy);
+                } catch(e) {
+                    errback(e);
+                }
+            }
+        );
+    }
+
+    function getSellPrice(buy) {
+        request('https://coinbase.com/api/v1/prices/sell',
+            function (error, response, body) {
+                try {
+                    var sell = processResponse(error, response, body);
+                    callback(new messages.Price("BTCUSD", buy, sell));
+                } catch(e) {
+                    errback(e);
+                }
+            }
+        );
+    }
+
+    getBuyPrice();
+};
+
+CoinbasePriceRequester.prototype.processResponse = function (response, body) {
+    var price = JSON.parse(body).amount;
+    
+    return new messages.Price("BTCUSD", 
+                              price, 
+                              price);
+};
+
+PriceRequestHandler.addRequester(CoinbasePriceRequester);
+/**/
+
+/**
+ * BTC-e
+ */
+
+function BTCePriceRequester(options) {
+    this.options = options;
+}
+
+BTCePriceRequester.config = {
+    exchange: 'btc-e',
+    symbol_map: {
+        "BTCUSD" : undefined
+    },
+    url_template: 'https://btc-e.com/api/2/btc_usd/ticker',
+};
+
+BTCePriceRequester.prototype = Object.create(PriceRequester.prototype);
+BTCePriceRequester.prototype.constructor = BTCePriceRequester;
+
+BTCePriceRequester.prototype.processResponse = function (response, body) {
+    var ticker = JSON.parse(body).ticker,
+        buy = ticker.buy,
+        sell = ticker.sell;
+    return new messages.Price("BTCUSD", buy, sell);
+};
+
+PriceRequestHandler.addRequester(BTCePriceRequester);
+/**/
+
+/**
+ * VirWox
+ */
+
+function VirWoxPriceRequester(options) {
+    this.options = options;
+}
+
+VirWoxPriceRequester.config = {
+    exchange: 'virwox',
+    symbol_map: {
+        "BTCSLL" : "BTC/SLL",
+        "USDSLL" : "USD/SLL",
+    },
+    url_template: (
+       'http://www.virwox.com/api/json.php?method=getBestPrices' +
+       '&symbols[0]=<<SYMBOL>>'
+    ),
+};
+
+VirWoxPriceRequester.prototype = Object.create(PriceRequester.prototype);
+VirWoxPriceRequester.prototype.constructor = VirWoxPriceRequester;
+
+VirWoxPriceRequester.prototype.processResponse = function (response, body) {
+    var result = JSON.parse(body).result,
+        buy = result[0].bestBuyPrice,
+        sell = result[0].bestSellPrice;
+    return new messages.Price(this.options.symbol, buy, sell);
+};
+
+PriceRequestHandler.addRequester(VirWoxPriceRequester);
 /**/
 

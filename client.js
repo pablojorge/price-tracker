@@ -4,6 +4,7 @@ function appendLine(msg) {
     var li = document.createElement('li');
     li.innerHTML = msg;
     document.querySelector('#pings').appendChild(li);
+    console.log(msg);
 }
 
 /**
@@ -13,12 +14,24 @@ var ws = new WebSocket(host);
 
 ws.onopen = function (event) {
     appendLine("connected!!");
-    ws.send((new PriceRequest("dummy", {})).toString());
-    ws.send((new PriceRequest("bitstamp", {})).toString());
-    ws.send((new PriceRequest("ambito", {symbol: "USDARS"})).toString());
-    ws.send((new PriceRequest("ambito", {symbol: "USDARSB"})).toString());
-    ws.send((new PriceRequest("bullionvault", {symbol: "XAGUSD"})).toString());
-    ws.send((new PriceRequest("bullionvault", {symbol: "XAUUSD"})).toString());
+
+    var exchanges = {
+        "dummy" :        ["DUMMY"],
+        "coinbase" :     ["BTCUSD"],
+        "btc-e" :        ["BTCUSD"],
+        "virwox" :       ["BTCSLL", "USDSLL"],
+        "bitstamp" :     ["BTCUSD"],
+        "ambito" :       ["USDARS", "USDARSB"],
+        "bullionvault" : ["XAGUSD", "XAUUSD"],
+    };
+
+    for (exchange in exchanges) {
+        for (index in exchanges[exchange]) {
+            var symbol = exchanges[exchange][index];
+            appendLine("Requesting price for " + symbol + " in " + exchange);
+            ws.send((new PriceRequest(exchange, {symbol: symbol})).toString());
+        }
+    }
 };
 
 ws.onmessage = function (event) {
