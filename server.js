@@ -15,7 +15,7 @@ app.use(express.static(__dirname + '/'));
 app.get("/request/price/:exchange/:symbol", function(req, res) {
     var exchange = req.params.exchange,
         symbol = req.params.symbol,
-        request = new messages.PriceRequest(exchange, {symbol: symbol}),
+        request = new messages.PriceRequest(exchange, symbol),
         factory = new RequestHandlerFactory(),
         handler = factory.getHandler(request);
 
@@ -112,7 +112,8 @@ PriceRequestHandler.prototype.getRequester = function() {
         throw ("Unknown exchange: " + this.request.exchange);
     return new CachedPriceRequester(PriceRequestHandler.cache,
                                     this.request,
-                                    new requester(this.request.options));
+                                    new requester(this.request.symbol,
+                                                  this.request.options));
 }
 
 PriceRequestHandler.prototype.processRequest = function (callback, errback) {
@@ -130,11 +131,13 @@ RequestHandlerFactory.addHandler(PriceRequestHandler.handles,
 
 /**
  */
-function PriceRequester() {}
+function PriceRequester(symbol, options) {
+    this.symbol = symbol;
+    this.options = options;
+}
 
 PriceRequester.prototype.doRequest = function (callback, errback) {
-    var _processResponse = this.processResponse,
-        _this = this;
+    var _this = this;
 
     request(this.buildRequest(),
         function (error, response, body) {
@@ -145,7 +148,7 @@ PriceRequester.prototype.doRequest = function (callback, errback) {
                 if (response.statusCode != 200) {
                     throw ("Error, status code: " + response.statusCode);
                 }
-                callback(_processResponse.call(_this, response, body));
+                callback(_this.processResponse(response, body));
             } catch(e) {
                 errback(e);
             }
@@ -153,15 +156,20 @@ PriceRequester.prototype.doRequest = function (callback, errback) {
     );
 };
 
+PriceRequester.prototype.getExchange = function() {
+    var _config = this.__proto__.constructor.config;
+    return _config.exchange;
+}
+
 PriceRequester.prototype.buildRequest = function() {
     var _config = this.__proto__.constructor.config;
 
-    if (this.options.symbol && !(this.options.symbol in _config.symbol_map)) {
-        throw ("Invalid symbol: " + this.options.symbol);
+    if (this.symbol && !(this.symbol in _config.symbol_map)) {
+        throw ("Invalid symbol: " + this.symbol);
     }
 
     return _config.url_template.replace("<<SYMBOL>>", 
-                                        _config.symbol_map[this.options.symbol]);
+                                        _config.symbol_map[this.symbol]);
 }
 
 PriceRequester.prototype.processResponse = function(response, body) {
@@ -227,30 +235,11 @@ CachedPriceRequester.prototype.doRequest = function (callback, errback) {
 }
 
 /**
- * Dummy price requester
- */
-
-function DummyPriceRequester(options) {
-    this.options = options;
-}
-
-DummyPriceRequester.config = {
-    exchange: 'dummy',
-}
-
-DummyPriceRequester.prototype.doRequest = function (callback, errback) {
-    callback(new messages.Price("Dummy", 1234.56, 4321.12));
-};
-
-PriceRequestHandler.addRequester(DummyPriceRequester);
-/**/
-
-/**
  * Bitstamp
  */
 
-function BitstampPriceRequester(options) {
-    this.options = options;
+function BitstampPriceRequester(symbol, options) {
+    PriceRequester.call(this, symbol, options);
 }
 
 BitstampPriceRequester.config = {
@@ -268,7 +257,7 @@ BitstampPriceRequester.prototype.processResponse = function (response, body) {
     var object = JSON.parse(body),
         buy = object.bid,
         sell = object.ask;
-    return new messages.Price("BTCUSD", buy, sell);
+    return new messages.Price(this.getExchange(), this.symbol, buy, sell);
 };
 
 PriceRequestHandler.addRequester(BitstampPriceRequester);
@@ -278,8 +267,8 @@ PriceRequestHandler.addRequester(BitstampPriceRequester);
  * BullionVault
  */
 
-function BullionVaultPriceRequester(options) {
-    this.options = options;
+function BullionVaultPriceRequester(symbol, options) {
+    PriceRequester.call(this, symbol, options);
 }
 
 BullionVaultPriceRequester.config = {
@@ -309,7 +298,7 @@ BullionVaultPriceRequester.prototype.processResponse = function (response, body)
         buy = get_price("buy"),
         sell = get_price("sell");
     
-    return new messages.Price(this.options.symbol, buy, sell);
+    return new messages.Price(this.getExchange(), this.symbol, buy, sell);
 };
 
 PriceRequestHandler.addRequester(BullionVaultPriceRequester);
@@ -319,8 +308,8 @@ PriceRequestHandler.addRequester(BullionVaultPriceRequester);
  * Ambito.com
  */
 
-function AmbitoPriceRequester(options) {
-    this.options = options;
+function AmbitoPriceRequester(symbol, options) {
+    PriceRequester.call(this, symbol, options);
 }
 
 AmbitoPriceRequester.config = {
@@ -350,7 +339,8 @@ AmbitoPriceRequester.prototype.processResponse = function (response, body) {
                               parseInt(match[4]),
                               parseInt(match[5]));
     
-    return new messages.Price(this.options.symbol, 
+    return new messages.Price(this.getExchange(), 
+                              this.symbol, 
                               buy, 
                               sell,
                               retrieved_on,
@@ -364,8 +354,8 @@ PriceRequestHandler.addRequester(AmbitoPriceRequester);
  * Coinbase
  */
 
-function CoinbasePriceRequester(options) {
-    this.options = options;
+function CoinbasePriceRequester(symbol, options) {
+    PriceRequester.call(this, symbol, options);
 }
 
 CoinbasePriceRequester.config = {
@@ -380,6 +370,8 @@ CoinbasePriceRequester.prototype = Object.create(PriceRequester.prototype);
 CoinbasePriceRequester.prototype.constructor = CoinbasePriceRequester;
 
 CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
+    var _this = this;
+
     function processResponse(error, response, body) {
         if (error != undefined) {
             throw ("Error: " + error);
@@ -408,7 +400,10 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
             function (error, response, body) {
                 try {
                     var sell = processResponse(error, response, body);
-                    callback(new messages.Price("BTCUSD", buy, sell));
+                    callback(new messages.Price(_this.getExchange(), 
+                                                _this.symbol, 
+                                                buy, 
+                                                sell));
                 } catch(e) {
                     errback(e);
                 }
@@ -422,7 +417,8 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
 CoinbasePriceRequester.prototype.processResponse = function (response, body) {
     var price = JSON.parse(body).amount;
     
-    return new messages.Price("BTCUSD", 
+    return new messages.Price(this.getExchange(),
+                              this.symbol,
                               price, 
                               price);
 };
@@ -434,8 +430,8 @@ PriceRequestHandler.addRequester(CoinbasePriceRequester);
  * BTC-e
  */
 
-function BTCePriceRequester(options) {
-    this.options = options;
+function BTCePriceRequester(symbol, options) {
+    PriceRequester.call(this, symbol, options);
 }
 
 BTCePriceRequester.config = {
@@ -453,7 +449,10 @@ BTCePriceRequester.prototype.processResponse = function (response, body) {
     var ticker = JSON.parse(body).ticker,
         buy = ticker.buy,
         sell = ticker.sell;
-    return new messages.Price("BTCUSD", buy, sell);
+    return new messages.Price(this.getExchange(), 
+                              this.symbol, 
+                              buy, 
+                              sell);
 };
 
 PriceRequestHandler.addRequester(BTCePriceRequester);
@@ -463,8 +462,8 @@ PriceRequestHandler.addRequester(BTCePriceRequester);
  * VirWox
  */
 
-function VirWoxPriceRequester(options) {
-    this.options = options;
+function VirWoxPriceRequester(symbol, options) {
+    PriceRequester.call(this, symbol, options);
 }
 
 VirWoxPriceRequester.config = {
@@ -486,7 +485,7 @@ VirWoxPriceRequester.prototype.processResponse = function (response, body) {
     var result = JSON.parse(body).result,
         buy = result[0].bestBuyPrice,
         sell = result[0].bestSellPrice;
-    return new messages.Price(this.options.symbol, buy, sell);
+    return new messages.Price(this.getExchange(), this.symbol, buy, sell);
 };
 
 PriceRequestHandler.addRequester(VirWoxPriceRequester);

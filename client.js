@@ -16,7 +16,6 @@ ws.onopen = function (event) {
     appendLine("connected!!");
 
     var exchanges = {
-        "dummy" :        ["DUMMY"],
         "coinbase" :     ["BTCUSD"],
         "btc-e" :        ["BTCUSD"],
         "virwox" :       ["BTCSLL", "USDSLL"],
@@ -29,7 +28,7 @@ ws.onopen = function (event) {
         for (index in exchanges[exchange]) {
             var symbol = exchanges[exchange][index];
             appendLine("Requesting price for " + symbol + " in " + exchange);
-            ws.send((new PriceRequest(exchange, {symbol: symbol})).toString());
+            ws.send((new PriceRequest(exchange, symbol)).toString());
         }
     }
 };

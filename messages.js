@@ -21,8 +21,9 @@ Request.fromString = function(string) {
 
 /**
  */
-function PriceRequest(exchange, options) {
+function PriceRequest(exchange, symbol, options) {
     this.exchange = exchange;
+    this.symbol = symbol;
     this.options = options;
 }
 
@@ -30,7 +31,7 @@ PriceRequest.prototype = Object.create(Request.prototype);
 PriceRequest.prototype.constructor = PriceRequest;
 
 PriceRequest.prototype.hash = function() {
-    return this.exchange + JSON.stringify(this.options);
+    return this.exchange + this.symbol + JSON.stringify(this.options);
 }
 
 /**
@@ -63,7 +64,8 @@ function Error(message) {
 Error.prototype = Object.create(Response.prototype);
 Error.prototype.constructor = Error;
 
-function Price(symbol, buy, sell, retrieved_on, updated_on) {
+function Price(exchange, symbol, buy, sell, retrieved_on, updated_on) {
+    this.exchange = exchange;
     this.symbol = symbol;
     this.buy = buy;
     this.sell = sell;
