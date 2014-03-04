@@ -62,7 +62,7 @@ wss.on('connection', function(ws) {
             handler.processRequest(
                 function(response) {
                     ws.send(response.toString(), function() {
-                        console.log("response sent");
+                        console.log("response sent: " + response);
                     });
                 }, 
                 function(exception) {
@@ -234,12 +234,19 @@ Cache.prototype.getEntry = function(entry) {
     cached = this.entries[entry];
 
     if (cached != undefined) {
+        console.log("cache entry found");
+
         if (cached.age() > this.ttl) {
+            console.log("cache entry too old");
+
             delete this.entries[entry];
             return undefined;
         }
+
+        console.log("cache entry is fresh");
         return cached.value;
     } else {
+        console.log("cache entry NOT found");
         return undefined;
     }
 }
