@@ -247,7 +247,7 @@ BitstampPriceRequester.config = {
     symbol_map: {
         "BTCUSD" : undefined
     },
-    url_template: 'https://www.bitstamp.net/api/ticker/',
+    url_template: 'http://www.bitstamp.net/api/ticker/',
 };
 
 BitstampPriceRequester.prototype = Object.create(PriceRequester.prototype);
@@ -255,8 +255,8 @@ BitstampPriceRequester.prototype.constructor = BitstampPriceRequester;
 
 BitstampPriceRequester.prototype.processResponse = function (response, body) {
     var object = JSON.parse(body),
-        buy = object.bid,
-        sell = object.ask;
+        buy = parseFloat(object.bid),
+        sell = parseFloat(object.ask);
     return new messages.Price(this.getExchange(), this.symbol, buy, sell);
 };
 
@@ -278,7 +278,7 @@ BullionVaultPriceRequester.config = {
         "XAGUSD" : "SILVER" 
     },
     url_template: (
-        'https://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
+        'http://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
         '?considerationCurrency=USD&securityClassNarrative=<<SYMBOL>>'
     ),
 };
@@ -363,12 +363,14 @@ CoinbasePriceRequester.config = {
     symbol_map: {
         "BTCUSD" : undefined
     },
-    url_template: 'https://coinbase.com/api/v1/prices/spot_rate',
+    url_template: 'http://coinbase.com/api/v1/prices/spot_rate',
 };
 
 CoinbasePriceRequester.prototype = Object.create(PriceRequester.prototype);
 CoinbasePriceRequester.prototype.constructor = CoinbasePriceRequester;
 
+// We must override doRequest() because two different requests are needed
+// to get the buy and sell prices
 CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
     var _this = this;
 
@@ -379,11 +381,12 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
         if (response.statusCode != 200) {
             throw ("Error, status code: " + response.statusCode);
         }
-        return JSON.parse(body).amount;
+        return parseFloat(JSON.parse(body).amount);
     }
 
+    // We want to invert 'buy' and 'sell' here:
     function getBuyPrice() {
-        request('https://coinbase.com/api/v1/prices/buy',
+        request('http://coinbase.com/api/v1/prices/sell',
             function (error, response, body) {
                 try {
                     var buy = processResponse(error, response, body);
@@ -396,7 +399,7 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
     }
 
     function getSellPrice(buy) {
-        request('https://coinbase.com/api/v1/prices/sell',
+        request('http://coinbase.com/api/v1/prices/buy',
             function (error, response, body) {
                 try {
                     var sell = processResponse(error, response, body);
@@ -439,7 +442,7 @@ BTCePriceRequester.config = {
     symbol_map: {
         "BTCUSD" : undefined
     },
-    url_template: 'https://btc-e.com/api/2/btc_usd/ticker',
+    url_template: 'http://btc-e.com/api/2/btc_usd/ticker',
 };
 
 BTCePriceRequester.prototype = Object.create(PriceRequester.prototype);
@@ -447,8 +450,9 @@ BTCePriceRequester.prototype.constructor = BTCePriceRequester;
 
 BTCePriceRequester.prototype.processResponse = function (response, body) {
     var ticker = JSON.parse(body).ticker,
-        buy = ticker.buy,
-        sell = ticker.sell;
+        // Yes, we want to invert them here:
+        buy = ticker.sell,
+        sell = ticker.buy;
     return new messages.Price(this.getExchange(), 
                               this.symbol, 
                               buy, 
@@ -483,8 +487,8 @@ VirWoxPriceRequester.prototype.constructor = VirWoxPriceRequester;
 
 VirWoxPriceRequester.prototype.processResponse = function (response, body) {
     var result = JSON.parse(body).result,
-        buy = result[0].bestBuyPrice,
-        sell = result[0].bestSellPrice;
+        buy = parseFloat(result[0].bestBuyPrice),
+        sell = parseFloat(result[0].bestSellPrice);
     return new messages.Price(this.getExchange(), this.symbol, buy, sell);
 };
 
