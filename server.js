@@ -476,9 +476,10 @@ function BTCePriceRequester(symbol, options) {
 BTCePriceRequester.config = {
     exchange: 'btc-e',
     symbol_map: {
-        "BTCUSD" : undefined
+        "BTCUSD" : "btc_usd",
+        "LTCUSD" : "ltc_usd",
     },
-    url_template: 'http://btc-e.com/api/2/btc_usd/ticker',
+    url_template: 'http://btc-e.com/api/2/<<SYMBOL>>/ticker',
 };
 
 BTCePriceRequester.prototype = Object.create(PriceRequester.prototype);
