@@ -9,7 +9,8 @@
     "ws": "0.4.x",
     "express": "3.x",
     "request" : "2.30.x",
-    "cheerio" : "0.13.x"
+    "cheerio" : "0.13.x",
+    "redis" : "0.10.x"
   },
   "engines": {
     "node": "0.10.x",

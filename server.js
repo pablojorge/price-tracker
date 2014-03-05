@@ -3,6 +3,8 @@ var WebSocketServer = require('ws').Server
   , express = require('express')
   , request = require('request')
   , cheerio = require('cheerio')
+  , redis = require('redis')
+  , url = require('url')
 
   // custom modules:
   , messages = require('./messages.js')
@@ -109,7 +111,10 @@ function PriceRequestHandler(request) {
 }
 
 PriceRequestHandler.requesters = {}
-PriceRequestHandler.cache = new Cache(60);
+PriceRequestHandler.cache = new ({
+    "internal" : InternalCache,
+    "redis" : RedisCache
+}[process.env.CACHE])(parseInt(process.env.CACHE_TTL));
 
 PriceRequestHandler.addRequester = function(requester) {
     PriceRequestHandler.requesters[requester.config.exchange] = requester;
@@ -211,15 +216,15 @@ PriceRequester.prototype.buildRequest = function() {
 PriceRequester.prototype.processResponse = function(response, body) {
     throw ("processResponse should be overriden!");
 }
-
+ 
 /**
  */
-function Cache(ttl) {
+function InternalCache(ttl) {
     this.ttl = ttl;
     this.entries = {}
 }
 
-Cache.prototype.setEntry = function(entry, value) {
+InternalCache.prototype.setEntry = function (entry, value) {
     this.entries[entry] = {
         timestamp: new Date(),
         age: function() {
@@ -230,25 +235,43 @@ Cache.prototype.setEntry = function(entry, value) {
     return value;
 }
 
-Cache.prototype.getEntry = function(entry) {
+InternalCache.prototype.getEntry = function (entry, callback) {
     cached = this.entries[entry];
 
     if (cached != undefined) {
-        console.log("cache entry found");
-
         if (cached.age() > this.ttl) {
-            console.log("cache entry too old");
-
             delete this.entries[entry];
-            return undefined;
+            callback(undefined, null);
         }
-
-        console.log("cache entry is fresh");
-        return cached.value;
+        callback(undefined, cached.value);
     } else {
-        console.log("cache entry NOT found");
-        return undefined;
+        callback(undefined, null);
     }
+}
+
+/**
+ */
+function RedisCache(ttl) {
+    var redisURL = url.parse(process.env.REDISCLOUD_URL),
+        client = redis.createClient(redisURL.port, 
+                                    redisURL.hostname, 
+                                    {no_ready_check: true});
+
+    client.auth(redisURL.auth.split(':')[1]);
+    console.log("connected to " + redisURL.hostname);
+
+    this.ttl = ttl;
+    this.client = client;
+}
+
+RedisCache.prototype.setEntry = function (entry, value) {
+    this.client.set(entry, value);
+    this.client.expire(entry, this.ttl);
+    return value;
+}
+
+RedisCache.prototype.getEntry = function (entry, callback) {
+    this.client.get(entry, callback);
 }
 
 /**
@@ -262,19 +285,22 @@ function CachedPriceRequester(cache, request, requester) {
 }
 
 CachedPriceRequester.prototype.doRequest = function (callback, errback) {
-    cached = this.cache.getEntry(this.request.hash());
+    var _this = this;
 
-    if (cached == undefined) {
-        var cache = this.cache,
-            request = this.request;
-
-        this.requester.doRequest(function (response) {
-            cache.setEntry(request.hash(), response);
-            callback(response);
-        }, errback);
-    } else {
-        callback(cached);
-    }
+    this.cache.getEntry(this.request.hash(), function (error, value) {
+        if (!value) {
+            console.log("'%s' NOT found in cache...", 
+                        _this.request.hash());
+            _this.requester.doRequest(function (response) {
+                _this.cache.setEntry(_this.request.hash(), response);
+                callback(response);
+            }, errback);
+        } else {
+            console.log("'%s' found in cache!", 
+                        _this.request.hash());
+            callback(value);
+        }
+    });
 }
 
 /**
