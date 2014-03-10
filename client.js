@@ -2,26 +2,29 @@
  */
 function buildExchangesContainers(exchanges){
     for(exchange in exchanges) {
-        $("#container-" + exchange).append($(
-            '<div class="row" ' + 
-            '     style="height: 95px;">' +
-            '  <div style="width: 100%; ' + 
-            '              height: 100%; ' + 
-            '              background: url(img/' + exchange + '_logo.png) ' +
-            '                          center center no-repeat;">' +
+        var panel = $(
+            '<div class="panel panel-default">' +
+            '  <div class="panel-heading">' + 
+            '    <div class="row" ' + 
+            '         style="height: 95px; ' + 
+            '                display: table; ' + 
+            '                margin-left: auto; ' + 
+            '                margin-right: auto;">' +
+            '      <div style="vertical-align: middle; ' + 
+            '                  display: table-cell;">' + 
+            '        <img class="img-responsive" ' +
+            '             src="img/' + exchange + '_logo.png">' +
+            '      </div>' +
+            '    </div>' +
             '  </div>' +
             '</div>'
-        ));
-
-        $("#container-" + exchange).
-            css("padding-left", "30px").
-            css("padding-right", "30px");
+        );
+          
+        var list = $('<ul class="list-group"></ul>');
         
-        for(index in exchanges[exchange]) {
-            var symbol = exchanges[exchange][index];
-
-            $("#container-" + exchange).append($(
-              '<div class="row">' +
+        exchanges[exchange].forEach(function(symbol) {
+            list.append($(
+              '<li class="list-group-item">' +
               '  <h5>' + symbol + '</h5>' +
               '  <div id="' + exchange + '-' + symbol + '-prices" ' +
               '       class="hide"></div>' +
@@ -29,19 +32,25 @@ function buildExchangesContainers(exchanges){
               '       id="' + exchange + '-' + symbol + '-progress">' +
               '    <div class="progress-bar" style="width: 100%"></div>' +
               '  </div>' +
-              '</div>'
+              '</li>'
             ));
-        }
+        });
+
+        panel.append(list);
+
+        $("#container-" + exchange).
+            css("padding-left", "5px").
+            css("padding-right", "5px").
+            append(panel);
     }
 }
 
 function requestPrices(ws, exchanges){
     for (exchange in exchanges) {
-        for (index in exchanges[exchange]) {
-            var symbol = exchanges[exchange][index];
+        exchanges[exchange].forEach(function(symbol) {
             console.log("requesting price for " + symbol + " in " + exchange);
             ws.send((new PriceRequest(exchange, symbol)).toString());
-        }
+        });
     }
 }
 
@@ -51,14 +60,28 @@ function updatePrice(price){
         progress_selector = base_selector + "-progress";
     
     $(prices_selector).html(
-        "<h3>" + price.buy.toFixed(2) + " - " +
-         price.sell.toFixed(2) + "</h3>" +
+        "<h4>" + price.buy.toFixed(2) + " - " +
+                 price.sell.toFixed(2) + "</h4>" +
         "<small>(Updated: " + 
             (new Date(price.updated_on)).toLocaleString() + 
         ")</small>" 
     );
     $(prices_selector).removeClass("hide");
     $(progress_selector).addClass("hide");
+}
+
+function hookButtons() {
+    $(".navbar-button").click(function(event){
+        event.preventDefault();
+
+        $(".main").addClass("hide");
+        $(".main#main-" + $(this).attr("target")).removeClass("hide");
+
+        $(".navbar-button").removeClass("active");
+        $(this).addClass("active");
+    });
+
+    $(".navbar-button[target='overview']").click();
 }
 
 /**
@@ -72,7 +95,7 @@ function onPriceUpdate(ws, price) {
     updatePrice(price);
 }
 
-function main() {
+function connect() {
     var host = location.origin.replace(/^http/, 'ws');
     var ws = new WebSocket(host);
 
@@ -103,6 +126,11 @@ function main() {
     ws.onerror = function (event) {
         console.log("error " + event);
     };
+}
+
+function main() {
+    hookButtons();
+    connect();
 }
 
 $(document).ready(function(){
