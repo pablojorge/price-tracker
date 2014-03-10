@@ -121,6 +121,30 @@ function connect() {
 
     ws.onclose = function (event) {
         console.log("disconnected!!");
+
+        // assuming websocket connectivity unavailable, fallback to AJAX 
+        // (TODO: add support for wss so we can delete this hack)
+        $.ajax({
+            url: location.origin + "/request/exchanges", 
+            dataType: 'json', 
+            success: function(data) {
+                var sender = {
+                    send: function(data) {
+                        var request = JSON.parse(data).request;
+
+                        $.ajax({
+                            url: location.origin + "/request/price/" + 
+                                 request.exchange + "/" + request.symbol, 
+                            dataType: 'json',
+                            success: function(data) {
+                                onPriceUpdate(undefined, data);
+                            }
+                        });
+                    },
+                };
+                onExchangesListReceived(sender, data);
+            }
+        });
     };
 
     ws.onerror = function (event) {
