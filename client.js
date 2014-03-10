@@ -1,60 +1,110 @@
 /**
  */
-function log(msg) {
-    console.log(msg);
+function buildExchangesContainers(exchanges){
+    for(exchange in exchanges) {
+        $("#container-" + exchange).append($(
+            '<div class="row" ' + 
+            '     style="height: 95px;">' +
+            '  <div style="width: 100%; ' + 
+            '              height: 100%; ' + 
+            '              background: url(img/' + exchange + '_logo.png) ' +
+            '                          center center no-repeat;">' +
+            '  </div>' +
+            '</div>'
+        ));
 
-    function append(line) {
-        var log = document.querySelector('#log');
-        log.innerHTML = log.innerHTML + line + '\n';
+        $("#container-" + exchange).
+            css("padding-left", "30px").
+            css("padding-right", "30px");
+        
+        for(index in exchanges[exchange]) {
+            var symbol = exchanges[exchange][index];
+
+            $("#container-" + exchange).append($(
+              '<div class="row">' +
+              '  <h5>' + symbol + '</h5>' +
+              '  <div id="' + exchange + '-' + symbol + '-prices" ' +
+              '       class="hide"></div>' +
+              '  <div class="progress progress-striped active" ' +
+              '       id="' + exchange + '-' + symbol + '-progress">' +
+              '    <div class="progress-bar" style="width: 100%"></div>' +
+              '  </div>' +
+              '</div>'
+            ));
+        }
     }
+}
 
-    while (msg.length > 80) {
-        append(msg.substr(0,80));
-        msg = msg.substr(80);
+function requestPrices(ws, exchanges){
+    for (exchange in exchanges) {
+        for (index in exchanges[exchange]) {
+            var symbol = exchanges[exchange][index];
+            console.log("requesting price for " + symbol + " in " + exchange);
+            ws.send((new PriceRequest(exchange, symbol)).toString());
+        }
     }
+}
 
-    append(msg);
+function updatePrice(price){
+    var base_selector = "#" + price.exchange + "-" + price.symbol,
+        prices_selector = base_selector + "-prices",
+        progress_selector = base_selector + "-progress";
+    
+    $(prices_selector).html(
+        "<h3>" + price.buy.toFixed(2) + " - " +
+         price.sell.toFixed(2) + "</h3>" +
+        "<small>(Updated: " + 
+            (new Date(price.updated_on)).toLocaleString() + 
+        ")</small>" 
+    );
+    $(prices_selector).removeClass("hide");
+    $(progress_selector).addClass("hide");
 }
 
 /**
  */
-var host = location.origin.replace(/^http/, 'ws');
-var ws = new WebSocket(host);
+function onExchangesListReceived(ws, exchanges) {
+    buildExchangesContainers(exchanges);
+    requestPrices(ws, exchanges);
+}
 
-ws.onopen = function (event) {
-    log("connected!!");
+function onPriceUpdate(ws, price) {
+    updatePrice(price);
+}
 
-    log("requesting exchanges list...")
-    ws.send((new ExchangesRequest()).toString());
-};
+function main() {
+    var host = location.origin.replace(/^http/, 'ws');
+    var ws = new WebSocket(host);
 
-ws.onmessage = function (event) {
-    //log("got message: " + event.data);
-    var object = JSON.parse(event.data);
+    ws.onopen = function (event) {
+        console.log("connected!!");
 
-    if (object.type == "Exchanges") {
-        var exchanges = object.response;
-        log("got exchanges list..");
-        for (exchange in exchanges) {
-            for (index in exchanges[exchange]) {
-                var symbol = exchanges[exchange][index];
-                log("requesting price for " + symbol + " in " + exchange);
-                ws.send((new PriceRequest(exchange, symbol)).toString());
-            }
+        console.log("requesting exchanges list...")
+        ws.send((new ExchangesRequest()).toString());
+    };
+
+    ws.onmessage = function (event) {
+        console.log("got message: " + event.data);
+        var object = JSON.parse(event.data);
+
+        if (object.type == "Exchanges") {
+            console.log("got exchanges list..");
+            onExchangesListReceived(ws, object.response);
+        } else if (object.type == "Price") {
+            console.log("got new price..");
+            onPriceUpdate(ws, object.response);
         }
-    } else if (object.type == "Price") {
-        var price = object.response;
+    };
 
-        log("[" + price.updated_on + "] " + 
-            price.symbol + "@" + price.exchange +
-            " = " + price.buy + " - " + price.sell);
-    }
-};
+    ws.onclose = function (event) {
+        console.log("disconnected!!");
+    };
 
-ws.onclose = function (event) {
-    log("disconnected!!");
-};
+    ws.onerror = function (event) {
+        console.log("error " + event);
+    };
+}
 
-ws.onerror = function (event) {
-    log("error " + event);
-};
+$(document).ready(function(){
+    main();
+});

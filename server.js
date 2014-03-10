@@ -384,8 +384,8 @@ function AmbitoPriceRequester(symbol, options) {
 AmbitoPriceRequester.config = {
     exchange: 'ambito',
     symbol_map: {
-        "USDARSB" : "ARSB=",
         "USDARS" : "ARSSCBCRA"
+        "USDARSB" : "ARSB=",
     },
     url_template: (
         'http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=<<SYMBOL>>'
