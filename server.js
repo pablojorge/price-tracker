@@ -230,7 +230,7 @@ InternalCache.prototype.setEntry = function (entry, value) {
         age: function() {
             return ((new Date()) - this.timestamp) / 1000;
         },
-        value: value
+        value: JSON.stringify(value),
     };
     return value;
 }
@@ -243,7 +243,7 @@ InternalCache.prototype.getEntry = function (entry, callback) {
             delete this.entries[entry];
             callback(undefined, null);
         }
-        callback(undefined, cached.value);
+        callback(undefined, JSON.parse(cached.value));
     } else {
         callback(undefined, null);
     }
@@ -265,13 +265,19 @@ function RedisCache(ttl) {
 }
 
 RedisCache.prototype.setEntry = function (entry, value) {
-    this.client.set(entry, value);
+    this.client.set(entry, JSON.stringify(value));
     this.client.expire(entry, this.ttl);
     return value;
 }
 
 RedisCache.prototype.getEntry = function (entry, callback) {
-    this.client.get(entry, callback);
+    this.client.get(entry, function (error, value) {
+        if (error != undefined) {
+            callback(error, null);
+        } else {
+            callback(undefined, JSON.parse(value));
+        }
+    });
 }
 
 /**
@@ -384,7 +390,7 @@ function AmbitoPriceRequester(symbol, options) {
 AmbitoPriceRequester.config = {
     exchange: 'ambito',
     symbol_map: {
-        "USDARS" : "ARSSCBCRA"
+        "USDARS" : "ARSSCBCRA",
         "USDARSB" : "ARSB=",
     },
     url_template: (
