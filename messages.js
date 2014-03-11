@@ -55,7 +55,10 @@ Response.prototype.toString = function() {
 }
 
 Response.fromString = function (string) {
-    object = JSON.parse(string);
+    if (string == null)
+        return null;
+
+    var object = JSON.parse(string);
 
     response = new module.exports[object.type]();
 
@@ -100,6 +103,8 @@ try {
     module.exports.Request = Request;
     module.exports.PriceRequest = PriceRequest;
     module.exports.ExchangesRequest = ExchangesRequest;
+
+    module.exports.Response = Response;
     module.exports.Error = Error;
     module.exports.Price = Price;
     module.exports.Exchanges = Exchanges;

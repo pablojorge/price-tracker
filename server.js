@@ -230,7 +230,7 @@ InternalCache.prototype.setEntry = function (entry, value) {
         age: function() {
             return ((new Date()) - this.timestamp) / 1000;
         },
-        value: JSON.stringify(value),
+        value: value.toString(),
     };
     return value;
 }
@@ -243,7 +243,7 @@ InternalCache.prototype.getEntry = function (entry, callback) {
             delete this.entries[entry];
             callback(undefined, null);
         }
-        callback(undefined, JSON.parse(cached.value));
+        callback(undefined, messages.Response.fromString(cached.value));
     } else {
         callback(undefined, null);
     }
@@ -265,18 +265,14 @@ function RedisCache(ttl) {
 }
 
 RedisCache.prototype.setEntry = function (entry, value) {
-    this.client.set(entry, JSON.stringify(value));
+    this.client.set(entry, value.toString());
     this.client.expire(entry, this.ttl);
     return value;
 }
 
 RedisCache.prototype.getEntry = function (entry, callback) {
     this.client.get(entry, function (error, value) {
-        if (error != undefined) {
-            callback(error, null);
-        } else {
-            callback(undefined, JSON.parse(value));
-        }
+        callback(error, messages.Response.fromString(value));                
     });
 }
 
