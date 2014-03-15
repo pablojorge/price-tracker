@@ -30,20 +30,44 @@ Subject.prototype.emit = function(event, args) {
  */
 function Client() {
     Subject.call(this, ["onConnect",
+                        "onDisconnect",
                         "onExchangesListReceived",
                         "onPriceUpdated"]);
 
-    this.socket = undefined;
-
     this.addHandler("onConnect", function() {
         console.log("connected!");
+    });
+
+    this.addHandler("onDisconnect", function() {
+        console.log("disconnected!!");
     });
 }
 
 Client.prototype = Object.create(Subject.prototype);
 Client.prototype.constructor = Client;
 
-Client.prototype.connect = function(host) {
+Client.prototype.requestPrices = function(exchanges) {
+    var _this = this;
+
+    for (exchange in exchanges) {
+        exchanges[exchange].forEach(function(symbol) {
+            _this.requestPrice(exchange, symbol);
+        });
+    }
+}
+
+/**
+ */
+function WSClient() {
+    Client.call(this);
+
+    this.socket = undefined;
+}
+
+WSClient.prototype = Object.create(Client.prototype);
+WSClient.prototype.constructor = WSClient;
+
+WSClient.prototype.connect = function(host) {
     var _this = this;
 
     _this.socket = new WebSocket(host);
@@ -66,31 +90,7 @@ Client.prototype.connect = function(host) {
     };
 
     _this.socket.onclose = function (event) {
-        console.log("disconnected!!");
-
-        // assuming websocket connectivity unavailable, fallback to AJAX 
-        // (TODO: add support for wss or socket.io so we can delete this hack)
-        // $.ajax({
-        //     url: location.origin + "/request/exchanges", 
-        //     dataType: 'json', 
-        //     success: function(data) {
-        //         var sender = {
-        //             send: function(data) {
-        //                 var request = JSON.parse(data).request;
-
-        //                 $.ajax({
-        //                     url: location.origin + "/request/price/" + 
-        //                          request.exchange + "/" + request.symbol, 
-        //                     dataType: 'json',
-        //                     success: function(data) {
-        //                         onPriceUpdate(undefined, data);
-        //                     }
-        //                 });
-        //             },
-        //         };
-        //         onExchangesListReceived(sender, data);
-        //     }
-        // });
+        _this.emit("onDisconnect");
     };
 
     _this.socket.onerror = function (event) {
@@ -98,22 +98,54 @@ Client.prototype.connect = function(host) {
     };
 }
 
-Client.prototype.requestExchanges = function() {
+WSClient.prototype.requestExchanges = function() {
     console.log("requesting exchanges list...")
     this.socket.send((new ExchangesRequest()).toString());
 }
 
-Client.prototype.requestPrice = function(exchange, symbol) {
+WSClient.prototype.requestPrice = function(exchange, symbol) {
     console.log("requesting price for " + symbol + " in " + exchange);
     this.socket.send((new PriceRequest(exchange, symbol)).toString());
 }
 
-Client.prototype.requestPrices = function(exchanges) {
+/**
+ */
+function RESTClient() {
+    Client.call(this);
+
+    this.host = undefined;
+}
+
+RESTClient.prototype = Object.create(Client.prototype);
+RESTClient.prototype.constructor = WSClient;
+
+RESTClient.prototype.connect = function(host) {
+    this.host = host;
+
+    this.emit("onConnect");
+}
+
+RESTClient.prototype.requestExchanges = function() {
     var _this = this;
 
-    for (exchange in exchanges) {
-        exchanges[exchange].forEach(function(symbol) {
-            _this.requestPrice(exchange, symbol);
-        });
-    }
+    $.ajax({
+        url: _this.host + "/request/exchanges", 
+        dataType: 'json', 
+        success: function(data) {
+            _this.emit("onExchangesListReceived", [data]);
+        },
+    });
+}
+
+RESTClient.prototype.requestPrice = function(exchange, symbol) {
+    var _this = this;
+
+    $.ajax({
+        url: _this.host + "/request/price/" + 
+             exchange + "/" + symbol, 
+        dataType: 'json',
+        success: function(data) {
+            _this.emit("onPriceUpdated", [data]);
+        },
+    });
 }

@@ -208,25 +208,36 @@
         hookSidebarButtons();
 
         // initalize WS connection:
-        var host = location.origin.replace(/^http/, 'ws'),
-            client = new Client();
+        var wsclient = new WSClient();
 
-        client.addHandler("onConnect", function() {
-            client.requestExchanges();
+        function connectHandlers(client) {
+            client.addHandler("onConnect", function() {
+                this.requestExchanges();
+            });
+
+            client.addHandler("onExchangesListReceived", function(exchanges) {
+                this.requestPrices(exchanges);
+            });
+
+            client.addHandler("onPriceUpdated", function(price) {
+                updatePrice(price);
+            });
+        }
+
+        wsclient.addHandler("onDisconnect", function() {
+            // assuming websocket connectivity unavailable, fallback to AJAX 
+            // (TODO: add support for wss or socket.io for proper handling
+            //        of this condition)
+            restclient = new RESTClient();
+            connectHandlers(restclient);
+            restclient.connect(location.origin);
         });
 
-        client.addHandler("onExchangesListReceived", function(exchanges) {
-            this.requestPrices(exchanges);
-        });
-
-        client.addHandler("onPriceUpdated", function(price) {
-            updatePrice(price);
-        });
-
-        client.connect(host);
+        connectHandlers(wsclient);
+        wsclient.connect(location.origin.replace(/^http/, 'ws'));
       }
 
-      $(document).ready(function(){
+      $(document).ready(function() {
         main();
       });
     </script>
