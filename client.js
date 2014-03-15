@@ -1,93 +1,119 @@
 /**
  */
-function requestPrices(ws, exchanges){
-    for (exchange in exchanges) {
-        exchanges[exchange].forEach(function(symbol) {
-            console.log("requesting price for " + symbol + " in " + exchange);
-            ws.send((new PriceRequest(exchange, symbol)).toString());
-        });
-    }
+function Subject(events) {
+    var handlers = {};
+
+    events.forEach(function(event) {
+        handlers[event] = [];
+    })
+
+    this.handlers = handlers;
 }
 
-function updatePrice(price){
-    var base_selector = "#" + price.symbol + "-" + price.exchange,
-        prices_selector = base_selector + "-prices",
-        buy_selector = base_selector + "-buy",
-        sell_selector = base_selector + "-sell",
-        updated_on_selector = base_selector + "-updated_on",
-        progress_selector = base_selector + "-progress";
-    
-    $(buy_selector).html(price.buy.toFixed(2));
-    $(sell_selector).html(price.sell.toFixed(2));
-    $(updated_on_selector).html((new Date(price.updated_on)).toLocaleString());
+Subject.prototype.addHandler = function(event, handler) {
+    if (!(event in this.handlers)) {
+        throw ("Invalid event! " + event);
+    }
 
-    $(prices_selector).removeClass("hide");
-    $(progress_selector).addClass("hide");
+    this.handlers[event].push(handler);
+}
+
+Subject.prototype.emit = function(event, args) {
+    var _this = this;
+
+    this.handlers[event].forEach(function(handler) {
+        handler.apply(_this, args);
+    });
 }
 
 /**
  */
-function onExchangesListReceived(ws, exchanges) {
-    requestPrices(ws, exchanges);
+function Client() {
+    Subject.call(this, ["onConnect",
+                        "onExchangesListReceived",
+                        "onPriceUpdated"]);
+
+    this.socket = undefined;
+
+    this.addHandler("onConnect", function() {
+        console.log("connected!");
+    });
 }
 
-function onPriceUpdate(ws, price) {
-    updatePrice(price);
-}
+Client.prototype = Object.create(Subject.prototype);
+Client.prototype.constructor = Client;
 
-function connect() {
-    var host = location.origin.replace(/^http/, 'ws');
-    var ws = new WebSocket(host);
+Client.prototype.connect = function(host) {
+    var _this = this;
 
-    ws.onopen = function (event) {
-        console.log("connected!!");
+    _this.socket = new WebSocket(host);
 
-        console.log("requesting exchanges list...")
-        ws.send((new ExchangesRequest()).toString());
+    _this.socket.onopen = function (event) {
+        _this.emit("onConnect");
     };
 
-    ws.onmessage = function (event) {
+    _this.socket.onmessage = function (event) {
         console.log("got message: " + event.data);
         var object = JSON.parse(event.data);
 
         if (object.type == "Exchanges") {
             console.log("got exchanges list..");
-            onExchangesListReceived(ws, object.response);
+            _this.emit("onExchangesListReceived", [object.response]);
         } else if (object.type == "Price") {
             console.log("got new price..");
-            onPriceUpdate(ws, object.response);
+            _this.emit("onPriceUpdated", [object.response]);
         }
     };
 
-    ws.onclose = function (event) {
+    _this.socket.onclose = function (event) {
         console.log("disconnected!!");
 
         // assuming websocket connectivity unavailable, fallback to AJAX 
         // (TODO: add support for wss or socket.io so we can delete this hack)
-        $.ajax({
-            url: location.origin + "/request/exchanges", 
-            dataType: 'json', 
-            success: function(data) {
-                var sender = {
-                    send: function(data) {
-                        var request = JSON.parse(data).request;
+        // $.ajax({
+        //     url: location.origin + "/request/exchanges", 
+        //     dataType: 'json', 
+        //     success: function(data) {
+        //         var sender = {
+        //             send: function(data) {
+        //                 var request = JSON.parse(data).request;
 
-                        $.ajax({
-                            url: location.origin + "/request/price/" + 
-                                 request.exchange + "/" + request.symbol, 
-                            dataType: 'json',
-                            success: function(data) {
-                                onPriceUpdate(undefined, data);
-                            }
-                        });
-                    },
-                };
-                onExchangesListReceived(sender, data);
-            }
-        });
+        //                 $.ajax({
+        //                     url: location.origin + "/request/price/" + 
+        //                          request.exchange + "/" + request.symbol, 
+        //                     dataType: 'json',
+        //                     success: function(data) {
+        //                         onPriceUpdate(undefined, data);
+        //                     }
+        //                 });
+        //             },
+        //         };
+        //         onExchangesListReceived(sender, data);
+        //     }
+        // });
     };
 
-    ws.onerror = function (event) {
+    _this.socket.onerror = function (event) {
         console.log("error " + event);
     };
+}
+
+Client.prototype.requestExchanges = function() {
+    console.log("requesting exchanges list...")
+    this.socket.send((new ExchangesRequest()).toString());
+}
+
+Client.prototype.requestPrice = function(exchange, symbol) {
+    console.log("requesting price for " + symbol + " in " + exchange);
+    this.socket.send((new PriceRequest(exchange, symbol)).toString());
+}
+
+Client.prototype.requestPrices = function(exchanges) {
+    var _this = this;
+
+    for (exchange in exchanges) {
+        exchanges[exchange].forEach(function(symbol) {
+            _this.requestPrice(exchange, symbol);
+        });
+    }
 }

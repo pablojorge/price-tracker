@@ -187,12 +187,43 @@
         $(".navbar-button[target='quotes']").click();
       }
 
+      function updatePrice(price){
+          var base_selector = "#" + price.symbol + "-" + price.exchange,
+              prices_selector = base_selector + "-prices",
+              buy_selector = base_selector + "-buy",
+              sell_selector = base_selector + "-sell",
+              updated_on_selector = base_selector + "-updated_on",
+              progress_selector = base_selector + "-progress";
+          
+          $(buy_selector).html(price.buy.toFixed(2));
+          $(sell_selector).html(price.sell.toFixed(2));
+          $(updated_on_selector).html((new Date(price.updated_on)).toLocaleString());
+
+          $(prices_selector).removeClass("hide");
+          $(progress_selector).addClass("hide");
+      }
+
       function main() {
         buildMainQuotes();
         hookSidebarButtons();
 
         // initalize WS connection:
-        connect();        
+        var host = location.origin.replace(/^http/, 'ws'),
+            client = new Client();
+
+        client.addHandler("onConnect", function() {
+            client.requestExchanges();
+        });
+
+        client.addHandler("onExchangesListReceived", function(exchanges) {
+            this.requestPrices(exchanges);
+        });
+
+        client.addHandler("onPriceUpdated", function(price) {
+            updatePrice(price);
+        });
+
+        client.connect(host);
       }
 
       $(document).ready(function(){
