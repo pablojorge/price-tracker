@@ -55,7 +55,7 @@
              id="main-quotes">
           <div class="row hide" id="global-error">
             <div class="alert alert-danger">
-              <ul id="global-error-msgs">
+              <ul id="global-error-msgs" class="list-unstyled">
               </ul>
             </div>
         </div>
@@ -88,7 +88,8 @@
     <script src="client.js"></script>
 
     <script type="text/javascript">
-      function buildMainQuotes() {
+
+      function buildMainContainers() {
         var symbols = [
             {name:'USDARS',
              description: '(Dolar oficial)',
@@ -111,76 +112,93 @@
         ];
 
         symbols.forEach(function(symbol) {
-            $("#main-quotes").append($(
-                '<div class="row">' +
-                '  <h3>' + symbol.name + 
-                '   <small>' + symbol.description + '</small>' +
-                '  </h3>' +
-                '  <table class="table table-hover">' +
-                '    <thead>' +
-                '      <tr>' + 
-                '        <th>Exchange</th>' +
-                '        <th>Buy</th>' +
-                '        <th>Sell</th>' +
-                '        <th>Updated on</th>' +
-                '      </tr>' +
-                '    </thead>' +
-                '    <tbody id="table-body-' + symbol.name + '">' +
-                '    </tbody>' +
-                '  </table>' +
-                '</div>'
-            ));
-
-            symbol.exchanges.forEach(function(exchange) {
-                var base_id = symbol.name + '-' + exchange;
-
-                $('#table-body-' + symbol.name).append(
-                    $('<tr id="' + base_id + '-progress">' +
-                      '  <td>' + exchange + '</td>' +
-                      '  <td colspan=3>' +
-                      '    <div class="progress progress-striped active">' +
-                      '      <div class="progress-bar" style="width: 100%">' +
-                      '      </div>' +
-                      '    </div>' +
-                      '  </td>' +
-                      '</tr>' +
-                      '<tr id="' + base_id + '-error" class="hide">' +
-                      '  <td>' + exchange + '</td>' +
-                      '  <td colspan=3>' +
-                      '    <div class="alert alert-danger" style="text-align: center;">' +
-                      '      <b>Error</b>' +
-                      '      <span id="' + base_id + '-error-msg">' +
-                      '      </span>' +
-                      '    </div>' +
-                      '  </td>' +
-                      '</tr>' +
-                      '<tr id="' + base_id + '-prices" class="hide">' +
-                      '  <td style="vertical-align: middle;">' + 
-                          exchange + 
-                      '  </td>' +
-                      '  <td style="vertical-align: middle;">' +
-                      '    <h4>' +
-                      '      <span class="label label-primary" ' +
-                      '            id="' + base_id + '-buy">' +
-                      '      </span>' +
-                      '     <h4>' +
-                      '  </td>' +
-                      '  <td style="vertical-align: middle;">' +
-                      '    <h4>' +
-                      '      <span class="label label-primary" ' +
-                      '            id="' + base_id + '-sell">' +
-                      '      </span>' +
-                      '    <h4>' +
-                      '  </td>' +
-                      '  <td style="vertical-align: middle;">' +
-                      '    <span id="' + base_id + '-updated_on">' +
-                      '    </span>' +
-                      '  </td>' +
-                      '</tr>'
-                    )
-                );
-            });
+            buildContainerForSymbol(symbol);
         });
+      }
+
+      function buildContainerForSymbol(symbol) {
+          $("#main-quotes").append($(
+              '<div class="row">' +
+              '  <div class="row" style="margin-left: 10px;">' +
+              '    <h3>' + symbol.name + 
+              '      <small>' + symbol.description + '</small>' +
+              '    </h3>' +
+              '  </div>' +
+              '</div>' +
+              '<div class="row">' +
+              '  <div class="col-xs-4 col-sm-2 col-md-3">' +
+              '    <strong>Exchange</strong>' +
+              '  </div>' +
+              '  <div class="col-xs-4 col-sm-2 col-md-2">' +
+              '    <strong>Buy</strong>' +
+              '  </div>' +
+              '  <div class="col-xs-4 col-sm-2 col-md-2">' +
+              '    <strong>Sell</strong>' +
+              '  </div>' +
+              '  <div class="hidden-xs col-sm-6 col-md-5">' +
+              '    <strong>Updated on</strong>' +
+              '  </div>' +
+              '</div>' +
+              '<div style="margin-top: 10px" ' +
+              '     id="prices-body-' + symbol.name + '">' +
+              '</div>'
+          ));
+
+          symbol.exchanges.forEach(function(exchange) {
+              buildExchangeContainerForSymbol(symbol, exchange);
+          });
+      }
+
+      function buildExchangeContainerForSymbol (symbol, exchange) {
+          var base_id = symbol.name + '-' + exchange;
+
+          $('#prices-body-' + symbol.name).append(
+              $('<div class="row">' +
+                '  <div class="col-xs-4 col-sm-2 col-md-3"' +
+                '       style="padding-left: 25px;">' + 
+                '    <h5>' + exchange + '</h5>' +
+                '  </div>' +
+                '  <div class="col-xs-8 col-sm-10 col-md-9"' +
+                '       id="' + base_id + '-progress">' +
+                '    <div class="progress progress-striped active">' +
+                '      <div class="progress-bar" style="width: 100%">' +
+                '      </div>' +
+                '    </div>' +
+                '  </div>' +
+                '  <div class="col-xs-8 col-sm-10 col-md-9 hide"' +
+                '       id="' + base_id + '-error">' +
+                '    <div class="alert alert-danger">' +
+                '      <strong>Error</strong>' +
+                '      <span id="' + base_id + '-error-msg"></span>' +
+                '    </div>' +
+                '  </div>' +
+                '  <div id="' + base_id + '-prices" class="hide">' +
+                '    <div class="col-xs-4 col-sm-2 col-md-2">' +
+                '      <h4>' +
+                '        <span class="label label-primary" ' +
+                '            id="' + base_id + '-buy">' +
+                '        </span>' +
+                '      </h4>' +
+                '    </div>' +
+                '    <div class="col-xs-4 col-sm-2 col-md-2">' +
+                '      <h4>' +
+                '        <span class="label label-primary" ' +
+                '              id="' + base_id + '-sell">' +
+                '        </span>' +
+                '      </h4>' +
+                '    </div>' +
+                '    <div class="hidden-xs col-sm-6 col-md-5">' +
+                '      <h4>' +
+                '        <small>' +
+                '          <span id="' + base_id + '-updated_on">' +
+                '          </span>' +
+                '        </small>' +
+                '      </h4>' +
+                '    </div>' +
+                '  </div>' +
+                '</div>'
+              )
+          );
       }
 
       function hookSidebarButtons() {
@@ -246,7 +264,7 @@
       }
 
       function main() {
-        buildMainQuotes();
+        buildMainContainers();
         hookSidebarButtons();
 
         // initalize WS connection:
