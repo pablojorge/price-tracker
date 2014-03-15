@@ -1,50 +1,5 @@
 /**
  */
-function buildExchangesContainers(exchanges){
-    for(exchange in exchanges) {
-        var panel = $(
-            '<div class="panel panel-default">' +
-            '  <div class="panel-heading">' + 
-            '    <div class="row" ' + 
-            '         style="height: 95px; ' + 
-            '                display: table; ' + 
-            '                margin-left: auto; ' + 
-            '                margin-right: auto;">' +
-            '      <div style="vertical-align: middle; ' + 
-            '                  display: table-cell;">' + 
-            '        <img class="img-responsive" ' +
-            '             src="img/' + exchange + '_logo.png">' +
-            '      </div>' +
-            '    </div>' +
-            '  </div>' +
-            '</div>'
-        );
-          
-        var list = $('<ul class="list-group"></ul>');
-        
-        exchanges[exchange].forEach(function(symbol) {
-            list.append($(
-              '<li class="list-group-item">' +
-              '  <h5>' + symbol + '</h5>' +
-              '  <div id="' + exchange + '-' + symbol + '-prices" ' +
-              '       class="hide"></div>' +
-              '  <div class="progress progress-striped active" ' +
-              '       id="' + exchange + '-' + symbol + '-progress">' +
-              '    <div class="progress-bar" style="width: 100%"></div>' +
-              '  </div>' +
-              '</li>'
-            ));
-        });
-
-        panel.append(list);
-
-        $("#container-" + exchange).
-            css("padding-left", "5px").
-            css("padding-right", "5px").
-            append(panel);
-    }
-}
-
 function requestPrices(ws, exchanges){
     for (exchange in exchanges) {
         exchanges[exchange].forEach(function(symbol) {
@@ -55,39 +10,24 @@ function requestPrices(ws, exchanges){
 }
 
 function updatePrice(price){
-    var base_selector = "#" + price.exchange + "-" + price.symbol,
+    var base_selector = "#" + price.symbol + "-" + price.exchange,
         prices_selector = base_selector + "-prices",
+        buy_selector = base_selector + "-buy",
+        sell_selector = base_selector + "-sell",
+        updated_on_selector = base_selector + "-updated_on",
         progress_selector = base_selector + "-progress";
     
-    $(prices_selector).html(
-        "<h4>" + price.buy.toFixed(2) + " - " +
-                 price.sell.toFixed(2) + "</h4>" +
-        "<small>(Updated: " + 
-            (new Date(price.updated_on)).toLocaleString() + 
-        ")</small>" 
-    );
+    $(buy_selector).html(price.buy.toFixed(2));
+    $(sell_selector).html(price.sell.toFixed(2));
+    $(updated_on_selector).html((new Date(price.updated_on)).toLocaleString());
+
     $(prices_selector).removeClass("hide");
     $(progress_selector).addClass("hide");
-}
-
-function hookButtons() {
-    $(".navbar-button").click(function(event){
-        event.preventDefault();
-
-        $(".main").addClass("hide");
-        $(".main#main-" + $(this).attr("target")).removeClass("hide");
-
-        $(".navbar-button").removeClass("active");
-        $(this).addClass("active");
-    });
-
-    $(".navbar-button[target='overview']").click();
 }
 
 /**
  */
 function onExchangesListReceived(ws, exchanges) {
-    buildExchangesContainers(exchanges);
     requestPrices(ws, exchanges);
 }
 
@@ -123,7 +63,7 @@ function connect() {
         console.log("disconnected!!");
 
         // assuming websocket connectivity unavailable, fallback to AJAX 
-        // (TODO: add support for wss so we can delete this hack)
+        // (TODO: add support for wss or socket.io so we can delete this hack)
         $.ajax({
             url: location.origin + "/request/exchanges", 
             dataType: 'json', 
@@ -151,12 +91,3 @@ function connect() {
         console.log("error " + event);
     };
 }
-
-function main() {
-    hookButtons();
-    connect();
-}
-
-$(document).ready(function(){
-    main();
-});

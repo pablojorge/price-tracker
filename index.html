@@ -39,7 +39,7 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li class="navbar-button" target="overview"><a>Overview</a></li>
+            <li class="navbar-button" target="quotes"><a>Quotes</a></li>
             <li class="navbar-button" target="analytics"><a>Analytics</a></li>
             <li class="navbar-button" target="live"><a>Live</a></li>
           </ul>
@@ -52,21 +52,7 @@
 
       <div class="row">
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
-             id="main-overview">
-          <h1 class="page-header">Overview</h1>
-
-          <div class="row placeholders">
-            <div class="col-sm-4" id="container-ambito"></div>
-            <div class="col-sm-4" id="container-coinbase"></div>
-            <div class="col-sm-4" id="container-bitstamp"></div>
-          </div>
-
-          <div class="row placeholders">
-            <div class="col-sm-4" id="container-virwox"></div>
-            <div class="col-sm-4" id="container-btc-e"></div>
-            <div class="col-sm-4" id="container-bullionvault"></div>
-          </div>
-
+             id="main-quotes">
         </div>
       </div>
 
@@ -95,6 +81,124 @@
 
     <script src="messages.js"></script>
     <script src="client.js"></script>
+
+    <script type="text/javascript">
+      function buildMainQuotes() {
+        var symbols = [
+            {name:'USDARS',
+             description: '(Dolar oficial)',
+             exchanges: ['ambito']}, 
+            {name:'USDARSB',
+             description: '(Dolar blue)',
+             exchanges: ['ambito']}, 
+            {name:'BTCUSD',
+             description: '(Bitcoin)',
+             exchanges: ['bitstamp', 'coinbase', 'btc-e']},           
+            {name:'LTCUSD',
+             description: '(Litecoin)',
+             exchanges: ['btc-e']},         
+            {name:'XAUUSD',
+             description: '(Gold)',
+             exchanges: ['bullionvault']},           
+            {name:'XAGUSD',
+             description: '(Silver)',
+             exchanges: ['bullionvault']}, 
+        ];
+
+        symbols.forEach(function(symbol) {
+            $("#main-quotes").append($(
+                '<div class="row">' +
+                '  <h3>' + symbol.name + 
+                '   <small>' + symbol.description + '</small>' +
+                '  </h3>' +
+                '  <table class="table table-hover">' +
+                '    <thead>' +
+                '      <tr>' + 
+                '        <th>Exchange</th>' +
+                '        <th>Buy</th>' +
+                '        <th>Sell</th>' +
+                '        <th>Updated on</th>' +
+                '      </tr>' +
+                '    </thead>' +
+                '    <tbody id="table-body-' + symbol.name + '">' +
+                '    </tbody>' +
+                '  </table>' +
+                '</div>'
+            ));
+
+            symbol.exchanges.forEach(function(exchange) {
+                var base_id = symbol.name + '-' + exchange;
+
+                $('#table-body-' + symbol.name).append(
+                    $('<tr id="' + base_id + '-progress">' +
+                      '  <td>' + exchange + '</td>' +
+                      '  <td colspan=3>' +
+                      '    <div class="progress progress-striped active">' +
+                      '      <div class="progress-bar" style="width: 100%">' +
+                      '      </div>' +
+                      '    </div>' +
+                      '  </td>' +
+                      '</tr>' +
+                      '<tr id="' + base_id + '-prices" class="hide">' +
+                      '  <td style="vertical-align: middle;">' + 
+                          exchange + 
+                      '  </td>' +
+                      '  <td style="vertical-align: middle;">' +
+                      '    <h4>' +
+                      '      <span class="label label-primary" ' +
+                      '            id="' + base_id + '-buy">' +
+                      '      </span>' +
+                      '     <h4>' +
+                      '  </td>' +
+                      '  <td style="vertical-align: middle;">' +
+                      '    <h4>' +
+                      '      <span class="label label-primary" ' +
+                      '            id="' + base_id + '-sell">' +
+                      '      </span>' +
+                      '    <h4>' +
+                      '  </td>' +
+                      '  <td style="vertical-align: middle;">' +
+                      '    <span id="' + base_id + '-updated_on">' +
+                      '    </span>' +
+                      '  </td>' +
+                      '</tr>'
+                    )
+                );
+            });
+        });
+      }
+
+      function hookSidebarButtons() {
+        $(".navbar-button").click(function(event){
+          event.preventDefault();
+
+          // hide all "main" divs
+          $(".main").addClass("hide");
+          // show the div with class "main" and id "main-$target"
+          $(".main#main-" + $(this).attr("target")).removeClass("hide");
+
+          // make all navbar buttons inactive:
+          $(".navbar-button").removeClass("active");
+          // active the current one:
+          $(this).addClass("active");
+        });
+
+        // activate the main 'quotes' section:
+        $(".navbar-button[target='quotes']").click();
+      }
+
+      function main() {
+        buildMainQuotes();
+        hookSidebarButtons();
+
+        // initalize WS connection:
+        connect();        
+      }
+
+      $(document).ready(function(){
+        main();
+      });
+    </script>
 
   </body>
 </html>
