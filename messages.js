@@ -69,8 +69,9 @@ Response.fromString = function (string) {
     return response;
 }
 
-function Error(message) {
+function Error(message, info) {
     this.message = message;
+    this.info = info;
 }
 
 Error.prototype = Object.create(Response.prototype);

@@ -67,8 +67,8 @@ wss.on('connection', function(ws) {
                         console.log("response sent: " + response);
                     });
                 }, 
-                function(exception) {
-                    error = new messages.Error(exception.toString());
+                function(exception, info) {
+                    error = new messages.Error(exception.toString(), info);
                     console.log("exception: " + exception);
                     ws.send(error.toString(), function() {
                         console.log("error sent");
@@ -135,7 +135,10 @@ PriceRequestHandler.prototype.processRequest = function (callback, errback) {
         var requester = this.getRequester();
         requester.doRequest(callback, errback);
     } catch(e) {
-        errback(e);
+        errback(e, {
+            exchange: this.request.exchange,
+            symbol: this.request.symbol
+        });
     }
 };
 
@@ -191,7 +194,10 @@ PriceRequester.prototype.doRequest = function (callback, errback) {
                 }
                 callback(_this.processResponse(response, body));
             } catch(e) {
-                errback(e);
+                errback(e, {
+                    exchange: _this.getExchange(),
+                    symbol: _this.symbol,
+                });
             }
         }
     );
@@ -463,7 +469,10 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
                     var buy = processResponse(error, response, body);
                     getSellPrice(buy);
                 } catch(e) {
-                    errback(e);
+                    errback(e, {
+                        exchange: _this.getExchange(),
+                        symbol: _this.symbol,
+                    });
                 }
             }
         );
@@ -479,7 +488,10 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
                                                 buy, 
                                                 sell));
                 } catch(e) {
-                    errback(e);
+                    errback(e, {
+                        exchange: _this.getExchange(),
+                        symbol: _this.symbol,
+                    });
                 }
             }
         );

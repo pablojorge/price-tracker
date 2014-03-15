@@ -32,7 +32,8 @@ function Client() {
     Subject.call(this, ["onConnect",
                         "onDisconnect",
                         "onExchangesListReceived",
-                        "onPriceUpdated"]);
+                        "onPriceUpdated",
+                        "onError"]);
 
     this.addHandler("onConnect", function() {
         console.log("connected!");
@@ -41,6 +42,10 @@ function Client() {
     this.addHandler("onDisconnect", function() {
         console.log("disconnected!!");
     });
+
+    this.addHandler("onError", function(error) {
+        console.log("error:", error);
+    })
 }
 
 Client.prototype = Object.create(Subject.prototype);
@@ -77,7 +82,7 @@ WSClient.prototype.connect = function(host) {
     };
 
     _this.socket.onmessage = function (event) {
-        console.log("got message: " + event.data);
+        console.log("got message: ", event.data);
         var object = JSON.parse(event.data);
 
         if (object.type == "Exchanges") {
@@ -86,6 +91,9 @@ WSClient.prototype.connect = function(host) {
         } else if (object.type == "Price") {
             console.log("got new price..");
             _this.emit("onPriceUpdated", [object.response]);
+        } else if (object.type == "Error") {
+            console.log("got error..");
+            _this.emit("onError", [object.response]);
         }
     };
 
@@ -94,7 +102,7 @@ WSClient.prototype.connect = function(host) {
     };
 
     _this.socket.onerror = function (event) {
-        console.log("error " + event);
+        _this.emit("onError", [new Error(event.toString())]);
     };
 }
 

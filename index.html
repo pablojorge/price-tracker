@@ -53,6 +53,11 @@
       <div class="row">
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
              id="main-quotes">
+          <div class="row hide" id="global-error">
+            <div class="alert alert-danger">
+              <ul id="global-error-msgs">
+              </ul>
+            </div>
         </div>
       </div>
 
@@ -139,6 +144,16 @@
                       '    </div>' +
                       '  </td>' +
                       '</tr>' +
+                      '<tr id="' + base_id + '-error" class="hide">' +
+                      '  <td>' + exchange + '</td>' +
+                      '  <td colspan=3>' +
+                      '    <div class="alert alert-danger" style="text-align: center;">' +
+                      '      <b>Error</b>' +
+                      '      <span id="' + base_id + '-error-msg">' +
+                      '      </span>' +
+                      '    </div>' +
+                      '  </td>' +
+                      '</tr>' +
                       '<tr id="' + base_id + '-prices" class="hide">' +
                       '  <td style="vertical-align: middle;">' + 
                           exchange + 
@@ -187,7 +202,7 @@
         $(".navbar-button[target='quotes']").click();
       }
 
-      function updatePrice(price){
+      function updatePrice(price) {
           var base_selector = "#" + price.symbol + "-" + price.exchange,
               prices_selector = base_selector + "-prices",
               buy_selector = base_selector + "-buy",
@@ -201,6 +216,33 @@
 
           $(prices_selector).removeClass("hide");
           $(progress_selector).addClass("hide");
+      }
+
+      function priceError(error) {
+          var base_selector = "#" + error.info.symbol + "-" + error.info.exchange,
+              error_selector = base_selector + "-error",
+              error_msg_selector = base_selector + "-error-msg",
+              progress_selector = base_selector + "-progress";
+
+          $(error_msg_selector).html(error.message);
+
+          $(error_selector).removeClass("hide");
+          $(progress_selector).addClass("hide");
+      }
+
+      function genericError(error) {
+          $("#global-error").removeClass("hide");
+          $("#global-error-msgs").append($(
+              "<li>" + error.message + "</li>"
+          ));
+      }
+
+      function handleError(error) {
+          if(!error.info || !error.info.exchange || !error.info.symbol) {
+            genericError(error);
+          } else {
+            priceError(error);
+          }
       }
 
       function main() {
@@ -221,6 +263,10 @@
 
             client.addHandler("onPriceUpdated", function(price) {
                 updatePrice(price);
+            });
+
+            client.addHandler("onError", function (error) {
+                handleError(error);
             });
         }
 
