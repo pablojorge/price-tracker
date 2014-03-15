@@ -155,5 +155,9 @@ RESTClient.prototype.requestPrice = function(exchange, symbol) {
         success: function(data) {
             _this.emit("onPriceUpdated", [data]);
         },
+        error: function(jqXHR, textStatus, errorThrown) {
+            var data = JSON.parse(jqXHR.responseText);
+            _this.emit("onError", [new Error(data.message, data.info)]);
+        }
     });
 }

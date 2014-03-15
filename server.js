@@ -23,10 +23,10 @@ function serveRequest(request, req, res) {
             console.log("response sent: " + response);
             res.json(response);
         },
-        function(exception) {
+        function(exception, info) {
             res.status(500);
             console.log("error sent: " + exception);
-            res.json(new messages.Error(exception.toString()));
+            res.json(new messages.Error(exception.toString(), info));
         }
     );
 }
