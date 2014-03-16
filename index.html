@@ -43,21 +43,22 @@
             <li class="navbar-button" target="analytics"><a>Analytics</a></li>
             <li class="navbar-button" target="live"><a>Live</a></li>
           </ul>
-          <!--ul class="nav nav-sidebar">
-            <li><a href="">Nav item</a></li>
-            <li><a href="">Nav item again</a></li>
-          </ul-->
+          <ul class="nav nav-sidebar">
+            <li class="navbar-button" target="portfolio"><a>Portfolio</a></li>
+          </ul>
         </div>
       </div>
 
       <div class="row">
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
              id="main-quotes">
+          <h1 class="page-header">Quotes</h1>
           <div class="row hide" id="global-error">
             <div class="alert alert-danger">
               <ul id="global-error-msgs" class="list-unstyled">
               </ul>
             </div>
+          </div>
         </div>
       </div>
 
@@ -79,6 +80,38 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
+             id="main-portfolio">
+          <h1 class="page-header">Portfolio</h1>
+          <!-- <ul class="nav nav-tabs">
+            <li class="active"><a href="#">Analysis</a></li>
+            <li><a href="#">Edit</a></li>
+          </ul> -->
+          <div id="portfolios">
+            
+          </div>
+
+          <form class="form-inline" role="form" id="form-new-portfolio">
+            <span> 
+              Create new portfolio: 
+            </span>
+
+            <div class="form-group" id="input-portfolio-name">
+              <input type="string" 
+                     class="form-control"  
+                     placeholder="Name">
+             </div>
+
+            <button class="btn btn-primary" id="btn-create-portfolio">
+              <span class="glyphicon glyphicon-plus"></span>
+              Create
+            </button>
+
+          </form>          
+        </div>
+      </div>
+
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -88,6 +121,13 @@
     <script src="client.js"></script>
 
     <script type="text/javascript">
+
+      function guid () {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+          return v.toString(16);
+        });
+      }
 
       function buildMainContainers() {
         var symbols = [
@@ -217,7 +257,131 @@
         });
 
         // activate the main 'quotes' section:
-        $(".navbar-button[target='quotes']").click();
+        $(".navbar-button[target='portfolio']").click();
+      }
+
+      function portfolioPanel(portfolio) {
+        return $(
+          '<div class="panel panel-default">' +
+          '  <div class="panel-heading">' +
+          '    <strong>' + portfolio.name + '</strong>' +
+          '    <button type="button" class="close" aria-hidden="true">' + 
+          '      &times;' +
+          '    </button>' +
+          '  </div>' +
+          '  <div class="panel-body" id="portfolio-' + portfolio.guid + '-totals">' +
+          '  </div>' +
+          '  <ul class="list-group" id="portfolio-' + portfolio.guid + '-trades">' +
+          '  </ul>' +
+          '  <ul class="list-group">' +
+          '    <li class="list-group-item">' +
+          '      <form class="form-inline" role="form">' +
+          '        <div class="row">' +
+          '          <div class="form-group col-md-3" id="input-' + portfolio.guid + '-amount">' +
+          '            <div class="input-group">' +
+          '              <input type="number" step="any" ' +
+          '                     class="form-control" ' +
+          '                     placeholder="Enter amount">' +
+          '              <span class="input-group-addon">BTC</span>' +
+          '            </div>' +
+          '          </div>' +
+          '          <div class="form-group col-md-3" id="input-' + portfolio.guid + '-price">' +
+          '            <div class="input-group">' +
+          '              <input type="number" step="any"' +
+          '                     class="form-control" ' +
+          '                     placeholder="Enter price">' +
+          '              <span class="input-group-addon">USD</span>' +
+          '            </div>' + 
+          '          </div>' +
+          '          <div class="col-md-3">' +
+          '            <button class="btn btn-primary"' +
+          '                    id="btn-' + portfolio.guid + '-add" >' +
+          '            <span class="glyphicon glyphicon-plus"></span>' +
+          '              Add' +
+          '            </button>' +
+          '          </div>' +
+          '        </div>' +
+          '      </form>' +
+          '    </li>' +
+          '  </ul>' +
+          '</div>'
+        );
+      }
+
+      function hookPortfolioButtons () {
+        $("#btn-create-portfolio").click(function (event) {
+          event.preventDefault();
+
+          var input_selector = "#input-portfolio-name",
+              value_selector = input_selector + " > :input",
+              portfolio_name = $(value_selector).val();
+
+          if (!portfolio_name) {
+            $(input_selector).addClass("has-error");
+          } else {
+            $(input_selector).removeClass("has-error");
+            $(value_selector).val(""); 
+
+            var portfolio = {
+                guid: guid(),
+                name: portfolio_name,
+            };
+
+            $("#portfolios").append(portfolioPanel(portfolio));
+            $("#btn-" + portfolio.guid + "-add").click(function (event) {
+              event.preventDefault();
+
+              var amount_selector = "#input-" + portfolio.guid + "-amount",
+                  price_selector = "#input-" + portfolio.guid + "-price",
+                  amount = parseFloat($(amount_selector + " > div > :input").val()),
+                  price = parseFloat($(price_selector + " > div > :input").val()),
+                  valid = true;
+
+              if (!(amount > 0)) {
+                $(amount_selector).addClass("has-error");
+                valid = false;
+              } else {
+                $(amount_selector).removeClass("has-error");                
+              }
+
+              if (!(price > 0)) {
+                $(price_selector).addClass("has-error");
+                valid = false;
+              } else {
+                $(price_selector).removeClass("has-error");                
+              }
+
+              if (valid) {
+                var btc_price = 500,
+                    inv_value = amount * btc_price,
+                    profit = inv_value - price,
+                    gain = (inv_value/price) * 100 - 100;
+
+                $(amount_selector + " > div > :input").val("");
+                $(price_selector + " > div > :input").val("");
+
+                $("#portfolio-" + portfolio.guid + "-trades").append(
+                  $("<li class='list-group-item'>" + 
+                      "<strong>"+ amount + "</strong>BTC for " +
+                      "<strong>" + price + "</strong>$" +
+                      '<span class="glyphicon glyphicon-arrow-right"></span>' +
+                      "Current value: " + inv_value.toString() +
+                      " Profit: " + profit.toString() +
+                      " Gain: " + 
+                      //'<h4>' + 
+                      '  <span class="label label-' + (gain < 0 ? 'danger' : 'success') + '">' +
+                      gain.toFixed(2).toString() + "%" +
+                      '  </span>' +
+                      //'</h4>' +
+                      '<button type="button" class="close" aria-hidden="true">' + 
+                      '  &times;' +
+                      '</button>' +
+                    "</li>")
+                );
+              }
+            });
+          }
+        })
       }
 
       function updatePrice(price) {
@@ -265,6 +429,8 @@
 
       function main() {
         buildMainContainers();
+
+        hookPortfolioButtons();
         hookSidebarButtons();
 
         // initalize WS connection:
@@ -272,7 +438,7 @@
 
         function connectHandlers(client) {
             client.addHandler("onConnect", function() {
-                this.requestExchanges();
+                //this.requestExchanges();
             });
 
             client.addHandler("onExchangesListReceived", function(exchanges) {
