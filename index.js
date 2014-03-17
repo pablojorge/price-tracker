@@ -92,7 +92,7 @@ function buildContainerForSymbol(symbol) {
     });
 }
 
-function buildExchangeContainerForSymbol (symbol, exchange) {
+function buildExchangeContainerForSymbol(symbol, exchange) {
     var base_id = __(symbol.name, '-', exchange);
 
     $__('#prices-body-', symbol.name).append(
@@ -190,31 +190,79 @@ function handleError(error) {
 // End Quotes section
 
 // Portfolio section
+var portfolioData = undefined;
+
+function savePortfolioData() {
+    localStorage["portfolioData"] = JSON.stringify(portfolioData);
+}
+
+function loadPortfolioData() {
+    portfolioData = JSON.parse(localStorage["portfolioData"] || null) || [];
+}
+
+function renderPortfolioData() {
+    portfolioData.forEach(function(portfolio) {
+        addPortfolio(portfolio);
+        portfolio.trades.forEach(function(trade) {
+            addTrade(portfolio, trade);
+        });
+    });
+}
+
+function savePortfolio(portfolio) {
+    portfolioData.push(portfolio);
+    savePortfolioData();
+}
+
+function saveTrade(portfolio, trade) {
+    portfolioData.forEach(function(portfolio_) {
+        if (portfolio_.guid == portfolio.guid) {
+            portfolio_.trades.push(trade);
+        }
+    });
+
+    savePortfolioData();
+}
+
 function renderTrade(portfolio, trade) {
     var btc_price = 500,
         inv_value = trade.amount * btc_price,
+        ind_price = trade.price / trade.amount,
         profit = inv_value - trade.price,
         gain = (inv_value/trade.price) * 100 - 100;
 
     return $__(
         '<li class="list-group-item">', 
-        '  <strong>', trade.amount, '</strong>BTC for ',
-        '  <strong>', trade.price, '</strong>$',
-        '  <span class="glyphicon glyphicon-arrow-right"></span>',
-        '  Current value: ', inv_value,
-        '  Profit: ', profit,
-        '  Gain: ', 
-        '  <h4>', 
-        '    <span class="label label-', 
-               (gain < 0 ? 'danger' : 'success'), '">',
-               gain.toFixed(2).toString(), "%",
-        '    </span>',
-        '</h4>',
-        '<button type="button" class="close" aria-hidden="true">', 
-        '  &times;',
-        '</button>',
-        "</li>"
-    )
+        '  <div class="row">',
+        '    <div class="col-md-4">',
+        '      <h5>',
+        '        <strong>', trade.amount, '</strong> BTC for ',
+        '        <strong>', trade.price, '</strong>$',
+        '        (', ind_price.toFixed(2), '$/BTC)',
+        '      </h5>',
+        '    </div>',
+        '    <div class="col-md-4">',
+        '      <h5>',
+        '        Current value: <strong>', inv_value, '</strong>$',
+        '        Profit: <strong>', profit, '</strong>$',
+        '      </h5>',
+        '    </div>',
+        '    <div class="col-md-3">',
+        '      <h4>', 
+        '        <span class="label label-', 
+                   (gain < 0 ? 'danger' : 'success'), '">',
+                   gain.toFixed(2).toString(), "%",
+        '        </span>',
+        '      </h4>',
+        '    </div>',
+        '    <div class="col-md-1">',
+        '      <button type="button" class="close" aria-hidden="true">', 
+        '        &times;',
+        '      </button>',
+        '    </div>',
+        '  </div>',
+        '</li>'
+        )
 }
 
 function addTrade(portfolio, trade) {
@@ -308,13 +356,13 @@ function addPortfolio(portfolio) {
                 price: price
             };
 
-            //saveTrade(portfolio, trade);
+            saveTrade(portfolio, trade);
             addTrade(portfolio, trade);
         }
     });
 }
 
-function hookPortfolioButtons () {
+function hookPortfolioButtons() {
     $("#btn-create-portfolio").click(function (event) {
         event.preventDefault();
 
@@ -331,9 +379,10 @@ function hookPortfolioButtons () {
             var portfolio = {
                 guid: guid(),
                 name: portfolio_name,
+                trades: [],
             };
 
-            //savePortfolio(portfolio);
+            savePortfolio(portfolio);
             addPortfolio(portfolio);
         }
     });
@@ -360,17 +409,20 @@ function hookSidebarButtons() {
 }
 
 function main() {
+    hookSidebarButtons();
+
     buildMainContainers();
 
     hookPortfolioButtons();
-    hookSidebarButtons();
+    loadPortfolioData();
+    renderPortfolioData();
 
     // initalize WS connection:
     var wsclient = new WSClient();
 
     function connectHandlers(client) {
         client.addHandler("onConnect", function() {
-            this.requestExchanges();
+            //this.requestExchanges();
         });
 
         client.addHandler("onExchangesListReceived", function(exchanges) {
@@ -396,7 +448,7 @@ function main() {
     });
 
     connectHandlers(wsclient);
-    wsclient.connect(location.origin.replace(/^http/, 'ws'));
+    //wsclient.connect(location.origin.replace(/^http/, 'ws'));
 }
 
 $(document).ready(function() {
