@@ -209,11 +209,23 @@ function renderPortfolioData() {
     });
 }
 
+//
 function savePortfolio(portfolio) {
     portfolioData.push(portfolio);
     savePortfolioData();
 }
 
+function deletePortfolio(guid) {
+    portfolioData.forEach(function(portfolio, index) {
+        if (portfolio.guid == guid) {
+            portfolioData.splice(index, 1);
+        }
+    });
+
+    savePortfolioData();
+}
+
+//
 function saveTrade(portfolio, trade) {
     portfolioData.forEach(function(portfolio_) {
         if (portfolio_.guid == portfolio.guid) {
@@ -224,6 +236,19 @@ function saveTrade(portfolio, trade) {
     savePortfolioData();
 }
 
+function deleteTrade(guid) {
+    portfolioData.forEach(function(portfolio) {
+        portfolio.trades.forEach(function(trade, index) {
+            if (trade.guid == guid) {
+                portfolio.trades.splice(index, 1);
+            }
+        });
+    });
+
+    savePortfolioData();
+}
+
+//
 function renderTrade(portfolio, trade) {
     var btc_price = 500,
         inv_value = trade.amount * btc_price,
@@ -232,7 +257,8 @@ function renderTrade(portfolio, trade) {
         gain = (inv_value/trade.price) * 100 - 100;
 
     return $__(
-        '<li class="list-group-item">', 
+        '<li class="list-group-item" ',
+        '    id="trade-', trade.guid, '">', 
         '  <div class="row">',
         '    <div class="col-md-4">',
         '      <h5>',
@@ -256,27 +282,42 @@ function renderTrade(portfolio, trade) {
         '      </h4>',
         '    </div>',
         '    <div class="col-md-1">',
-        '      <button type="button" class="close" aria-hidden="true">', 
+        '      <button type="button" class="close" aria-hidden="true"',
+        '              id="btn-', trade.guid, '-remove">', 
         '        &times;',
         '      </button>',
         '    </div>',
         '  </div>',
         '</li>'
-        )
+    );
 }
 
 function addTrade(portfolio, trade) {
     $__("#portfolio-", portfolio.guid, "-trades").append(
         renderTrade(portfolio, trade)
     );
+
+    $__("#btn-", trade.guid, "-remove").click(function (event) {
+        event.preventDefault();
+
+        deleteTrade(trade.guid);
+        removeTrade(trade.guid);
+    });
 }
 
+function removeTrade(guid) {
+    $__("#trade-", guid).remove();
+}
+
+//
 function renderPortfolio(portfolio) {
     return $__(
-        '<div class="panel panel-default">',
+        '<div class="panel panel-default" ',
+        '     id="portfolio-', portfolio.guid, '">',
         '  <div class="panel-heading">',
         '    <strong>', portfolio.name, '</strong>',
-        '    <button type="button" class="close" aria-hidden="true">', 
+        '    <button type="button" class="close" aria-hidden="true"',
+        '            id="btn-', portfolio.guid,'-remove">', 
         '      &times;',
         '    </button>',
         '  </div>',
@@ -352,6 +393,7 @@ function addPortfolio(portfolio) {
             $__(price_selector, " > div > :input").val("");
 
             var trade = {
+                guid: guid(),
                 amount: amount,
                 price: price
             };
@@ -360,8 +402,20 @@ function addPortfolio(portfolio) {
             addTrade(portfolio, trade);
         }
     });
+
+    $__("#btn-", portfolio.guid, "-remove").click(function (event) {
+        event.preventDefault();
+
+        deletePortfolio(portfolio.guid);
+        removePortfolio(portfolio.guid);
+    });
 }
 
+function removePortfolio(guid) {
+    $__("#portfolio-", guid).remove();
+}
+
+//
 function hookPortfolioButtons() {
     $("#btn-create-portfolio").click(function (event) {
         event.preventDefault();
@@ -388,6 +442,7 @@ function hookPortfolioButtons() {
     });
 }
 // End Portfolio section
+
 // Global functions
 function hookSidebarButtons() {
     $(".navbar-button").click(function(event) {
