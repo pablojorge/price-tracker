@@ -20,7 +20,9 @@ $__ = function() {
 /**/
 
 // Quotes section:
-function buildMainContainers() {
+function QuotesView() {}
+
+QuotesView.prototype.render = function() {
     var symbols = [
         {
             name:'USDARS',
@@ -54,12 +56,13 @@ function buildMainContainers() {
         }, 
     ];
 
+    var _this = this;
     symbols.forEach(function(symbol) {
-        buildContainerForSymbol(symbol);
+        _this.renderSymbol(symbol);
     });
 }
 
-function buildContainerForSymbol(symbol) {
+QuotesView.prototype.renderSymbol = function (symbol) {
     $("#main-quotes").append($__(
         '<div class="row">',
         '  <div class="row" style="margin-left: 10px;">',
@@ -87,12 +90,13 @@ function buildContainerForSymbol(symbol) {
         '</div>'
     ));
 
+    var _this = this;
     symbol.exchanges.forEach(function(exchange) {
-        buildExchangeContainerForSymbol(symbol, exchange);
+        _this.renderExchangeForSymbol(symbol, exchange);
     });
 }
 
-function buildExchangeContainerForSymbol(symbol, exchange) {
+QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
     var base_id = __(symbol.name, '-', exchange);
 
     $__('#prices-body-', symbol.name).append(
@@ -145,7 +149,7 @@ function buildExchangeContainerForSymbol(symbol, exchange) {
     );
 }
 
-function updatePrice(price) {
+QuotesView.prototype.renderPrice = function (price) {
     var base_selector = __("#", price.symbol, "-", price.exchange),
         prices_selector = __(base_selector, "-prices"),
         buy_selector = __(base_selector, "-buy"),
@@ -161,7 +165,7 @@ function updatePrice(price) {
     $(progress_selector).addClass("hide");
 }
 
-function priceError(error) {
+QuotesView.prototype.renderPriceError = function (error) {
     var base_selector = __("#", error.info.symbol, "-", error.info.exchange),
         error_selector = __(base_selector, "-error"),
         error_msg_selector = __(base_selector, "-error-msg"),
@@ -173,18 +177,27 @@ function priceError(error) {
     $(progress_selector).addClass("hide");
 }
 
-function genericError(error) {
+QuotesView.prototype.renderGenericError = function (error) {
     $("#global-error").removeClass("hide");
     $("#global-error-msgs").append($__(
         "<li>", error.message, "</li>"
     ));
 }
 
-function handleError(error) {
+function QuotesController(view, model) {
+    this.view = view;
+    this.model = model;
+}
+
+QuotesController.prototype.onPriceUpdated = function (price) {
+    this.view.renderPrice(price);
+}
+
+QuotesController.prototype.onError = function (error) {
     if (!error.info || !error.info.exchange || !error.info.symbol) {
-        genericError(error);
+        thiw.view.renderGenericError(error);
     } else {
-        priceError(error);
+        this.view.renderPriceError(error);
     }
 }
 // End Quotes section
@@ -443,8 +456,9 @@ function hookPortfolioButtons() {
 }
 // End Portfolio section
 
-// Global functions
-function hookSidebarButtons() {
+function GlobalView() {}
+
+GlobalView.prototype.hookSidebarButtons = function () {
     $(".navbar-button").click(function(event) {
         event.preventDefault();
 
@@ -458,15 +472,23 @@ function hookSidebarButtons() {
         // active the current one:
         $(this).addClass("active");
     });
+}
 
+GlobalView.prototype.activateSection = function (section) {
     // activate the main 'quotes' section:
-    $(".navbar-button[target='portfolio']").click();
+    $__(".navbar-button[target='", section, "']").click();
 }
 
 function main() {
-    hookSidebarButtons();
+    global_view = new GlobalView();
+    quotes_view = new QuotesView();
+    quotes_controller = new QuotesController(quotes_view, null);
 
-    buildMainContainers();
+    global_view.hookSidebarButtons();
+    //global_view.activateSection("quotes");
+    global_view.activateSection("portfolio");
+
+    quotes_view.render();
 
     hookPortfolioButtons();
     loadPortfolioData();
@@ -477,7 +499,7 @@ function main() {
 
     function connectHandlers(client) {
         client.addHandler("onConnect", function() {
-            //this.requestExchanges();
+            this.requestExchanges();
         });
 
         client.addHandler("onExchangesListReceived", function(exchanges) {
@@ -485,11 +507,11 @@ function main() {
         });
 
         client.addHandler("onPriceUpdated", function(price) {
-            updatePrice(price);
+            quotes_controller.onPriceUpdated(price);
         });
 
         client.addHandler("onError", function (error) {
-            handleError(error);
+            quotes_controller.onError(error);
         });
     }
 
@@ -503,7 +525,7 @@ function main() {
     });
 
     connectHandlers(wsclient);
-    //wsclient.connect(location.origin.replace(/^http/, 'ws'));
+    wsclient.connect(location.origin.replace(/^http/, 'ws'));
 }
 
 $(document).ready(function() {
