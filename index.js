@@ -1,4 +1,5 @@
 /**
+ * Taken from http://stackoverflow.com/a/2117523
  */
 function guid () {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -8,18 +9,27 @@ function guid () {
 }
 
 /**
+ * Utility function to avoid tedious string concatenations:
+ * Instead of: 'a' + 'b' + 'c', 
+ *         or: ['a', 'b', 'c'].join(""), 
+ * you can write: concat('a', 'b', 'c')
  */
 function concat () {
-  var args = Array.prototype.slice.call(arguments);
-  return args.join("");
+    var args = Array.prototype.slice.call(arguments);
+    return args.join("");
 }
+/**
+ * Use __('a', 'b', 'c') instead of concat('a', 'b', 'c')
+ */
 __ = concat;
+/**
+ * Use $__('a', 'b', 'c') instead of $(__('a', 'b', 'c'))
+ */
 $__ = function() {
-  return $(__.apply(null, arguments));
+    return $(__.apply(null, arguments));
 }
 /**/
 
-// Quotes section:
 function QuotesView() {}
 
 QuotesView.prototype.render = function() {
@@ -216,9 +226,7 @@ QuotesController.prototype.onError = function (error) {
         this.view.renderPriceError(error);
     }
 }
-// End Quotes section
 
-// Portfolio section
 function PortfolioModel() {
     this.data = undefined;
 }
@@ -353,7 +361,6 @@ PortfolioView.prototype.removeTrade = function(guid) {
     $__("#trade-", guid).remove();
 }
 
-//
 PortfolioView.prototype.renderPortfolio = function(portfolio) {
     return $__(
         '<div class="panel panel-default" ',
@@ -509,12 +516,11 @@ PortfolioController.prototype.deletePortfolio = function (guid) {
     this.model.deletePortfolio(guid);
     this.view.removePortfolio(guid);
 }
+
 PortfolioController.prototype.deleteTrade = function (guid) {
     this.model.deleteTrade(guid);
     this.view.removeTrade(guid);
 }
-
-// End Portfolio section
 
 function GlobalView() {}
 
