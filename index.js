@@ -344,7 +344,7 @@ PortfolioView.prototype.updateTrade = function(trade, return_) {
     $__(base_selector, '-current-value').html(return_.current_value.toFixed(2));
     $__(base_selector, '-profit').html(return_.profit.toFixed(2));
 
-    $__(base_selector, '-gain').html(__(return_.gain.toFixed(2), '%'));
+    $__(base_selector, '-gain').html(__((return_.gain * 100).toFixed(2), '%'));
     $__(base_selector, '-gain').removeClass('label-default');
     $__(base_selector, '-gain').addClass(
         return_.gain < 0 ? 'label-danger' : 'label-success'
@@ -358,8 +358,8 @@ PortfolioView.prototype.renderTrade = function(portfolio, trade) {
         '  <div class="row">',
         '    <div class="col-md-4">',
         '      <h5>',
-        '        <strong>', trade.amount, '</strong> BTC for ',
-        '        <strong>', trade.price, '</strong>$',
+        '        <strong>', trade.amount, ' BTC</strong> for ',
+        '        <strong>', trade.price, '$</strong>',
         '        (', (trade.price / trade.amount).toFixed(2), '$/BTC)',
         '      </h5>',
         '    </div>',
@@ -368,11 +368,13 @@ PortfolioView.prototype.renderTrade = function(portfolio, trade) {
         '        Current value: ',
         '        <strong>',
         '          <span id="trade-', trade.guid, '-current-value">',
-        '          ??</span>',
+        '            ??',
+        '          </span>',
         '        </strong>$',
         '        Profit: <strong>',
         '          <span id="trade-', trade.guid, '-profit">',
-        '          ??</span>',
+        '            ??',
+        '          </span>',
         '        </strong>$',
         '      </h5>',
         '    </div>',
@@ -380,7 +382,8 @@ PortfolioView.prototype.renderTrade = function(portfolio, trade) {
         '      <h4>', 
         '        <span class="label label-default" ',
         '              id="trade-', trade.guid, '-gain">',
-        '        ??.??</span>',
+        '          ??.??',
+        '        </span>',
         '      </h4>',
         '    </div>',
         '    <div class="col-md-1">',
@@ -423,6 +426,61 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
         '    </button>',
         '  </div>',
         '  <div class="panel-body" id="portfolio-', portfolio.guid, '-totals">',
+        '    <div class="row">',
+        '      <div class="col-md-4">',
+        '        <h5>',
+        '          <div>',
+        '            Portfolio holdings: ',
+        '            <strong>', 
+        '              <span id="portfolio-', portfolio.guid, '-holdings">',
+        '                0',
+        '              </span> BTC',
+        '            </strong>',
+        '          </div>',
+        '          <div>',
+        '            Portfolio cost: ',
+        '            <strong>',
+        '              <span id="portfolio-', portfolio.guid, '-cost">',
+        '                0',
+        '              </span>$',
+        '            </strong>',
+        '          </div>',
+        '          <div>',
+        '            Avg: ', 
+        '            <span id="portfolio-', portfolio.guid, '-avg-price">',
+        '              0',
+        '            </span>$/BTC',
+        '          </div>',
+        '        </h5>',
+        '      </div>',
+        '      <div class="col-md-5">',
+        '        <h5>',
+        '          <div>',
+        '            Current value: ',
+        '            <strong>',
+        '              <span id="portfolio-', portfolio.guid, '-current-value">',
+        '                0',
+        '              </span>',
+        '            </strong>$',
+        '          </div>',
+        '          <div>',
+        '            Profit: <strong>',
+        '              <span id="portfolio-', portfolio.guid, '-profit">',
+        '                0',
+        '              </span>',
+        '            </strong>$',
+        '          </div>',
+        '        </h5>',
+        '      </div>',
+        '      <div class="col-md-2">',
+        '        <h3>', 
+        '          <span class="label label-default" ',
+        '                id="portfolio-', portfolio.guid, '-gain">',
+        '            0.00%',
+        '          </span>',
+        '        </h3>',
+        '      </div>',
+        '    </div>',
         '  </div>',
         '  <ul class="list-group" id="portfolio-', portfolio.guid, '-trades">',
         '  </ul>',
@@ -504,6 +562,28 @@ PortfolioView.prototype.addPortfolio = function(portfolio) {
     });
 }
 
+PortfolioView.prototype.updatePortfolio = function(portfolio, holdings, return_) {
+    var base_selector = __('#portfolio-', portfolio.guid);
+
+    if (!return_)
+        return;
+
+    $__(base_selector, '-holdings').html(holdings.amount.toFixed(2));
+    $__(base_selector, '-cost').html(holdings.price.toFixed(2));
+    $__(base_selector, '-avg-price').html(
+        (holdings.price/holdings.amount).toFixed(2)
+    );
+    
+    $__(base_selector, '-current-value').html(return_.current_value.toFixed(2));
+    $__(base_selector, '-profit').html(return_.profit.toFixed(2));
+
+    $__(base_selector, '-gain').html(__((return_.gain * 100).toFixed(2), '%'));
+    $__(base_selector, '-gain').removeClass('label-default');
+    $__(base_selector, '-gain').addClass(
+        return_.gain < 0 ? 'label-danger' : 'label-success'
+    );
+}
+
 PortfolioView.prototype.removePortfolio = function(guid) {
     $__("#portfolio-", guid).remove();
 }
@@ -564,14 +644,33 @@ PortfolioController.prototype.getInvestmentReturn = function (investment) {
 }
 
 PortfolioController.prototype.onPriceUpdated = function (price) {
+    this.updateReturns();
+}
+
+PortfolioController.prototype.updateReturns = function() {
     var _this = this;
 
-    this.model.data.forEach(function (prototype) {
-        prototype.trades.forEach(function (trade) {
-            _this.view.updateTrade(trade, 
+    this.model.data.forEach(function (portfolio) {
+        var portfolio_total = {
+            amount: 0, 
+            price: 0
+        };
+
+        portfolio.trades.forEach(function (trade) {
+            portfolio_total.amount += trade.amount;
+            portfolio_total.price += trade.price;
+
+            _this.view.updateTrade(
+                trade, 
                 _this.getInvestmentReturn(trade)
             );
-        })
+        });
+
+        _this.view.updatePortfolio(
+            portfolio,
+            portfolio_total, 
+            _this.getInvestmentReturn(portfolio_total)
+        );
     })
 }
 
@@ -596,17 +695,21 @@ PortfolioController.prototype.createTrade = function (portfolio, amount, price) 
     this.model.saveTrade(portfolio, trade);
     this.view.addTrade(portfolio, trade);
 
-    this.view.updateTrade(trade, this.getInvestmentReturn(trade));
+    this.updateReturns();
 }
 
 PortfolioController.prototype.deletePortfolio = function (guid) {
     this.model.deletePortfolio(guid);
     this.view.removePortfolio(guid);
+
+    this.updateReturns();
 }
 
 PortfolioController.prototype.deleteTrade = function (guid) {
     this.model.deleteTrade(guid);
     this.view.removeTrade(guid);
+
+    this.updateReturns();
 }
 
 function GlobalView() {}
