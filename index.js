@@ -54,6 +54,16 @@ QuotesView.prototype.render = function() {
             description: '(Silver)',
             exchanges: ['bullionvault']
         }, 
+        {
+            name:'USDSLL',
+            description: '(Linden/USD)',
+            exchanges: ['virwox']
+        }, 
+        {
+            name:'BTCSLL',
+            description: '(Linden/Bitcoin)',
+            exchanges: ['virwox']
+        }, 
     ];
 
     var _this = this;
@@ -184,9 +194,15 @@ QuotesView.prototype.renderGenericError = function (error) {
     ));
 }
 
+function QuotesModel() {}
+
 function QuotesController(view, model) {
     this.view = view;
     this.model = model;
+}
+
+QuotesController.prototype.start = function () {
+    this.view.render();
 }
 
 QuotesController.prototype.onPriceUpdated = function (price) {
@@ -203,54 +219,51 @@ QuotesController.prototype.onError = function (error) {
 // End Quotes section
 
 // Portfolio section
-var portfolioData = undefined;
-
-function savePortfolioData() {
-    localStorage["portfolioData"] = JSON.stringify(portfolioData);
+function PortfolioModel() {
+    this.data = undefined;
 }
 
-function loadPortfolioData() {
-    portfolioData = JSON.parse(localStorage["portfolioData"] || null) || [];
+PortfolioModel.prototype.save = function () {
+    localStorage["portfolio.data"] = JSON.stringify(this.data);
 }
 
-function renderPortfolioData() {
-    portfolioData.forEach(function(portfolio) {
-        addPortfolio(portfolio);
-        portfolio.trades.forEach(function(trade) {
-            addTrade(portfolio, trade);
-        });
-    });
+PortfolioModel.prototype.load = function () {
+    this.data = JSON.parse(localStorage["portfolio.data"] || null) || [];
 }
 
-//
-function savePortfolio(portfolio) {
-    portfolioData.push(portfolio);
-    savePortfolioData();
+PortfolioModel.prototype.savePortfolio = function (portfolio) {
+    this.data.push(portfolio);
+    this.save();
 }
 
-function deletePortfolio(guid) {
-    portfolioData.forEach(function(portfolio, index) {
+PortfolioModel.prototype.deletePortfolio = function (guid) {
+    var _this = this;
+
+    this.data.forEach(function(portfolio, index) {
         if (portfolio.guid == guid) {
-            portfolioData.splice(index, 1);
+            _this.data.splice(index, 1);
         }
     });
 
-    savePortfolioData();
+    this.save();
 }
 
-//
-function saveTrade(portfolio, trade) {
-    portfolioData.forEach(function(portfolio_) {
+PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
+    var _this = this;
+
+    this.data.forEach(function(portfolio_) {
         if (portfolio_.guid == portfolio.guid) {
             portfolio_.trades.push(trade);
         }
     });
 
-    savePortfolioData();
+    this.save();
 }
 
-function deleteTrade(guid) {
-    portfolioData.forEach(function(portfolio) {
+PortfolioModel.prototype.deleteTrade = function (guid) {
+    var _this = this;
+
+    this.data.forEach(function(portfolio) {
         portfolio.trades.forEach(function(trade, index) {
             if (trade.guid == guid) {
                 portfolio.trades.splice(index, 1);
@@ -258,11 +271,29 @@ function deleteTrade(guid) {
         });
     });
 
-    savePortfolioData();
+    this.save();
 }
 
-//
-function renderTrade(portfolio, trade) {
+function PortfolioView() {
+    this.controller = undefined;
+}
+
+PortfolioView.prototype.setController = function (controller) {
+    this.controller = controller;
+}
+
+PortfolioView.prototype.render = function (data) {
+    var _this = this;
+
+    data.forEach(function(portfolio) {
+        _this.addPortfolio(portfolio);
+        portfolio.trades.forEach(function(trade) {
+            _this.addTrade(portfolio, trade);
+        });
+    });
+}
+
+PortfolioView.prototype.renderTrade = function(portfolio, trade) {
     var btc_price = 500,
         inv_value = trade.amount * btc_price,
         ind_price = trade.price / trade.amount,
@@ -305,25 +336,25 @@ function renderTrade(portfolio, trade) {
     );
 }
 
-function addTrade(portfolio, trade) {
+PortfolioView.prototype.addTrade = function(portfolio, trade) {
+    var _this = this;
+
     $__("#portfolio-", portfolio.guid, "-trades").append(
-        renderTrade(portfolio, trade)
+        this.renderTrade(portfolio, trade)
     );
 
     $__("#btn-", trade.guid, "-remove").click(function (event) {
         event.preventDefault();
-
-        deleteTrade(trade.guid);
-        removeTrade(trade.guid);
+        _this.controller.deleteTrade(trade.guid);
     });
 }
 
-function removeTrade(guid) {
+PortfolioView.prototype.removeTrade = function(guid) {
     $__("#trade-", guid).remove();
 }
 
 //
-function renderPortfolio(portfolio) {
+PortfolioView.prototype.renderPortfolio = function(portfolio) {
     return $__(
         '<div class="panel panel-default" ',
         '     id="portfolio-', portfolio.guid, '">',
@@ -375,8 +406,10 @@ function renderPortfolio(portfolio) {
     );
 }
 
-function addPortfolio(portfolio) {
-    $("#portfolios").append(renderPortfolio(portfolio));
+PortfolioView.prototype.addPortfolio = function(portfolio) {
+    var _this = this;
+
+    $("#portfolios").append(this.renderPortfolio(portfolio));
 
     $__("#btn-", portfolio.guid, "-add").click(function (event) {
         event.preventDefault();
@@ -404,32 +437,21 @@ function addPortfolio(portfolio) {
         if (valid) {
             $__(amount_selector, " > div > :input").val("");
             $__(price_selector, " > div > :input").val("");
-
-            var trade = {
-                guid: guid(),
-                amount: amount,
-                price: price
-            };
-
-            saveTrade(portfolio, trade);
-            addTrade(portfolio, trade);
+            _this.controller.createTrade(portfolio, amount, price);
         }
     });
 
     $__("#btn-", portfolio.guid, "-remove").click(function (event) {
         event.preventDefault();
-
-        deletePortfolio(portfolio.guid);
-        removePortfolio(portfolio.guid);
+        _this.controller.deletePortfolio(portfolio.guid);
     });
 }
 
-function removePortfolio(guid) {
+PortfolioView.prototype.removePortfolio = function(guid) {
     $__("#portfolio-", guid).remove();
 }
 
-//
-function hookPortfolioButtons() {
+PortfolioView.prototype.start = function(controller) {
     $("#btn-create-portfolio").click(function (event) {
         event.preventDefault();
 
@@ -443,17 +465,55 @@ function hookPortfolioButtons() {
             $(input_selector).removeClass("has-error");
             $(value_selector).val(""); 
 
-            var portfolio = {
-                guid: guid(),
-                name: portfolio_name,
-                trades: [],
-            };
-
-            savePortfolio(portfolio);
-            addPortfolio(portfolio);
+            controller.createPortfolio(portfolio_name);
         }
     });
 }
+
+function PortfolioController(view, model) {
+    this.view = view;
+    this.model = model;
+
+    this.view.setController(this);
+}
+
+PortfolioController.prototype.start = function () {
+    this.model.load();
+    this.view.start(this);
+    this.view.render(this.model.data);
+}
+
+PortfolioController.prototype.createPortfolio = function (name) {
+    var portfolio = {
+        guid: guid(),
+        name: name,
+        trades: [],
+    };
+
+    this.model.savePortfolio(portfolio);
+    this.view.addPortfolio(portfolio);
+}
+
+PortfolioController.prototype.createTrade = function (portfolio, amount, price) {
+    var trade = {
+        guid: guid(),
+        amount: amount,
+        price: price
+    };
+
+    this.model.saveTrade(portfolio, trade);
+    this.view.addTrade(portfolio, trade);
+}
+
+PortfolioController.prototype.deletePortfolio = function (guid) {
+    this.model.deletePortfolio(guid);
+    this.view.removePortfolio(guid);
+}
+PortfolioController.prototype.deleteTrade = function (guid) {
+    this.model.deleteTrade(guid);
+    this.view.removeTrade(guid);
+}
+
 // End Portfolio section
 
 function GlobalView() {}
@@ -479,20 +539,31 @@ GlobalView.prototype.activateSection = function (section) {
     $__(".navbar-button[target='", section, "']").click();
 }
 
+function GlobalController(view) {
+    this.view = view;
+}
+
+GlobalController.prototype.start = function() {
+    this.view.hookSidebarButtons();
+    this.view.activateSection("portfolio");
+}
+
 function main() {
     global_view = new GlobalView();
+    global_controller = new GlobalController(global_view);
+
     quotes_view = new QuotesView();
-    quotes_controller = new QuotesController(quotes_view, null);
+    quotes_model = new QuotesModel();
+    quotes_controller = new QuotesController(quotes_view, quotes_model);
 
-    global_view.hookSidebarButtons();
-    //global_view.activateSection("quotes");
-    global_view.activateSection("portfolio");
+    portfolio_view = new PortfolioView();
+    portfolio_model = new PortfolioModel();
+    portfolio_controller = new PortfolioController(portfolio_view, 
+                                                   portfolio_model);
 
-    quotes_view.render();
-
-    hookPortfolioButtons();
-    loadPortfolioData();
-    renderPortfolioData();
+    global_controller.start();
+    quotes_controller.start();
+    portfolio_controller.start();
 
     // initalize WS connection:
     var wsclient = new WSClient();
