@@ -78,12 +78,12 @@ QuotesView.prototype.render = function() {
 
     var _this = this;
     symbols.forEach(function(symbol) {
-        _this.renderSymbol(symbol);
+        _this.addSymbol(symbol);
     });
 }
 
 QuotesView.prototype.renderSymbol = function (symbol) {
-    $("#main-quotes").append($__(
+    return $__(
         '<div class="row">',
         '  <div class="row" style="margin-left: 10px;">',
         '    <h3>', symbol.name, 
@@ -108,64 +108,74 @@ QuotesView.prototype.renderSymbol = function (symbol) {
         '<div style="margin-top: 10px" ',
         '     id="prices-body-', symbol.name, '">',
         '</div>'
-    ));
+    );
+}
+
+QuotesView.prototype.addSymbol = function (symbol) {
+    $("#main-quotes").append(this.renderSymbol(symbol));
 
     var _this = this;
     symbol.exchanges.forEach(function(exchange) {
-        _this.renderExchangeForSymbol(symbol, exchange);
+        _this.addExchangeForSymbol(symbol, exchange);
     });
 }
 
 QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
     var base_id = __(symbol.name, '-', exchange);
 
+    return $__(
+        '<div class="row">',
+        '  <div class="col-xs-4 col-sm-2 col-md-3"',
+        '       style="padding-left: 25px;">', 
+        '    <h5>', exchange, '</h5>',
+        '  </div>',
+        '  <div class="col-xs-8 col-sm-10 col-md-9"',
+        '       id="', base_id, '-progress">',
+        '    <div class="progress progress-striped active">',
+        '      <div class="progress-bar" style="width: 100%">',
+        '      </div>',
+        '    </div>',
+        '  </div>',
+        '  <div class="col-xs-8 col-sm-10 col-md-9 hide"',
+        '       id="', base_id, '-error">',
+        '    <div class="alert alert-danger">',
+        '      <strong>Error</strong>',
+        '      <span id="', base_id, '-error-msg"></span>',
+        '    </div>',
+        '  </div>',
+        '  <div id="', base_id, '-prices" class="hide">',
+        '    <div class="col-xs-4 col-sm-2 col-md-2">',
+        '      <h4>',
+        '        <span class="label label-primary" ',
+        '            id="', base_id, '-buy">',
+        '        </span>',
+        '      </h4>',
+        '    </div>',
+        '    <div class="col-xs-4 col-sm-2 col-md-2">',
+        '      <h4>',
+        '        <span class="label label-primary" ',
+        '              id="', base_id, '-sell">',
+        '        </span>',
+        '      </h4>',
+        '    </div>',
+        '    <div class="hidden-xs col-sm-6 col-md-5">',
+        '      <h4>',
+        '        <small>',
+        '          <span id="', base_id, '-updated_on">',
+        '          </span>',
+        '        </small>',
+        '      </h4>',
+        '    </div>',
+        '  </div>',
+        '</div>'
+    );
+}
+
+QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
+    var base_id = __(symbol.name, '-', exchange);
+
     $__('#prices-body-', symbol.name).append(
-        $__(
-            '<div class="row">',
-            '  <div class="col-xs-4 col-sm-2 col-md-3"',
-            '       style="padding-left: 25px;">', 
-            '    <h5>', exchange, '</h5>',
-            '  </div>',
-            '  <div class="col-xs-8 col-sm-10 col-md-9"',
-            '       id="', base_id, '-progress">',
-            '    <div class="progress progress-striped active">',
-            '      <div class="progress-bar" style="width: 100%">',
-            '      </div>',
-            '    </div>',
-            '  </div>',
-            '  <div class="col-xs-8 col-sm-10 col-md-9 hide"',
-            '       id="', base_id, '-error">',
-            '    <div class="alert alert-danger">',
-            '      <strong>Error</strong>',
-            '      <span id="', base_id, '-error-msg"></span>',
-            '    </div>',
-            '  </div>',
-            '  <div id="', base_id, '-prices" class="hide">',
-            '    <div class="col-xs-4 col-sm-2 col-md-2">',
-            '      <h4>',
-            '        <span class="label label-primary" ',
-            '            id="', base_id, '-buy">',
-            '        </span>',
-            '      </h4>',
-            '    </div>',
-            '    <div class="col-xs-4 col-sm-2 col-md-2">',
-            '      <h4>',
-            '        <span class="label label-primary" ',
-            '              id="', base_id, '-sell">',
-            '        </span>',
-            '      </h4>',
-            '    </div>',
-            '    <div class="hidden-xs col-sm-6 col-md-5">',
-            '      <h4>',
-            '        <small>',
-            '          <span id="', base_id, '-updated_on">',
-            '          </span>',
-            '        </small>',
-            '      </h4>',
-            '    </div>',
-            '  </div>',
-            '</div>'
-        )
+        this.renderExchangeForSymbol(symbol, exchange)
     );
 }
 
@@ -204,7 +214,26 @@ QuotesView.prototype.renderGenericError = function (error) {
     ));
 }
 
-function QuotesModel() {}
+function QuotesModel() {
+    this.quotes = {}
+}
+
+QuotesModel.prototype.updateQuote = function(quote) {
+    if (!(quote.symbol in this.quotes))
+        this.quotes[quote.symbol] = {}
+
+    this.quotes[quote.symbol][quote.exchange] = quote;
+}
+
+QuotesModel.prototype.getQuote = function(symbol, exchange) {
+    if (!(symbol in this.quotes))
+        return;
+
+    if (!(exchange in this.quotes[symbol]))
+        return;
+    
+    return this.quotes[symbol][exchange];
+}
 
 function QuotesController(view, model) {
     this.view = view;
@@ -216,6 +245,7 @@ QuotesController.prototype.start = function () {
 }
 
 QuotesController.prototype.onPriceUpdated = function (price) {
+    this.model.updateQuote(price);
     this.view.renderPrice(price);
 }
 
@@ -225,6 +255,10 @@ QuotesController.prototype.onError = function (error) {
     } else {
         this.view.renderPriceError(error);
     }
+}
+
+QuotesController.prototype.getQuote = function (symbol, exchange) {
+    return this.model.getQuote(symbol, exchange);
 }
 
 function PortfolioModel() {
@@ -301,13 +335,23 @@ PortfolioView.prototype.render = function (data) {
     });
 }
 
-PortfolioView.prototype.renderTrade = function(portfolio, trade) {
-    var btc_price = 500,
-        inv_value = trade.amount * btc_price,
-        ind_price = trade.price / trade.amount,
-        profit = inv_value - trade.price,
-        gain = (inv_value/trade.price) * 100 - 100;
+PortfolioView.prototype.updateTrade = function(trade, return_) {
+    var base_selector = __('#trade-', trade.guid);
 
+    if (!return_)
+        return;
+    
+    $__(base_selector, '-current-value').html(return_.current_value.toFixed(2));
+    $__(base_selector, '-profit').html(return_.profit.toFixed(2));
+
+    $__(base_selector, '-gain').html(__(return_.gain.toFixed(2), '%'));
+    $__(base_selector, '-gain').removeClass('label-default');
+    $__(base_selector, '-gain').addClass(
+        return_.gain < 0 ? 'label-danger' : 'label-success'
+    );
+}
+
+PortfolioView.prototype.renderTrade = function(portfolio, trade) {
     return $__(
         '<li class="list-group-item" ',
         '    id="trade-', trade.guid, '">', 
@@ -316,21 +360,27 @@ PortfolioView.prototype.renderTrade = function(portfolio, trade) {
         '      <h5>',
         '        <strong>', trade.amount, '</strong> BTC for ',
         '        <strong>', trade.price, '</strong>$',
-        '        (', ind_price.toFixed(2), '$/BTC)',
+        '        (', (trade.price / trade.amount).toFixed(2), '$/BTC)',
         '      </h5>',
         '    </div>',
-        '    <div class="col-md-4">',
+        '    <div class="col-md-5">',
         '      <h5>',
-        '        Current value: <strong>', inv_value, '</strong>$',
-        '        Profit: <strong>', profit, '</strong>$',
+        '        Current value: ',
+        '        <strong>',
+        '          <span id="trade-', trade.guid, '-current-value">',
+        '          ??</span>',
+        '        </strong>$',
+        '        Profit: <strong>',
+        '          <span id="trade-', trade.guid, '-profit">',
+        '          ??</span>',
+        '        </strong>$',
         '      </h5>',
         '    </div>',
-        '    <div class="col-md-3">',
+        '    <div class="col-md-2">',
         '      <h4>', 
-        '        <span class="label label-', 
-                   (gain < 0 ? 'danger' : 'success'), '">',
-                   gain.toFixed(2).toString(), "%",
-        '        </span>',
+        '        <span class="label label-default" ',
+        '              id="trade-', trade.guid, '-gain">',
+        '        ??.??</span>',
         '      </h4>',
         '    </div>',
         '    <div class="col-md-1">',
@@ -482,12 +532,47 @@ function PortfolioController(view, model) {
     this.model = model;
 
     this.view.setController(this);
+    this.quotes_controller = undefined;
+}
+
+PortfolioController.prototype.setQuotesController = function(controller) {
+    this.quotes_controller = controller;
 }
 
 PortfolioController.prototype.start = function () {
     this.model.load();
     this.view.start(this);
     this.view.render(this.model.data);
+}
+
+PortfolioController.prototype.getInvestmentReturn = function (investment) {
+    // TODO: make the choice dynamic:
+    var quote = this.quotes_controller.getQuote('BTCUSD', 'coinbase');
+
+    if (!quote) 
+        return undefined;
+
+    var current_value = investment.amount * quote.buy,
+        profit = current_value - investment.price,
+        gain = (current_value / investment.price) - 1;
+    
+    return {
+        current_value: current_value,
+        profit: profit,
+        gain: gain
+    }
+}
+
+PortfolioController.prototype.onPriceUpdated = function (price) {
+    var _this = this;
+
+    this.model.data.forEach(function (prototype) {
+        prototype.trades.forEach(function (trade) {
+            _this.view.updateTrade(trade, 
+                _this.getInvestmentReturn(trade)
+            );
+        })
+    })
 }
 
 PortfolioController.prototype.createPortfolio = function (name) {
@@ -510,6 +595,8 @@ PortfolioController.prototype.createTrade = function (portfolio, amount, price) 
 
     this.model.saveTrade(portfolio, trade);
     this.view.addTrade(portfolio, trade);
+
+    this.view.updateTrade(trade, this.getInvestmentReturn(trade));
 }
 
 PortfolioController.prototype.deletePortfolio = function (guid) {
@@ -566,6 +653,7 @@ function main() {
     portfolio_model = new PortfolioModel();
     portfolio_controller = new PortfolioController(portfolio_view, 
                                                    portfolio_model);
+    portfolio_controller.setQuotesController(quotes_controller);
 
     global_controller.start();
     quotes_controller.start();
@@ -585,6 +673,7 @@ function main() {
 
         client.addHandler("onPriceUpdated", function(price) {
             quotes_controller.onPriceUpdated(price);
+            portfolio_controller.onPriceUpdated(price);
         });
 
         client.addHandler("onError", function (error) {
