@@ -84,10 +84,16 @@
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
              id="main-portfolio">
           <h1 class="page-header">
-            Portfolio
+            <div style="padding-bottom: 10px;">
+              Portfolio
+              <span class="label label-default" style="margin-left: 20px;"
+                    id="global-gain">
+                0.00%
+              </span>
+            </div>
           </h1>
             <div class="row">
-              <div class="col-md-4">
+              <div class="col-sm-6">
                 <h5>
                   <div>
                     Total holdings: 
@@ -100,49 +106,43 @@
                   <div>
                     Total cost: 
                     <strong>
-                      <span id="global-cost">
+                      $<span id="global-cost">
                         0
-                      </span>$
+                      </span>
                     </strong>
                   </div>
                   <div>
-                    Avg:  
-                    <span id="global-avg-price">
+                    Average price:  
+                    $<span id="global-avg-price">
                       0
-                    </span>$/BTC
+                    </span>/BTC
                   </div>
                 </h5>
               </div>
-              <div class="col-md-5">
+              <div class="col-sm-6">
                 <h5>
                   <div>
                     Current value: 
                     <strong>
-                      <span id="global-current-value">
+                      $<span id="global-current-value">
                         0
                       </span>
-                    </strong>$
+                    </strong>
                   </div>
                   <div>
                     Profit: <strong>
-                      <span id="global-profit">
+                      $<span id="global-profit">
                         0
                       </span>
-                    </strong>$
+                    </strong>
                   </div>
                 </h5>
               </div>
-              <div class="col-md-2">
-                <h2> 
-                  <span class="label label-default" 
-                        id="global-gain">
-                    0.00%
-                  </span>
-                </h2>
-              </div>
             </div>
 
-          <div id="portfolios">            
+          <hr>
+
+          <div id="portfolios">
           </div>
 
           <form class="form-inline" role="form" id="form-new-portfolio">

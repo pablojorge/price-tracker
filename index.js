@@ -180,12 +180,12 @@ QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
 }
 
 QuotesView.prototype.renderPrice = function (price) {
-    var base_selector = __("#", price.symbol, "-", price.exchange),
-        prices_selector = __(base_selector, "-prices"),
-        buy_selector = __(base_selector, "-buy"),
-        sell_selector = __(base_selector, "-sell"),
-        updated_on_selector = __(base_selector, "-updated_on"),
-        progress_selector = __(base_selector, "-progress");
+    var selector_base = __("#", price.symbol, "-", price.exchange),
+        prices_selector = __(selector_base, "-prices"),
+        buy_selector = __(selector_base, "-buy"),
+        sell_selector = __(selector_base, "-sell"),
+        updated_on_selector = __(selector_base, "-updated_on"),
+        progress_selector = __(selector_base, "-progress");
     
     $(buy_selector).html(price.buy.toFixed(2));
     $(sell_selector).html(price.sell.toFixed(2));
@@ -196,10 +196,10 @@ QuotesView.prototype.renderPrice = function (price) {
 }
 
 QuotesView.prototype.renderPriceError = function (error) {
-    var base_selector = __("#", error.info.symbol, "-", error.info.exchange),
-        error_selector = __(base_selector, "-error"),
-        error_msg_selector = __(base_selector, "-error-msg"),
-        progress_selector = __(base_selector, "-progress");
+    var selector_base = __("#", error.info.symbol, "-", error.info.exchange),
+        error_selector = __(selector_base, "-error"),
+        error_msg_selector = __(selector_base, "-error-msg"),
+        progress_selector = __(selector_base, "-progress");
 
     $(error_msg_selector).html(error.message);
 
@@ -335,62 +335,48 @@ PortfolioView.prototype.render = function (data) {
     });
 }
 
-PortfolioView.prototype.updateTrade = function(trade, return_) {
-    var base_selector = __('#trade-', trade.guid);
+PortfolioView.prototype.updateTradeReturn = function(trade, investment) {
+    var selector_base = __('#trade-', trade.guid);
 
-    if (!return_)
-        return;
-    
-    $__(base_selector, '-current-value').html(return_.current_value.toFixed(2));
-    $__(base_selector, '-profit').html(return_.profit.toFixed(2));
-
-    $__(base_selector, '-gain').html(__((return_.gain * 100).toFixed(2), '%'));
-    $__(base_selector, '-gain').removeClass('label-default');
-    $__(base_selector, '-gain').addClass(
-        return_.gain < 0 ? 'label-danger' : 'label-success'
-    );
+    this.updateInvestment(selector_base, investment);
 }
 
 PortfolioView.prototype.renderTrade = function(portfolio, trade) {
     return $__(
         '<li class="list-group-item" ',
         '    id="trade-', trade.guid, '">', 
+        '  <button type="button" class="close" aria-hidden="true"',
+        '          id="btn-', trade.guid, '-remove">', 
+        '    &times;',
+        '  </button>',
         '  <div class="row">',
-        '    <div class="col-md-4">',
+        '    <div class="col-sm-6">',
         '      <h5>',
         '        <strong>', trade.amount, ' BTC</strong> for ',
         '        <strong>', trade.price, '$</strong>',
         '        (', (trade.price / trade.amount).toFixed(2), '$/BTC)',
         '      </h5>',
-        '    </div>',
-        '    <div class="col-md-5">',
         '      <h5>',
-        '        Current value: ',
+        '        Value: ',
         '        <strong>',
-        '          <span id="trade-', trade.guid, '-current-value">',
+        '          $<span id="trade-', trade.guid, '-current-value">',
         '            ??',
         '          </span>',
-        '        </strong>$',
+        '        </strong>',
         '        Profit: <strong>',
-        '          <span id="trade-', trade.guid, '-profit">',
+        '          $<span id="trade-', trade.guid, '-profit">',
         '            ??',
         '          </span>',
-        '        </strong>$',
+        '        </strong>',
         '      </h5>',
         '    </div>',
-        '    <div class="col-md-2">',
+        '    <div class="col-sm-6">',
         '      <h4>', 
         '        <span class="label label-default" ',
         '              id="trade-', trade.guid, '-gain">',
         '          ??.??',
         '        </span>',
         '      </h4>',
-        '    </div>',
-        '    <div class="col-md-1">',
-        '      <button type="button" class="close" aria-hidden="true"',
-        '              id="btn-', trade.guid, '-remove">', 
-        '        &times;',
-        '      </button>',
         '    </div>',
         '  </div>',
         '</li>'
@@ -419,15 +405,20 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
         '<div class="panel panel-default" ',
         '     id="portfolio-', portfolio.guid, '">',
         '  <div class="panel-heading">',
-        '    <strong>', portfolio.name, '</strong>',
         '    <button type="button" class="close" aria-hidden="true"',
         '            id="btn-', portfolio.guid,'-remove">', 
         '      &times;',
         '    </button>',
+        '    <h4>', portfolio.name, 
+        '      <span class="label label-default" style="margin-left: 15px"',
+        '          id="portfolio-', portfolio.guid, '-gain">',
+        '        0.00%',
+        '      </span>',
+        '    </h4>',
         '  </div>',
         '  <div class="panel-body" id="portfolio-', portfolio.guid, '-totals">',
         '    <div class="row">',
-        '      <div class="col-md-4">',
+        '      <div class="col-sm-6">',
         '        <h5>',
         '          <div>',
         '            Portfolio holdings: ',
@@ -440,45 +431,37 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
         '          <div>',
         '            Portfolio cost: ',
         '            <strong>',
-        '              <span id="portfolio-', portfolio.guid, '-cost">',
+        '              $<span id="portfolio-', portfolio.guid, '-cost">',
         '                0',
-        '              </span>$',
+        '              </span>',
         '            </strong>',
         '          </div>',
         '          <div>',
         '            Avg: ', 
-        '            <span id="portfolio-', portfolio.guid, '-avg-price">',
+        '            $<span id="portfolio-', portfolio.guid, '-avg-price">',
         '              0',
-        '            </span>$/BTC',
+        '            </span>/BTC',
         '          </div>',
         '        </h5>',
         '      </div>',
-        '      <div class="col-md-5">',
+        '      <div class="col-sm-6">',
         '        <h5>',
         '          <div>',
         '            Current value: ',
         '            <strong>',
-        '              <span id="portfolio-', portfolio.guid, '-current-value">',
+        '              $<span id="portfolio-', portfolio.guid, '-current-value">',
         '                0',
         '              </span>',
-        '            </strong>$',
+        '            </strong>',
         '          </div>',
         '          <div>',
         '            Profit: <strong>',
-        '              <span id="portfolio-', portfolio.guid, '-profit">',
+        '              $<span id="portfolio-', portfolio.guid, '-profit">',
         '                0',
         '              </span>',
-        '            </strong>$',
+        '            </strong>',
         '          </div>',
         '        </h5>',
-        '      </div>',
-        '      <div class="col-md-2">',
-        '        <h3>', 
-        '          <span class="label label-default" ',
-        '                id="portfolio-', portfolio.guid, '-gain">',
-        '            0.00%',
-        '          </span>',
-        '        </h3>',
         '      </div>',
         '    </div>',
         '  </div>',
@@ -488,7 +471,7 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
         '    <li class="list-group-item">',
         '      <form class="form-inline" role="form">',
         '        <div class="row">',
-        '          <div class="form-group col-md-3" ',
+        '          <div class="form-group col-md-4" ',
         '               id="input-', portfolio.guid, '-amount">',
         '            <div class="input-group">',
         '              <input type="number" step="any" ',
@@ -497,7 +480,7 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
         '              <span class="input-group-addon">BTC</span>',
         '            </div>',
         '          </div>',
-        '          <div class="form-group col-md-3" ',
+        '          <div class="form-group col-md-4" ',
         '               id="input-', portfolio.guid, '-price">',
         '            <div class="input-group">',
         '              <input type="number" step="any"',
@@ -506,7 +489,7 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
         '              <span class="input-group-addon">USD</span>',
         '            </div>', 
         '          </div>',
-        '          <div class="col-md-3">',
+        '          <div class="col-md-2">',
         '            <button class="btn btn-primary"',
         '                    id="btn-', portfolio.guid, '-add" >',
         '            <span class="glyphicon glyphicon-plus"></span>',
@@ -563,25 +546,9 @@ PortfolioView.prototype.addPortfolio = function(portfolio) {
 }
 
 PortfolioView.prototype.updatePortfolioReturn = function(portfolio, holdings, return_) {
-    var base_selector = __('#portfolio-', portfolio.guid);
+    var selector_base = __('#portfolio-', portfolio.guid);
 
-    if (!return_)
-        return;
-
-    $__(base_selector, '-holdings').html(holdings.amount.toFixed(2));
-    $__(base_selector, '-cost').html(holdings.price.toFixed(2));
-    $__(base_selector, '-avg-price').html(
-        (holdings.price/holdings.amount).toFixed(2)
-    );
-    
-    $__(base_selector, '-current-value').html(return_.current_value.toFixed(2));
-    $__(base_selector, '-profit').html(return_.profit.toFixed(2));
-
-    $__(base_selector, '-gain').html(__((return_.gain * 100).toFixed(2), '%'));
-    $__(base_selector, '-gain').removeClass('label-default');
-    $__(base_selector, '-gain').addClass(
-        return_.gain < 0 ? 'label-danger' : 'label-success'
-    );
+    this.updateInvestment(selector_base, holdings, return_);
 }
 
 PortfolioView.prototype.removePortfolio = function(guid) {
@@ -589,22 +556,27 @@ PortfolioView.prototype.removePortfolio = function(guid) {
 }
 
 PortfolioView.prototype.updateGlobalReturn = function(holdings, return_) {
-    if (!return_)
+    this.updateInvestment("#global", holdings, return_);
+}
+
+PortfolioView.prototype.updateInvestment = function(selector_base, investment) {
+    if (!investment)
         return;
 
-    $__('#global-holdings').html(holdings.amount.toFixed(2));
-    $__('#global-cost').html(holdings.price.toFixed(2));
-    $__('#global-avg-price').html(
-        (holdings.price/holdings.amount).toFixed(2)
-    );
+    $__(selector_base, '-holdings').html(investment.holdings.toFixed(2));
+    $__(selector_base, '-cost').html(investment.cost.toFixed(2));
+    $__(selector_base, '-avg-price').html(investment.average.toFixed(2));
     
-    $__('#global-current-value').html(return_.current_value.toFixed(2));
-    $__('#global-profit').html(return_.profit.toFixed(2));
+    $__(selector_base, '-current-value').html(investment.current_value.toFixed(2));
+    $__(selector_base, '-profit').html(investment.profit.toFixed(2));
 
-    $__('#global-gain').html(__((return_.gain * 100).toFixed(2), '%'));
-    $__('#global-gain').removeClass('label-default');
-    $__('#global-gain').addClass(
-        return_.gain < 0 ? 'label-danger' : 'label-success'
+    $__(selector_base, '-gain').html(__(
+        investment.gain < 0 ? '' : '+', (investment.gain * 100).toFixed(2), '%'
+    ));
+
+    $__(selector_base, '-gain').removeClass('label-default');
+    $__(selector_base, '-gain').addClass(
+        investment.gain < 0 ? 'label-danger' : 'label-success'
     );
 }
 
@@ -645,18 +617,24 @@ PortfolioController.prototype.start = function () {
     this.view.render(this.model.data);
 }
 
-PortfolioController.prototype.getInvestmentReturn = function (investment) {
+PortfolioController.prototype.getInvestmentInfo = function (investment) {
     // TODO: make the choice dynamic:
     var quote = this.quotes_controller.getQuote('BTCUSD', 'coinbase');
 
     if (!quote) 
         return undefined;
 
-    var current_value = investment.amount * quote.buy,
+    var average = ((investment.amount > 0) 
+                     ? (investment.price / investment.amount) : 0),
+        current_value = investment.amount * quote.buy,
         profit = current_value - investment.price,
-        gain = (current_value / investment.price) - 1;
+        gain = ((investment.price > 0 && investment.amount > 0) 
+                 ? (current_value / investment.price) - 1 : 0);
     
     return {
+        holdings: investment.amount,
+        cost: investment.price,
+        average: average,
         current_value: current_value,
         profit: profit,
         gain: gain
@@ -664,10 +642,10 @@ PortfolioController.prototype.getInvestmentReturn = function (investment) {
 }
 
 PortfolioController.prototype.onPriceUpdated = function (price) {
-    this.updateReturns();
+    this.updateInvestments();
 }
 
-PortfolioController.prototype.updateReturns = function() {
+PortfolioController.prototype.updateInvestments = function() {
     var _this = this;
 
     var global_total = {
@@ -685,9 +663,9 @@ PortfolioController.prototype.updateReturns = function() {
             portfolio_total.amount += trade.amount;
             portfolio_total.price += trade.price;
 
-            _this.view.updateTrade(
+            _this.view.updateTradeReturn(
                 trade, 
-                _this.getInvestmentReturn(trade)
+                _this.getInvestmentInfo(trade)
             );
         });
 
@@ -696,15 +674,11 @@ PortfolioController.prototype.updateReturns = function() {
 
         _this.view.updatePortfolioReturn(
             portfolio,
-            portfolio_total, 
-            _this.getInvestmentReturn(portfolio_total)
+            _this.getInvestmentInfo(portfolio_total)
         );
-    })
+    });
 
-    _this.view.updateGlobalReturn(
-        global_total, 
-        _this.getInvestmentReturn(global_total)
-    );
+    _this.view.updateGlobalReturn(_this.getInvestmentInfo(global_total));
 }
 
 PortfolioController.prototype.createPortfolio = function (name) {
@@ -716,6 +690,8 @@ PortfolioController.prototype.createPortfolio = function (name) {
 
     this.model.savePortfolio(portfolio);
     this.view.addPortfolio(portfolio);
+
+    this.updateInvestments();
 }
 
 PortfolioController.prototype.createTrade = function (portfolio, amount, price) {
@@ -728,21 +704,21 @@ PortfolioController.prototype.createTrade = function (portfolio, amount, price) 
     this.model.saveTrade(portfolio, trade);
     this.view.addTrade(portfolio, trade);
 
-    this.updateReturns();
+    this.updateInvestments();
 }
 
 PortfolioController.prototype.deletePortfolio = function (guid) {
     this.model.deletePortfolio(guid);
     this.view.removePortfolio(guid);
 
-    this.updateReturns();
+    this.updateInvestments();
 }
 
 PortfolioController.prototype.deleteTrade = function (guid) {
     this.model.deleteTrade(guid);
     this.view.removeTrade(guid);
 
-    this.updateReturns();
+    this.updateInvestments();
 }
 
 function GlobalView() {}
