@@ -562,7 +562,7 @@ PortfolioView.prototype.addPortfolio = function(portfolio) {
     });
 }
 
-PortfolioView.prototype.updatePortfolio = function(portfolio, holdings, return_) {
+PortfolioView.prototype.updatePortfolioReturn = function(portfolio, holdings, return_) {
     var base_selector = __('#portfolio-', portfolio.guid);
 
     if (!return_)
@@ -586,6 +586,26 @@ PortfolioView.prototype.updatePortfolio = function(portfolio, holdings, return_)
 
 PortfolioView.prototype.removePortfolio = function(guid) {
     $__("#portfolio-", guid).remove();
+}
+
+PortfolioView.prototype.updateGlobalReturn = function(holdings, return_) {
+    if (!return_)
+        return;
+
+    $__('#global-holdings').html(holdings.amount.toFixed(2));
+    $__('#global-cost').html(holdings.price.toFixed(2));
+    $__('#global-avg-price').html(
+        (holdings.price/holdings.amount).toFixed(2)
+    );
+    
+    $__('#global-current-value').html(return_.current_value.toFixed(2));
+    $__('#global-profit').html(return_.profit.toFixed(2));
+
+    $__('#global-gain').html(__((return_.gain * 100).toFixed(2), '%'));
+    $__('#global-gain').removeClass('label-default');
+    $__('#global-gain').addClass(
+        return_.gain < 0 ? 'label-danger' : 'label-success'
+    );
 }
 
 PortfolioView.prototype.start = function(controller) {
@@ -650,6 +670,11 @@ PortfolioController.prototype.onPriceUpdated = function (price) {
 PortfolioController.prototype.updateReturns = function() {
     var _this = this;
 
+    var global_total = {
+        amount: 0,
+        price: 0
+    };
+
     this.model.data.forEach(function (portfolio) {
         var portfolio_total = {
             amount: 0, 
@@ -666,12 +691,20 @@ PortfolioController.prototype.updateReturns = function() {
             );
         });
 
-        _this.view.updatePortfolio(
+        global_total.amount += portfolio_total.amount;
+        global_total.price += portfolio_total.price;
+
+        _this.view.updatePortfolioReturn(
             portfolio,
             portfolio_total, 
             _this.getInvestmentReturn(portfolio_total)
         );
     })
+
+    _this.view.updateGlobalReturn(
+        global_total, 
+        _this.getInvestmentReturn(global_total)
+    );
 }
 
 PortfolioController.prototype.createPortfolio = function (name) {
