@@ -37,12 +37,12 @@ QuotesView.prototype.render = function() {
         {
             name:'USDARS',
             description: '(Dolar oficial)',
-            exchanges: ['ambito']
+            exchanges: ['ambito', 'lanacion']
         }, 
         {
             name:'USDARSB',
             description: '(Dolar blue)',
-            exchanges: ['ambito']
+            exchanges: ['ambito', 'lanacion']
         }, 
         {
             name:'BTCUSD',
