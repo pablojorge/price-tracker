@@ -1,5 +1,6 @@
 var WebSocketServer = require('ws').Server
   , http = require('http')
+  , async = require('async')
   , express = require('express')
   , request = require('request')
   , cheerio = require('cheerio')
@@ -510,53 +511,42 @@ CoinbasePriceRequester.prototype.constructor = CoinbasePriceRequester;
 CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
     var _this = this;
 
-    function processResponse(error, response, body) {
-        if (error != undefined) {
-            throw ("Error: " + error);
-        }
-        if (response.statusCode != 200) {
-            throw ("Error, status code: " + response.statusCode);
-        }
-        return parseFloat(JSON.parse(body).amount);
-    }
+    async.map(
+        ['http://coinbase.com/api/v1/prices/sell',
+         'http://coinbase.com/api/v1/prices/buy'],
+        function (item, cb) {
+            request(item,
+                function (error, response, body) {
+                    try {
+                        if (error != undefined) {
+                            throw ("Error: " + error);
+                        }
+                        if (response.statusCode != 200) {
+                            throw ("Error, status code: " + response.statusCode);
+                        }
 
-    // We want to invert 'buy' and 'sell' here:
-    function getBuyPrice() {
-        request('http://coinbase.com/api/v1/prices/sell',
-            function (error, response, body) {
-                try {
-                    var buy = processResponse(error, response, body);
-                    getSellPrice(buy);
-                } catch(e) {
-                    errback(e, {
-                        exchange: _this.getExchange(),
-                        symbol: _this.symbol,
-                    });
+                        cb(null, parseFloat(JSON.parse(body).amount));
+                    } catch(e) {
+                        cb(e);
+                    }     
                 }
+            );
+        },
+        function (err, results) {
+            if (err != null) {
+                errback(err, {
+                    exchange: _this.getExchange(),
+                    symbol: _this.symbol,
+                });                
             }
-        );
-    }
 
-    function getSellPrice(buy) {
-        request('http://coinbase.com/api/v1/prices/buy',
-            function (error, response, body) {
-                try {
-                    var sell = processResponse(error, response, body);
-                    callback(new messages.Price(_this.getExchange(), 
-                                                _this.symbol, 
-                                                buy, 
-                                                sell));
-                } catch(e) {
-                    errback(e, {
-                        exchange: _this.getExchange(),
-                        symbol: _this.symbol,
-                    });
-                }
-            }
-        );
-    }
-
-    getBuyPrice();
+            // Yes, we want to invert 'buy' and 'sell' here:
+            callback(new messages.Price(_this.getExchange(), 
+                                        _this.symbol, 
+                                        results[0], 
+                                        results[1]));
+        }
+    );
 };
 
 CoinbasePriceRequester.prototype.processResponse = function (response, body) {
