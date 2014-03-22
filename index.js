@@ -574,7 +574,12 @@ PortfolioView.prototype.updateInvestment = function(selector_base, investment) {
         investment.gain < 0 ? '' : '+', (investment.gain * 100).toFixed(2), '%'
     ));
 
-    $__(selector_base, '-gain').removeClass('label-default');
+    var classes = ['label-default', 'label-danger', 'label-success'];
+
+    classes.forEach(function (label_class) {
+        $__(selector_base, '-gain').removeClass(label_class);
+    });
+    
     $__(selector_base, '-gain').addClass(
         investment.gain < 0 ? 'label-danger' : 'label-success'
     );
