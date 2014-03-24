@@ -86,7 +86,7 @@
           <h1 class="page-header">
             <div style="padding-bottom: 10px;">
               Portfolio
-              <span class="label label-default" style="margin-left: 20px;"
+              <span class="label label-default" style="margin-left: 15px;"
                     id="global-gain">
                 0.00%
               </span>
@@ -98,7 +98,7 @@
                   <div>
                     Total holdings: 
                     <strong> 
-                      <span id="global-holdings">
+                      <span id="global-holdings" style="font-size: x-large;">
                         0
                       </span> BTC
                     </strong>
@@ -106,16 +106,16 @@
                   <div>
                     Total cost: 
                     <strong>
-                      $<span id="global-cost">
+                      <span id="global-cost" style="font-size: large;">
                         0
-                      </span>
+                      </span> USD
                     </strong>
                   </div>
                   <div>
                     Average price:  
-                    $<span id="global-avg-price">
+                    <span id="global-avg-price">
                       0
-                    </span>/BTC
+                    </span> USD/BTC
                   </div>
                 </h5>
               </div>
@@ -124,16 +124,17 @@
                   <div>
                     Current value: 
                     <strong>
-                      $<span id="global-current-value">
+                      <span id="global-current-value"
+                             style="font-size: x-large;">
                         0
-                      </span>
+                      </span> USD
                     </strong>
                   </div>
                   <div>
                     Profit: <strong>
-                      $<span id="global-profit">
+                      <span id="global-profit" style="font-size: large;">
                         0
-                      </span>
+                      </span> USD
                     </strong>
                   </div>
                 </h5>
@@ -145,23 +146,22 @@
           <div id="portfolios">
           </div>
 
-          <form class="form-inline" role="form" id="form-new-portfolio">
-            <span> 
-              Create new portfolio: 
-            </span>
-
-            <div class="form-group" id="input-portfolio-name">
-              <input type="string" 
-                     class="form-control"  
-                     placeholder="Name">
-             </div>
-
-            <button class="btn btn-primary" id="btn-create-portfolio">
-              <span class="glyphicon glyphicon-plus"></span>
-              Create
-            </button>
-
-          </form>          
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <form class="form-inline" role="form" id="form-new-portfolio">
+                <div class="form-group" id="input-portfolio-name">
+                  <input type="string" 
+                         class="form-control"  
+                         placeholder="Name">
+                 </div>
+                <button class="btn btn-primary" id="btn-create-portfolio"
+                        style="margin-left: 10px">
+                  <span class="glyphicon glyphicon-plus"></span>
+                  Create
+                </button>
+              </form>          
+            </div>
+          </div>
         </div>
       </div>
 
