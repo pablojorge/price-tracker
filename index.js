@@ -31,6 +31,37 @@ $__ = function() {
 /**/
 
 function QuotesView() {
+    this.exchanges = {
+        'ambito' : {
+            description: 'Ambito.com',
+            link: 'http://www.ambito.com/economia/mercados/monedas/dolar/',
+        },
+        'lanacion' : {
+            description: 'La Nacion',
+            link: 'http://www.lanacion.com.ar/dolar-hoy-t1369'
+        },
+        'coinbase' : {
+            description: 'Coinbase',
+            link: 'https://coinbase.com/charts',
+        },
+        'bitstamp' : {
+            description: 'Bitstamp',
+            link: 'https://www.bitstamp.net',
+        },
+        'btc-e' : {
+            description: 'BTC-e',
+            link: 'https://btc-e.com',
+        },
+        'bullionvault' : {
+            description: 'BullionVault',
+            link: 'https://www.bullionvault.com',
+        },
+        'virwox' : {
+            description: 'VirWox',
+            link: 'https://www.virwox.com',
+        }
+    };
+
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
@@ -92,20 +123,6 @@ QuotesView.prototype.renderSymbol = function (symbol, info) {
         '    </h3>',
         '  </div>',
         '</div>',
-        '<div class="row">',
-        '  <div class="col-xs-4 col-sm-2 col-md-3">',
-        '    <strong>Exchange</strong>',
-        '  </div>',
-        '  <div class="col-xs-4 col-sm-2 col-md-2">',
-        '    <strong>Buy</strong>',
-        '  </div>',
-        '  <div class="col-xs-4 col-sm-2 col-md-2">',
-        '    <strong>Sell</strong>',
-        '  </div>',
-        '  <div class="hidden-xs col-sm-6 col-md-5">',
-        '    <strong>Updated on</strong>',
-        '  </div>',
-        '</div>',
         '<div style="margin-top: 10px" ',
         '     id="prices-body-', symbol, '">',
         '</div>'
@@ -126,18 +143,23 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
 
     return $__(
         '<div class="row">',
-        '  <div class="col-xs-4 col-sm-2 col-md-3"',
-        '       style="padding-left: 25px;">', 
-        '    <h5>', exchange, '</h5>',
+        '  <div class="col-xs-4 col-sm-3">', 
+        '    <h5>',
+        '       <img src="img/', exchange, '_icon.ico" ',
+        '            width=16 height=16> ', 
+        '       <a href="', this.exchanges[exchange].link,'">',
+                  this.exchanges[exchange].description, 
+        '       </a>',
+        '    </h5>',
         '  </div>',
-        '  <div class="col-xs-8 col-sm-10 col-md-9"',
+        '  <div class="col-xs-8 col-sm-9"',
         '       id="', base_id, '-progress">',
         '    <div class="progress progress-striped active">',
         '      <div class="progress-bar" style="width: 100%">',
         '      </div>',
         '    </div>',
         '  </div>',
-        '  <div class="col-xs-8 col-sm-10 col-md-9 hide"',
+        '  <div class="col-xs-8 col-sm-9 hide"',
         '       id="', base_id, '-error">',
         '    <div class="alert alert-danger">',
         '      <strong>Error</strong>',
@@ -145,21 +167,21 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '    </div>',
         '  </div>',
         '  <div id="', base_id, '-prices" class="hide">',
-        '    <div class="col-xs-4 col-sm-2 col-md-2">',
+        '    <div class="col-xs-4 col-sm-2 col-md-3">',
         '      <h4>',
         '        <span class="label label-primary" ',
         '            id="', base_id, '-buy">',
         '        </span>',
         '      </h4>',
         '    </div>',
-        '    <div class="col-xs-4 col-sm-2 col-md-2">',
+        '    <div class="col-xs-4 col-sm-2 col-md-3">',
         '      <h4>',
         '        <span class="label label-primary" ',
         '              id="', base_id, '-sell">',
         '        </span>',
         '      </h4>',
         '    </div>',
-        '    <div class="hidden-xs col-sm-6 col-md-5">',
+        '    <div class="hidden-xs col-sm-5 col-md-3">',
         '      <h4>',
         '        <small>',
         '          <span id="', base_id, '-updated_on">',
