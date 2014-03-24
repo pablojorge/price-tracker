@@ -30,64 +30,65 @@ $__ = function() {
 }
 /**/
 
-function QuotesView() {}
-
-QuotesView.prototype.render = function() {
-    var symbols = [
-        {
-            name:'USDARS',
+function QuotesView() {
+    this.symbols = {
+        'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'lanacion']
+            exchanges: ['ambito', 'lanacion'],
+            prefix: 'AR$'
         }, 
-        {
-            name:'USDARSB',
+        'USDARSB' : {
             description: '(Dolar blue)',
-            exchanges: ['ambito', 'lanacion']
+            exchanges: ['ambito', 'lanacion'],
+            prefix: 'AR$'
         }, 
-        {
-            name:'BTCUSD',
+        'BTCUSD' : {
             description: '(Bitcoin)',
-            exchanges: ['bitstamp', 'coinbase', 'btc-e']
+            exchanges: ['bitstamp', 'coinbase', 'btc-e'],
+            prefix: '$'
         },  
-        {
-            name:'LTCUSD',
+        'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e']
+            exchanges: ['btc-e'],
+            prefix: '$'
         },
-        {
-            name:'XAUUSD',
+        'XAUUSD' : {
             description: '(Gold)',
-            exchanges: ['bullionvault']
+            exchanges: ['bullionvault'],
+            prefix: '$'
         },           
-        {
-            name:'XAGUSD',
+        'XAGUSD' : {
             description: '(Silver)',
-            exchanges: ['bullionvault']
+            exchanges: ['bullionvault'],
+            prefix: '$'
         }, 
-        {
-            name:'USDSLL',
+        'USDSLL' : {
             description: '(Linden/USD)',
-            exchanges: ['virwox']
+            exchanges: ['virwox'],
+            prefix: ''
         }, 
-        {
-            name:'BTCSLL',
+        'BTCSLL' : {
             description: '(Linden/Bitcoin)',
-            exchanges: ['virwox']
+            exchanges: ['virwox'],
+            prefix: 'SLL '
         }, 
-    ];
-
-    var _this = this;
-    symbols.forEach(function(symbol) {
-        _this.addSymbol(symbol);
-    });
+    };
 }
 
-QuotesView.prototype.renderSymbol = function (symbol) {
+QuotesView.prototype.render = function() {
+    var _this = this;
+
+    for (symbol in this.symbols) {
+        _this.addSymbol(symbol, this.symbols[symbol]);
+    }
+}
+
+QuotesView.prototype.renderSymbol = function (symbol, info) {
     return $__(
         '<div class="row">',
         '  <div class="row" style="margin-left: 10px;">',
-        '    <h3>', symbol.name, 
-        '      <small>', symbol.description, '</small>',
+        '    <h3>', symbol, 
+        '      <small>', info.description, '</small>',
         '    </h3>',
         '  </div>',
         '</div>',
@@ -106,22 +107,22 @@ QuotesView.prototype.renderSymbol = function (symbol) {
         '  </div>',
         '</div>',
         '<div style="margin-top: 10px" ',
-        '     id="prices-body-', symbol.name, '">',
+        '     id="prices-body-', symbol, '">',
         '</div>'
     );
 }
 
-QuotesView.prototype.addSymbol = function (symbol) {
-    $("#main-quotes").append(this.renderSymbol(symbol));
+QuotesView.prototype.addSymbol = function (symbol, info) {
+    $("#main-quotes").append(this.renderSymbol(symbol, info));
 
     var _this = this;
-    symbol.exchanges.forEach(function(exchange) {
+    info.exchanges.forEach(function(exchange) {
         _this.addExchangeForSymbol(symbol, exchange);
     });
 }
 
 QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
-    var base_id = __(symbol.name, '-', exchange);
+    var base_id = __(symbol, '-', exchange);
 
     return $__(
         '<div class="row">',
@@ -172,9 +173,9 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
 }
 
 QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
-    var base_id = __(symbol.name, '-', exchange);
+    var base_id = __(symbol, '-', exchange);
 
-    $__('#prices-body-', symbol.name).append(
+    $__('#prices-body-', symbol).append(
         this.renderExchangeForSymbol(symbol, exchange)
     );
 }
@@ -187,8 +188,10 @@ QuotesView.prototype.renderPrice = function (price) {
         updated_on_selector = __(selector_base, "-updated_on"),
         progress_selector = __(selector_base, "-progress");
     
-    $(buy_selector).html(price.buy.toFixed(2));
-    $(sell_selector).html(price.sell.toFixed(2));
+    $(buy_selector).html(__(this.symbols[price.symbol].prefix, 
+                            price.buy.toFixed(2)));
+    $(sell_selector).html(__(this.symbols[price.symbol].prefix, 
+                             price.sell.toFixed(2)));
     $(updated_on_selector).html((new Date(price.updated_on)).toLocaleString());
 
     $(prices_selector).removeClass("hide");
@@ -755,7 +758,7 @@ function GlobalController(view) {
 
 GlobalController.prototype.start = function() {
     this.view.hookSidebarButtons();
-    this.view.activateSection("portfolio");
+    this.view.activateSection("quotes");
 }
 
 function main() {
