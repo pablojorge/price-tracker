@@ -286,29 +286,45 @@ QuotesController.prototype.getQuote = function (symbol, exchange) {
     return this.model.getQuote(symbol, exchange);
 }
 
+QuotesController.prototype.getExchanges = function (symbol) {
+    return this.view.symbols[symbol].exchanges;
+}
+
+QuotesController.prototype.getExchangeDescription = function (exchange) {
+    return this.view.exchanges[exchange].description;
+}
+
 function PortfolioModel() {
-    this.data = undefined;
+    this.portfolios = undefined;
+    this.main_exchange = undefined;
 }
 
 PortfolioModel.prototype.save = function () {
-    localStorage["portfolio.data"] = JSON.stringify(this.data);
+    localStorage["portfolio.portfolios"] = JSON.stringify(this.portfolios);
+    localStorage["portfolio.main_exchange"] = this.main_exchange;
 }
 
 PortfolioModel.prototype.load = function () {
-    this.data = JSON.parse(localStorage["portfolio.data"] || null) || [];
+    this.portfolios = JSON.parse(localStorage["portfolio.portfolios"] || null) || [];
+    this.main_exchange = localStorage["portfolio.main_exchange"] || 'coinbase';
+}
+
+PortfolioModel.prototype.setMainExchange = function (exchange) {
+    this.main_exchange = exchange;
+    this.save();
 }
 
 PortfolioModel.prototype.savePortfolio = function (portfolio) {
-    this.data.push(portfolio);
+    this.portfolios.push(portfolio);
     this.save();
 }
 
 PortfolioModel.prototype.deletePortfolio = function (guid) {
     var _this = this;
 
-    this.data.forEach(function(portfolio, index) {
+    this.portfolios.forEach(function(portfolio, index) {
         if (portfolio.guid == guid) {
-            _this.data.splice(index, 1);
+            _this.portfolios.splice(index, 1);
         }
     });
 
@@ -318,7 +334,7 @@ PortfolioModel.prototype.deletePortfolio = function (guid) {
 PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
     var _this = this;
 
-    this.data.forEach(function(portfolio_) {
+    this.portfolios.forEach(function(portfolio_) {
         if (portfolio_.guid == portfolio.guid) {
             portfolio_.trades.push(trade);
         }
@@ -330,7 +346,7 @@ PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
 PortfolioModel.prototype.deleteTrade = function (guid) {
     var _this = this;
 
-    this.data.forEach(function(portfolio) {
+    this.portfolios.forEach(function(portfolio) {
         portfolio.trades.forEach(function(trade, index) {
             if (trade.guid == guid) {
                 portfolio.trades.splice(index, 1);
@@ -349,10 +365,10 @@ PortfolioView.prototype.setController = function (controller) {
     this.controller = controller;
 }
 
-PortfolioView.prototype.render = function (data) {
+PortfolioView.prototype.render = function (portfolios) {
     var _this = this;
 
-    data.forEach(function(portfolio) {
+    portfolios.forEach(function(portfolio) {
         _this.addPortfolio(portfolio);
         portfolio.trades.forEach(function(trade) {
             _this.addTrade(portfolio, trade);
@@ -465,6 +481,12 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
         '          <div>',
         '            Avg: ', 
         '            <span id="portfolio-', portfolio.guid, '-avg-price">',
+        '              0',
+        '            </span> USD/BTC',
+        '          </div>',
+        '          <div>',
+        '            Current: ', 
+        '            <span id="portfolio-', portfolio.guid, '-current-price">',
         '              0',
         '            </span> USD/BTC',
         '          </div>',
@@ -593,6 +615,7 @@ PortfolioView.prototype.updateInvestment = function(selector_base, investment) {
     $__(selector_base, '-holdings').html(investment.holdings.toFixed(2));
     $__(selector_base, '-cost').html(investment.cost.toFixed(2));
     $__(selector_base, '-avg-price').html(investment.average.toFixed(2));
+    $__(selector_base, '-current-price').html(investment.current_price.toFixed(2));
     
     $__(selector_base, '-current-value').html(investment.current_value.toFixed(2));
     $__(selector_base, '-profit').html(investment.profit.toFixed(2));
@@ -612,7 +635,27 @@ PortfolioView.prototype.updateInvestment = function(selector_base, investment) {
     );
 }
 
-PortfolioView.prototype.start = function(controller) {
+PortfolioView.prototype.start = function(main_exchange) {
+    var self = this;
+
+    this.updateMainExchange(main_exchange);
+
+    self.controller.getExchanges("BTCUSD").forEach(function (exchange) {
+        $('#portfolio-exchanges').append($__(
+            '<li>',
+            '  <a id="btn-portfolio-exchange-', exchange, '">', 
+                 self.controller.getExchangeDescription(exchange), 
+            '    (<span id="portfolio-exchange-', exchange, '-price">',
+            '     ?? </span> USD)',
+            '  </a>',
+            '</li>'
+        ));
+        $__('#btn-portfolio-exchange-', exchange).click(function (event) {
+            event.preventDefault();
+            self.controller.setMainExchange(exchange);
+        })
+    })
+
     $("#btn-create-portfolio").click(function (event) {
         event.preventDefault();
 
@@ -626,9 +669,19 @@ PortfolioView.prototype.start = function(controller) {
             $(input_selector).removeClass("has-error");
             $(value_selector).val(""); 
 
-            controller.createPortfolio(portfolio_name);
+            self.controller.createPortfolio(portfolio_name);
         }
     });
+}
+
+PortfolioView.prototype.updateMainExchange = function (exchange) {
+    $("#portfolio-main-exchange").html(
+        this.controller.getExchangeDescription(exchange)
+    );
+}
+
+PortfolioView.prototype.updateExchangePrice = function (exchange, quote) {
+    $__('#portfolio-exchange-', exchange, '-price').html(quote.toFixed(2));
 }
 
 function PortfolioController(view, model) {
@@ -645,13 +698,12 @@ PortfolioController.prototype.setQuotesController = function(controller) {
 
 PortfolioController.prototype.start = function () {
     this.model.load();
-    this.view.start(this);
-    this.view.render(this.model.data);
+    this.view.start(this.model.main_exchange);
+    this.view.render(this.model.portfolios);
 }
 
 PortfolioController.prototype.getInvestmentInfo = function (investment) {
-    // TODO: make the choice dynamic:
-    var quote = this.quotes_controller.getQuote('BTCUSD', 'coinbase');
+    var quote = this.quotes_controller.getQuote('BTCUSD', this.model.main_exchange);
 
     if (!quote) 
         return undefined;
@@ -668,13 +720,28 @@ PortfolioController.prototype.getInvestmentInfo = function (investment) {
         cost: investment.price,
         average: average,
         current_value: current_value,
+        current_price: quote.buy,
         profit: profit,
         gain: gain
     }
 }
 
+PortfolioController.prototype.getExchanges = function (symbol) {
+    return this.quotes_controller.getExchanges(symbol);
+}
+
+PortfolioController.prototype.getExchangeDescription = function (exchange) {
+    return this.quotes_controller.getExchangeDescription(exchange);
+}
+
 PortfolioController.prototype.onPriceUpdated = function (price) {
-    this.updateInvestments();
+    if (price.symbol != 'BTCUSD')
+        return;
+
+    if (price.exchange == this.model.main_exchange)
+        this.updateInvestments();
+
+    this.updateExchangePrice(price);
 }
 
 PortfolioController.prototype.updateInvestments = function() {
@@ -685,7 +752,7 @@ PortfolioController.prototype.updateInvestments = function() {
         price: 0
     };
 
-    this.model.data.forEach(function (portfolio) {
+    this.model.portfolios.forEach(function (portfolio) {
         var portfolio_total = {
             amount: 0, 
             price: 0
@@ -711,6 +778,18 @@ PortfolioController.prototype.updateInvestments = function() {
     });
 
     _this.view.updateGlobalReturn(_this.getInvestmentInfo(global_total));
+}
+
+PortfolioController.prototype.updateExchangePrice = function(price) {    
+    var quote = this.quotes_controller.getQuote(price.symbol, price.exchange);
+
+    this.view.updateExchangePrice(price.exchange, quote.buy);
+}
+
+PortfolioController.prototype.setMainExchange = function(exchange) {
+    this.model.setMainExchange(exchange);
+    this.updateInvestments();
+    this.view.updateMainExchange(exchange);
 }
 
 PortfolioController.prototype.createPortfolio = function (name) {

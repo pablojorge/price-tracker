@@ -90,6 +90,17 @@
                     id="global-gain">
                 0.00%
               </span>
+            <div class="btn-group" 
+                 style="float: right; margin-top: 5px;">
+              <button type="button" class="btn btn-primary dropdown-toggle" 
+                      data-toggle="dropdown">
+                <span id="portfolio-main-exchange">??</span> 
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-right" role="menu" 
+                  id="portfolio-exchanges">
+              </ul>
+            </div>
             </div>
           </h1>
             <div class="row">
@@ -114,6 +125,12 @@
                   <div>
                     Average price:  
                     <span id="global-avg-price">
+                      0
+                    </span> USD/BTC
+                  </div>
+                  <div>
+                    Current price:  
+                    <span id="global-current-price">
                       0
                     </span> USD/BTC
                   </div>
