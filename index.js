@@ -276,7 +276,7 @@ QuotesController.prototype.onPriceUpdated = function (price) {
 
 QuotesController.prototype.onError = function (error) {
     if (!error.info || !error.info.exchange || !error.info.symbol) {
-        thiw.view.renderGenericError(error);
+        this.view.renderGenericError(error);
     } else {
         this.view.renderPriceError(error);
     }

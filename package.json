@@ -1,9 +1,9 @@
 {
-  "name": "node-ws-canary",
+  "name": "price-tracker",
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "git://github.com/einaros/ws.git"
+    "url": "git://github.com/pablojorge/price-tracker.git"
   },
   "dependencies": {
     "ws": "0.4.x",
