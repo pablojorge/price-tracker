@@ -1,4 +1,4 @@
-var WebSocketServer = require('ws').Server
+var ws = require('ws')
   , http = require('http')
   , async = require('async')
   , express = require('express')
@@ -49,7 +49,7 @@ server.listen(port);
 
 console.log('http server listening on %d', port);
 
-var wss = new WebSocketServer({server: server});
+var wss = new ws.Server({server: server});
 
 console.log('websocket server created');
 
@@ -173,6 +173,95 @@ ExchangesRequestHandler.prototype.processRequest = function (callback, errback) 
 ExchangesRequestHandler.handles = "ExchangesRequest";
 RequestHandlerFactory.addHandler(ExchangesRequestHandler.handles, 
                                  ExchangesRequestHandler);
+
+/**
+ */
+function Factory() {
+    this.constructors = {};
+}
+
+Factory.prototype.register = function (key, constructor) {
+    this.constructors[key] = constructor;
+};
+
+Factory.prototype.create = function (key, args) {
+    var constructor = this.constructors[key];
+    
+    if (constructor === undefined) {
+        throw "Unknown constructor: " + key;
+    }
+
+    var object = Object.create(constructor.prototype);
+    constructor.apply(object, args);
+    
+    return object;
+};
+
+/**
+ */
+function Broadcaster() {
+    this.stream = {};
+}
+
+Broadcaster.streamers = new Factory();
+
+Broadcaster.registerStreamer = function(streamer) {
+    Broadcaster.streamers.register(streamer.config.exchange, streamer);
+};
+
+Broadcaster.prototype.addListener = function(exchange, symbol, callback) {
+    var self = this;
+
+    if (this.stream[exchange] === undefined) {
+        this.stream[exchange] = {};
+    }
+
+    if (this.stream[exchange][symbol] === undefined) {
+        var updateFn = function (data) {
+            self.stream[exchange][symbol].listeners.forEach(function (listener) {
+                listener(data);
+            });
+        };
+
+        var streamer = Broadcaster.streamers.create(exchange, [symbol, updateFn]);
+
+        this.stream[exchange][symbol] = {
+            streamer: streamer,
+            listeners: [],
+        };        
+    }
+
+    this.stream[exchange][symbol].listeners.push(callback);
+};
+
+broadcaster = new Broadcaster();
+
+/**
+ */
+function SubscribeRequestHandler(request) {
+    this.request = request;
+}
+
+SubscribeRequestHandler.broadcaster = new Broadcaster();
+
+SubscribeRequestHandler.prototype.processRequest = function (callback, errback) {
+    try {
+        SubscribeRequestHandler.broadcaster.addListener(
+            this.request.exchange, 
+            this.request.symbol, 
+            callback
+        );
+    } catch(e) {
+        errback(e, {
+            exchange: this.request.exchange,
+            symbol: this.request.symbol
+        });
+    }
+};
+
+SubscribeRequestHandler.handles = "SubscribeRequest";
+RequestHandlerFactory.addHandler(SubscribeRequestHandler.handles, 
+                                 SubscribeRequestHandler);
 
 /**
  */

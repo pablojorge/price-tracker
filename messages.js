@@ -36,6 +36,17 @@ PriceRequest.prototype.hash = function() {
 
 /**
  */
+function SubscribeRequest(exchange, symbol, options) {
+    this.exchange = exchange;
+    this.symbol = symbol;
+    this.options = options;
+}
+
+SubscribeRequest.prototype = Object.create(Request.prototype);
+SubscribeRequest.prototype.constructor = SubscribeRequest;
+
+/**
+ */
 function ExchangesRequest(options) {
     this.options = options;
 }
@@ -104,6 +115,7 @@ try {
     module.exports.Request = Request;
     module.exports.PriceRequest = PriceRequest;
     module.exports.ExchangesRequest = ExchangesRequest;
+    module.exports.SubscribeRequest = SubscribeRequest;
 
     module.exports.Response = Response;
     module.exports.Error = Error;
