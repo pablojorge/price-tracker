@@ -431,6 +431,62 @@ PriceRequestHandler.addRequester(BitstampPriceRequester);
 /**/
 
 /**
+ * Simple client for Pusher
+ */
+
+function PusherClient(pusherId) {
+    var url = ("wss://ws.pusherapp.com/app/" + pusherId + 
+               "?protocol=7&client=js&version=2.1.6&flash=false");
+
+    this.connection = ws.connect(url);
+}
+
+PusherClient.prototype.subscribe = function (channel) {
+    var self = this;
+
+    this.connection.on('open', function () {
+        var message = {
+            event: "pusher:subscribe",
+            data: {channel: channel}
+        };
+
+        self.connection.send(JSON.stringify(message));
+    });
+};
+
+PusherClient.prototype.bind = function (event, handler) {
+    this.connection.on('message', function (message) {
+        var payload = JSON.parse(message);
+        console.log("payload:", payload);
+        if (payload.event === event) {
+            handler(JSON.parse(payload.data));
+        }
+    });
+};
+
+/**
+ * Bitstamp streamer
+ */
+
+function BitstampStreamer(symbol, callback) {
+    this.client = new PusherClient('de504dc5763aeef9ff52');
+    this.client.subscribe('order_book');
+    this.client.bind('data', function (data) {
+        callback(new messages.Price("bitstamp", 
+                                    symbol, 
+                                    parseFloat(data.bids[0][0]), 
+                                    parseFloat(data.asks[0][0])));
+    });
+}
+
+BitstampStreamer.config = {
+    exchange: 'bitstamp',
+};
+
+Broadcaster.registerStreamer(BitstampStreamer);
+/**/
+
+/**
  * BullionVault
  */
 
