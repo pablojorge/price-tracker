@@ -1,17 +1,17 @@
-var ws = require('ws')
-  , http = require('http')
-  , async = require('async')
-  , express = require('express')
-  , request = require('request')
-  , cheerio = require('cheerio')
-  , redis = require('redis')
-  , url = require('url')
+var ws = require('ws'),
+    http = require('http'),
+    async = require('async'),
+    express = require('express'),
+    request = require('request'),
+    cheerio = require('cheerio'),
+    redis = require('redis'),
+    url = require('url'),
 
   // custom modules:
-  , messages = require('./messages.js')
+    messages = require('./messages.js'),
 
-  , app = express()
-  , port = process.env.PORT || 5000;
+    app = express(),
+    port = process.env.PORT || 5000;
 
 app.use(express.static(__dirname + '/'));
 
@@ -93,17 +93,17 @@ wss.on('connection', function(ws) {
 /**
  */
 function RequestHandlerFactory() {}
-RequestHandlerFactory.handlers = {}
+RequestHandlerFactory.handlers = {};
 RequestHandlerFactory.addHandler = function(type, handler) {
     RequestHandlerFactory.handlers[type] = handler;
-}
+};
 
 RequestHandlerFactory.prototype.getHandler = function(request) {
     var handler = RequestHandlerFactory.handlers[request.__proto__.constructor.name];
-    if (handler == undefined)
+    if (handler === undefined)
         throw ("Invalid type: " + request);
     return new handler(request);
-}
+};
 
 /**
  */
@@ -111,7 +111,7 @@ function PriceRequestHandler(request) {
     this.request = request;
 }
 
-PriceRequestHandler.requesters = {}
+PriceRequestHandler.requesters = {};
 PriceRequestHandler.cache = new ({
     "internal" : InternalCache,
     "redis" : RedisCache
@@ -119,17 +119,17 @@ PriceRequestHandler.cache = new ({
 
 PriceRequestHandler.addRequester = function(requester) {
     PriceRequestHandler.requesters[requester.config.exchange] = requester;
-}
+};
 
 PriceRequestHandler.prototype.getRequester = function() {
     var requester = PriceRequestHandler.requesters[this.request.exchange];
-    if (requester == undefined)
+    if (requester === undefined)
         throw ("Unknown exchange: " + this.request.exchange);
     return new CachedPriceRequester(PriceRequestHandler.cache,
                                     this.request,
                                     new requester(this.request.symbol,
                                                   this.request.options));
-}
+};
 
 PriceRequestHandler.prototype.processRequest = function (callback, errback) {
     try {
@@ -155,16 +155,16 @@ function ExchangesRequestHandler(request) {
 
 ExchangesRequestHandler.prototype.processRequest = function (callback, errback) {
     try {
-        var exchanges = new messages.Exchanges()
-        for (exchange in PriceRequestHandler.requesters) {
+        var exchanges = new messages.Exchanges();
+        for (var exchange in PriceRequestHandler.requesters) {
             var requester = PriceRequestHandler.requesters[exchange],
                 symbols = [];
-            for (symbol in requester.config.symbol_map) {
+            for (var symbol in requester.config.symbol_map) {
                 symbols.push(symbol);
             }
             exchanges.addExchange(requester.config.exchange, symbols);
         }
-        callback(exchanges)
+        callback(exchanges);
     } catch(e) {
         errback(e);
     }
@@ -276,7 +276,7 @@ PriceRequester.prototype.doRequest = function (callback, errback) {
     request(this.buildRequest(),
         function (error, response, body) {
             try {
-                if (error != undefined) {
+                if (error !== undefined) {
                     throw ("Error: " + error);
                 }
                 if (response.statusCode != 200) {
@@ -296,7 +296,7 @@ PriceRequester.prototype.doRequest = function (callback, errback) {
 PriceRequester.prototype.getExchange = function() {
     var _config = this.__proto__.constructor.config;
     return _config.exchange;
-}
+};
 
 PriceRequester.prototype.buildRequest = function() {
     var _config = this.__proto__.constructor.config;
@@ -307,17 +307,17 @@ PriceRequester.prototype.buildRequest = function() {
 
     return _config.url_template.replace("<<SYMBOL>>", 
                                         _config.symbol_map[this.symbol]);
-}
+};
 
 PriceRequester.prototype.processResponse = function(response, body) {
     throw ("processResponse should be overriden!");
-}
+};
  
 /**
  */
 function InternalCache(ttl) {
     this.ttl = ttl;
-    this.entries = {}
+    this.entries = {};
 }
 
 InternalCache.prototype.setEntry = function (entry, value) {
@@ -329,12 +329,12 @@ InternalCache.prototype.setEntry = function (entry, value) {
         value: value.toString(),
     };
     return value;
-}
+};
 
 InternalCache.prototype.getEntry = function (entry, callback) {
     cached = this.entries[entry];
 
-    if (cached != undefined) {
+    if (cached !== undefined) {
         if (cached.age() > this.ttl) {
             delete this.entries[entry];
             callback(undefined, null);
@@ -343,7 +343,7 @@ InternalCache.prototype.getEntry = function (entry, callback) {
     } else {
         callback(undefined, null);
     }
-}
+};
 
 /**
  */
@@ -364,13 +364,13 @@ RedisCache.prototype.setEntry = function (entry, value) {
     this.client.set(entry, value.toString());
     this.client.expire(entry, this.ttl);
     return value;
-}
+};
 
 RedisCache.prototype.getEntry = function (entry, callback) {
     this.client.get(entry, function (error, value) {
         callback(error, messages.Response.fromString(value));                
     });
-}
+};
 
 /**
  * Decorator to cache prices
@@ -399,7 +399,7 @@ CachedPriceRequester.prototype.doRequest = function (callback, errback) {
             callback(value);
         }
     });
-}
+};
 
 /**
  * Bitstamp
@@ -605,7 +605,7 @@ LaNacionPriceRequester.prototype.processResponse = function (response, body) {
             buy: 'InformalCompraValue',
             sell: 'InformalVentaValue'
         }
-    }
+    };
     
     var payload = body.substring(body.indexOf('{'), body.lastIndexOf('}') + 1),
         resp = JSON.parse(payload),
@@ -663,7 +663,7 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
             request(item,
                 function (error, response, body) {
                     try {
-                        if (error != undefined) {
+                        if (error !== undefined) {
                             throw ("Error: " + error);
                         }
                         if (response.statusCode != 200) {
@@ -678,7 +678,7 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
             );
         },
         function (err, results) {
-            if (err != null) {
+            if (err !== null) {
                 errback(err, {
                     exchange: _this.getExchange(),
                     symbol: _this.symbol,

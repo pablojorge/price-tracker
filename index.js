@@ -27,7 +27,7 @@ __ = concat;
  */
 $__ = function() {
     return $(__.apply(null, arguments));
-}
+};
 /**/
 
 function QuotesView() {
@@ -109,10 +109,10 @@ function QuotesView() {
 QuotesView.prototype.render = function() {
     var _this = this;
 
-    for (symbol in this.symbols) {
+    for (var symbol in this.symbols) {
         _this.addSymbol(symbol, this.symbols[symbol]);
     }
-}
+};
 
 QuotesView.prototype.renderSymbol = function (symbol, info) {
     return $__(
@@ -127,7 +127,7 @@ QuotesView.prototype.renderSymbol = function (symbol, info) {
         '     id="prices-body-', symbol, '">',
         '</div>'
     );
-}
+};
 
 QuotesView.prototype.addSymbol = function (symbol, info) {
     $("#main-quotes").append(this.renderSymbol(symbol, info));
@@ -136,7 +136,7 @@ QuotesView.prototype.addSymbol = function (symbol, info) {
     info.exchanges.forEach(function(exchange) {
         _this.addExchangeForSymbol(symbol, exchange);
     });
-}
+};
 
 QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
@@ -192,7 +192,7 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '  </div>',
         '</div>'
     );
-}
+};
 
 QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
@@ -200,7 +200,7 @@ QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
     $__('#prices-body-', symbol).append(
         this.renderExchangeForSymbol(symbol, exchange)
     );
-}
+};
 
 QuotesView.prototype.renderPrice = function (price) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
@@ -218,7 +218,7 @@ QuotesView.prototype.renderPrice = function (price) {
 
     $(prices_selector).removeClass("hide");
     $(progress_selector).addClass("hide");
-}
+};
 
 QuotesView.prototype.renderPriceError = function (error) {
     var selector_base = __("#", error.info.symbol, "-", error.info.exchange),
@@ -230,25 +230,25 @@ QuotesView.prototype.renderPriceError = function (error) {
 
     $(error_selector).removeClass("hide");
     $(progress_selector).addClass("hide");
-}
+};
 
 QuotesView.prototype.renderGenericError = function (error) {
     $("#global-error").removeClass("hide");
     $("#global-error-msgs").append($__(
         "<li>", error.message, "</li>"
     ));
-}
+};
 
 function QuotesModel() {
-    this.quotes = {}
+    this.quotes = {};
 }
 
 QuotesModel.prototype.updateQuote = function(quote) {
     if (!(quote.symbol in this.quotes))
-        this.quotes[quote.symbol] = {}
+        this.quotes[quote.symbol] = {};
 
     this.quotes[quote.symbol][quote.exchange] = quote;
-}
+};
 
 QuotesModel.prototype.getQuote = function(symbol, exchange) {
     if (!(symbol in this.quotes))
@@ -258,7 +258,7 @@ QuotesModel.prototype.getQuote = function(symbol, exchange) {
         return;
     
     return this.quotes[symbol][exchange];
-}
+};
 
 function QuotesController(view, model) {
     this.view = view;
@@ -267,12 +267,12 @@ function QuotesController(view, model) {
 
 QuotesController.prototype.start = function () {
     this.view.render();
-}
+};
 
 QuotesController.prototype.onPriceUpdated = function (price) {
     this.model.updateQuote(price);
     this.view.renderPrice(price);
-}
+};
 
 QuotesController.prototype.onError = function (error) {
     if (!error.info || !error.info.exchange || !error.info.symbol) {
@@ -280,19 +280,19 @@ QuotesController.prototype.onError = function (error) {
     } else {
         this.view.renderPriceError(error);
     }
-}
+};
 
 QuotesController.prototype.getQuote = function (symbol, exchange) {
     return this.model.getQuote(symbol, exchange);
-}
+};
 
 QuotesController.prototype.getExchanges = function (symbol) {
     return this.view.symbols[symbol].exchanges;
-}
+};
 
 QuotesController.prototype.getExchangeDescription = function (exchange) {
     return this.view.exchanges[exchange].description;
-}
+};
 
 function PortfolioModel() {
     this.portfolios = undefined;
@@ -302,22 +302,22 @@ function PortfolioModel() {
 PortfolioModel.prototype.save = function () {
     localStorage["portfolio.portfolios"] = JSON.stringify(this.portfolios);
     localStorage["portfolio.main_exchange"] = this.main_exchange;
-}
+};
 
 PortfolioModel.prototype.load = function () {
     this.portfolios = JSON.parse(localStorage["portfolio.portfolios"] || null) || [];
     this.main_exchange = localStorage["portfolio.main_exchange"] || 'coinbase';
-}
+};
 
 PortfolioModel.prototype.setMainExchange = function (exchange) {
     this.main_exchange = exchange;
     this.save();
-}
+};
 
 PortfolioModel.prototype.savePortfolio = function (portfolio) {
     this.portfolios.push(portfolio);
     this.save();
-}
+};
 
 PortfolioModel.prototype.deletePortfolio = function (guid) {
     var _this = this;
@@ -329,7 +329,7 @@ PortfolioModel.prototype.deletePortfolio = function (guid) {
     });
 
     this.save();
-}
+};
 
 PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
     var _this = this;
@@ -341,7 +341,7 @@ PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
     });
 
     this.save();
-}
+};
 
 PortfolioModel.prototype.deleteTrade = function (guid) {
     var _this = this;
@@ -355,7 +355,7 @@ PortfolioModel.prototype.deleteTrade = function (guid) {
     });
 
     this.save();
-}
+};
 
 function PortfolioView() {
     this.controller = undefined;
@@ -363,7 +363,7 @@ function PortfolioView() {
 
 PortfolioView.prototype.setController = function (controller) {
     this.controller = controller;
-}
+};
 
 PortfolioView.prototype.render = function (portfolios) {
     var _this = this;
@@ -374,13 +374,13 @@ PortfolioView.prototype.render = function (portfolios) {
             _this.addTrade(portfolio, trade);
         });
     });
-}
+};
 
 PortfolioView.prototype.updateTradeReturn = function(trade, investment) {
     var selector_base = __('#trade-', trade.guid);
 
     this.updateInvestment(selector_base, investment);
-}
+};
 
 PortfolioView.prototype.renderTrade = function(portfolio, trade) {
     return $__(
@@ -422,7 +422,7 @@ PortfolioView.prototype.renderTrade = function(portfolio, trade) {
         '  </div>',
         '</li>'
     );
-}
+};
 
 PortfolioView.prototype.addTrade = function(portfolio, trade) {
     var _this = this;
@@ -435,11 +435,11 @@ PortfolioView.prototype.addTrade = function(portfolio, trade) {
         event.preventDefault();
         _this.controller.deleteTrade(trade.guid);
     });
-}
+};
 
 PortfolioView.prototype.removeTrade = function(guid) {
     $__("#trade-", guid).remove();
-}
+};
 
 PortfolioView.prototype.renderPortfolio = function(portfolio) {
     return $__(
@@ -551,7 +551,7 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
         '  </ul>',
         '</div>'
     );
-}
+};
 
 PortfolioView.prototype.addPortfolio = function(portfolio) {
     var _this = this;
@@ -592,21 +592,21 @@ PortfolioView.prototype.addPortfolio = function(portfolio) {
         event.preventDefault();
         _this.controller.deletePortfolio(portfolio.guid);
     });
-}
+};
 
 PortfolioView.prototype.updatePortfolioReturn = function(portfolio, holdings, return_) {
     var selector_base = __('#portfolio-', portfolio.guid);
 
     this.updateInvestment(selector_base, holdings, return_);
-}
+};
 
 PortfolioView.prototype.removePortfolio = function(guid) {
     $__("#portfolio-", guid).remove();
-}
+};
 
 PortfolioView.prototype.updateGlobalReturn = function(holdings, return_) {
     this.updateInvestment("#global", holdings, return_);
-}
+};
 
 PortfolioView.prototype.updateInvestment = function(selector_base, investment) {
     if (!investment)
@@ -633,7 +633,7 @@ PortfolioView.prototype.updateInvestment = function(selector_base, investment) {
     $__(selector_base, '-gain').addClass(
         investment.gain < 0 ? 'label-danger' : 'label-success'
     );
-}
+};
 
 PortfolioView.prototype.start = function(main_exchange) {
     var self = this;
@@ -653,8 +653,8 @@ PortfolioView.prototype.start = function(main_exchange) {
         $__('#btn-portfolio-exchange-', exchange).click(function (event) {
             event.preventDefault();
             self.controller.setMainExchange(exchange);
-        })
-    })
+        });
+    });
 
     $("#btn-create-portfolio").click(function (event) {
         event.preventDefault();
@@ -672,17 +672,17 @@ PortfolioView.prototype.start = function(main_exchange) {
             self.controller.createPortfolio(portfolio_name);
         }
     });
-}
+};
 
 PortfolioView.prototype.updateMainExchange = function (exchange) {
     $("#portfolio-main-exchange").html(
         this.controller.getExchangeDescription(exchange)
     );
-}
+};
 
 PortfolioView.prototype.updateExchangePrice = function (exchange, quote) {
     $__('#portfolio-exchange-', exchange, '-price').html(quote.toFixed(2));
-}
+};
 
 function PortfolioController(view, model) {
     this.view = view;
@@ -694,13 +694,13 @@ function PortfolioController(view, model) {
 
 PortfolioController.prototype.setQuotesController = function(controller) {
     this.quotes_controller = controller;
-}
+};
 
 PortfolioController.prototype.start = function () {
     this.model.load();
     this.view.start(this.model.main_exchange);
     this.view.render(this.model.portfolios);
-}
+};
 
 PortfolioController.prototype.getInvestmentInfo = function (investment) {
     var quote = this.quotes_controller.getQuote('BTCUSD', this.model.main_exchange);
@@ -723,16 +723,16 @@ PortfolioController.prototype.getInvestmentInfo = function (investment) {
         current_price: quote.buy,
         profit: profit,
         gain: gain
-    }
-}
+    };
+};
 
 PortfolioController.prototype.getExchanges = function (symbol) {
     return this.quotes_controller.getExchanges(symbol);
-}
+};
 
 PortfolioController.prototype.getExchangeDescription = function (exchange) {
     return this.quotes_controller.getExchangeDescription(exchange);
-}
+};
 
 PortfolioController.prototype.onPriceUpdated = function (price) {
     if (price.symbol != 'BTCUSD')
@@ -742,7 +742,7 @@ PortfolioController.prototype.onPriceUpdated = function (price) {
         this.updateInvestments();
 
     this.updateExchangePrice(price);
-}
+};
 
 PortfolioController.prototype.updateInvestments = function() {
     var _this = this;
@@ -778,19 +778,19 @@ PortfolioController.prototype.updateInvestments = function() {
     });
 
     _this.view.updateGlobalReturn(_this.getInvestmentInfo(global_total));
-}
+};
 
 PortfolioController.prototype.updateExchangePrice = function(price) {    
     var quote = this.quotes_controller.getQuote(price.symbol, price.exchange);
 
     this.view.updateExchangePrice(price.exchange, quote.buy);
-}
+};
 
 PortfolioController.prototype.setMainExchange = function(exchange) {
     this.model.setMainExchange(exchange);
     this.updateInvestments();
     this.view.updateMainExchange(exchange);
-}
+};
 
 PortfolioController.prototype.createPortfolio = function (name) {
     var portfolio = {
@@ -803,7 +803,7 @@ PortfolioController.prototype.createPortfolio = function (name) {
     this.view.addPortfolio(portfolio);
 
     this.updateInvestments();
-}
+};
 
 PortfolioController.prototype.createTrade = function (portfolio, amount, price) {
     var trade = {
@@ -816,21 +816,21 @@ PortfolioController.prototype.createTrade = function (portfolio, amount, price) 
     this.view.addTrade(portfolio, trade);
 
     this.updateInvestments();
-}
+};
 
 PortfolioController.prototype.deletePortfolio = function (guid) {
     this.model.deletePortfolio(guid);
     this.view.removePortfolio(guid);
 
     this.updateInvestments();
-}
+};
 
 PortfolioController.prototype.deleteTrade = function (guid) {
     this.model.deleteTrade(guid);
     this.view.removeTrade(guid);
 
     this.updateInvestments();
-}
+};
 
 function GlobalView() {}
 
@@ -848,12 +848,12 @@ GlobalView.prototype.hookSidebarButtons = function () {
         // active the current one:
         $(this).addClass("active");
     });
-}
+};
 
 GlobalView.prototype.activateSection = function (section) {
     // activate the main 'quotes' section:
     $__(".navbar-button[target='", section, "']").click();
-}
+};
 
 function GlobalController(view) {
     this.view = view;
@@ -862,7 +862,7 @@ function GlobalController(view) {
 GlobalController.prototype.start = function() {
     this.view.hookSidebarButtons();
     this.view.activateSection("quotes");
-}
+};
 
 function main() {
     global_view = new GlobalView();

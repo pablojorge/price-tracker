@@ -5,7 +5,7 @@ function Subject(events) {
 
     events.forEach(function(event) {
         handlers[event] = [];
-    })
+    });
 
     this.handlers = handlers;
 }
@@ -16,7 +16,7 @@ Subject.prototype.addHandler = function(event, handler) {
     }
 
     this.handlers[event].push(handler);
-}
+};
 
 Subject.prototype.emit = function(event, args) {
     var _this = this;
@@ -24,7 +24,7 @@ Subject.prototype.emit = function(event, args) {
     this.handlers[event].forEach(function(handler) {
         handler.apply(_this, args);
     });
-}
+};
 
 /**
  */
@@ -45,7 +45,7 @@ function Client() {
 
     this.addHandler("onError", function(error) {
         console.log("error:", error);
-    })
+    });
 }
 
 Client.prototype = Object.create(Subject.prototype);
@@ -54,12 +54,12 @@ Client.prototype.constructor = Client;
 Client.prototype.requestPrices = function(exchanges) {
     var _this = this;
 
-    for (exchange in exchanges) {
+    for (var exchange in exchanges) {
         exchanges[exchange].forEach(function(symbol) {
             _this.requestPrice(exchange, symbol);
         });
     }
-}
+};
 
 /**
  */
@@ -104,17 +104,17 @@ WSClient.prototype.connect = function(host) {
     _this.socket.onerror = function (event) {
         _this.emit("onError", [new Error(event.toString())]);
     };
-}
+};
 
 WSClient.prototype.requestExchanges = function() {
-    console.log("requesting exchanges list...")
+    console.log("requesting exchanges list...");
     this.socket.send((new ExchangesRequest()).toString());
-}
+};
 
 WSClient.prototype.requestPrice = function(exchange, symbol) {
     console.log("requesting price for " + symbol + " in " + exchange);
     this.socket.send((new PriceRequest(exchange, symbol)).toString());
-}
+};
 
 /**
  */
@@ -131,7 +131,7 @@ RESTClient.prototype.connect = function(host) {
     this.host = host;
 
     this.emit("onConnect");
-}
+};
 
 RESTClient.prototype.requestExchanges = function() {
     var _this = this;
@@ -143,7 +143,7 @@ RESTClient.prototype.requestExchanges = function() {
             _this.emit("onExchangesListReceived", [data]);
         },
     });
-}
+};
 
 RESTClient.prototype.requestPrice = function(exchange, symbol) {
     var _this = this;
@@ -160,4 +160,4 @@ RESTClient.prototype.requestPrice = function(exchange, symbol) {
             _this.emit("onError", [new Error(data.message, data.info)]);
         }
     });
-}
+};
