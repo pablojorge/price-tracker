@@ -57,6 +57,7 @@ Client.prototype.requestPrices = function(exchanges) {
     for (var exchange in exchanges) {
         exchanges[exchange].forEach(function(symbol) {
             _this.requestPrice(exchange, symbol);
+            _this.subscribe(exchange, symbol);
         });
     }
 };
@@ -114,6 +115,11 @@ WSClient.prototype.requestExchanges = function() {
 WSClient.prototype.requestPrice = function(exchange, symbol) {
     console.log("requesting price for " + symbol + " in " + exchange);
     this.socket.send((new PriceRequest(exchange, symbol)).toString());
+};
+
+WSClient.prototype.subscribe = function(exchange, symbol) {
+    console.log("subscribing to " + symbol + " in " + exchange);
+    this.socket.send((new SubscribeRequest(exchange, symbol)).toString());
 };
 
 /**

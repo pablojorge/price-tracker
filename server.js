@@ -772,3 +772,30 @@ VirWoxPriceRequester.prototype.processResponse = function (response, body) {
 PriceRequestHandler.addRequester(VirWoxPriceRequester);
 /**/
 
+/**
+ * Automatically declare Streamers based on PriceRequesters
+ */
+(function () {
+    [AmbitoPriceRequester,
+     LaNacionPriceRequester,
+     CoinbasePriceRequester,
+     BTCePriceRequester,
+     BullionVaultPriceRequester,
+     VirWoxPriceRequester].forEach(function (requester) {
+        var streamer = function (symbol, callback) {
+            var requesterObj = new requester(symbol);
+            this.intervalId = setInterval(function () {
+                requesterObj.doRequest(callback, function (e) {
+                    console.log("Error while streaming:", e);
+                });
+            }, 30 * 1000);
+        };
+        streamer.prototype.stop = function () {
+            clearInterval(this.intervalId);
+        };
+        streamer.config = {
+            exchange: requester.config.exchange,
+        };
+        Broadcaster.registerStreamer(streamer);
+    });
+})();
