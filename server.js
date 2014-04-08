@@ -276,7 +276,7 @@ PriceRequester.prototype.doRequest = function (callback, errback) {
     request(this.buildRequest(),
         function (error, response, body) {
             try {
-                if (error !== undefined) {
+                if (error !== null) {
                     throw ("Error: " + error);
                 }
                 if (response.statusCode != 200) {
@@ -457,7 +457,6 @@ PusherClient.prototype.subscribe = function (channel) {
 PusherClient.prototype.bind = function (event, handler) {
     this.connection.on('message', function (message) {
         var payload = JSON.parse(message);
-        console.log("payload:", payload);
         if (payload.event === event) {
             handler(JSON.parse(payload.data));
         }
@@ -663,7 +662,7 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
             request(item,
                 function (error, response, body) {
                     try {
-                        if (error !== undefined) {
+                        if (error !== null) {
                             throw ("Error: " + error);
                         }
                         if (response.statusCode != 200) {
