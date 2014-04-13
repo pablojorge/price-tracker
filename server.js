@@ -270,10 +270,10 @@ function PriceRequester(symbol, options) {
     this.options = options;
 }
 
-PriceRequester.prototype.doRequest = function (callback, errback) {
+PriceRequester.prototype.__doRequest = function (url, callback, errback) {
     var _this = this;
 
-    request(this.buildRequest(),
+    request(url,
         function (error, response, body) {
             try {
                 if (error !== null) {
@@ -293,13 +293,17 @@ PriceRequester.prototype.doRequest = function (callback, errback) {
     );
 };
 
+PriceRequester.prototype.doRequest = function (callback, errback) {
+    this.__doRequest(this.buildRequest(), callback, errback);
+};
+
 PriceRequester.prototype.getExchange = function() {
-    var _config = this.__proto__.constructor.config;
+    var _config = this.constructor.config;
     return _config.exchange;
 };
 
 PriceRequester.prototype.buildRequest = function() {
-    var _config = this.__proto__.constructor.config;
+    var _config = this.constructor.config;
 
     if (this.symbol && !(this.symbol in _config.symbol_map)) {
         throw ("Invalid symbol: " + this.symbol);
@@ -659,20 +663,13 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
         ['http://coinbase.com/api/v1/prices/sell',
          'http://coinbase.com/api/v1/prices/buy'],
         function (item, cb) {
-            request(item,
-                function (error, response, body) {
-                    try {
-                        if (error !== null) {
-                            throw ("Error: " + error);
-                        }
-                        if (response.statusCode != 200) {
-                            throw ("Error, status code: " + response.statusCode);
-                        }
-
-                        cb(null, parseFloat(JSON.parse(body).amount));
-                    } catch(e) {
-                        cb(e);
-                    }     
+            _this.__doRequest(
+                item, 
+                function (resp) {
+                    cb(null, resp);
+                },
+                function (err) {
+                    cb(err);
                 }
             );
         },
@@ -694,12 +691,7 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
 };
 
 CoinbasePriceRequester.prototype.processResponse = function (response, body) {
-    var price = JSON.parse(body).amount;
-    
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              price, 
-                              price);
+    return parseFloat(JSON.parse(body).amount);
 };
 
 PriceRequestHandler.addRequester(CoinbasePriceRequester);
