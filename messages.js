@@ -3,8 +3,10 @@
 function Request() {}
 
 Request.prototype.toString = function() {
-    return JSON.stringify({type: this.__proto__.constructor.name,
-                           request: this});
+    return JSON.stringify({
+        type: this.constructor.name,
+        request: this
+    });
 };
 
 Request.fromString = function(string) {
@@ -60,7 +62,7 @@ function Response() {}
 
 Response.prototype.toString = function() {
     return JSON.stringify({
-        type: this.__proto__.constructor.name,
+        type: this.constructor.name,
         response: this
     });
 };

@@ -99,7 +99,7 @@ RequestHandlerFactory.addHandler = function(type, handler) {
 };
 
 RequestHandlerFactory.prototype.getHandler = function(request) {
-    var handler = RequestHandlerFactory.handlers[request.__proto__.constructor.name];
+    var handler = RequestHandlerFactory.handlers[request.constructor.name];
     if (handler === undefined)
         throw ("Invalid type: " + request);
     return new handler(request);
