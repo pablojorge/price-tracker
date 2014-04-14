@@ -62,7 +62,8 @@ wss.on('connection', function(ws) {
             var request = messages.Request.fromString(message);
             var factory = new RequestHandlerFactory();
             var handler = factory.getHandler(request);
-            handler.processRequest(
+
+            var ret = handler.processRequest(
                 function(response) {
                     ws.send(response.toString(), function() {
                         console.log("response sent: " + response);
@@ -76,6 +77,10 @@ wss.on('connection', function(ws) {
                     });
                 }
             );
+
+            if (ret !== undefined) {
+                ws.on('close', ret);
+            }
         } catch(exception) {
             error = new messages.Error(exception.toString());
             console.log("exception: " + exception);
@@ -231,7 +236,29 @@ Broadcaster.prototype.addListener = function(exchange, symbol, callback) {
         };        
     }
 
+    var removeCb = function () {
+        self.removeListener(exchange, symbol, callback);
+    };
+
     this.stream[exchange][symbol].listeners.push(callback);
+    return removeCb;
+};
+
+Broadcaster.prototype.removeListener = function (exchange, symbol, listener) {
+    var stream = this.stream[exchange][symbol];
+    var listeners = stream.listeners;
+    var streamer = stream.streamer;
+
+    console.log("Removing listener for", exchange, symbol);
+    var index = listeners.indexOf(listener);
+    listeners.splice(index, 1);
+
+    if (!listeners.length) {
+        console.log("No more listeners for", exchange, symbol);
+        streamer.stop();
+
+        this.stream[exchange][symbol] = undefined;
+    }
 };
 
 broadcaster = new Broadcaster();
@@ -246,7 +273,7 @@ SubscribeRequestHandler.broadcaster = new Broadcaster();
 
 SubscribeRequestHandler.prototype.processRequest = function (callback, errback) {
     try {
-        SubscribeRequestHandler.broadcaster.addListener(
+        return SubscribeRequestHandler.broadcaster.addListener(
             this.request.exchange, 
             this.request.symbol, 
             callback
@@ -467,6 +494,10 @@ PusherClient.prototype.bind = function (event, handler) {
     });
 };
 
+PusherClient.prototype.stop = function () {
+    this.connection.close();
+};
+
 /**
  * Bitstamp streamer
  */
@@ -484,6 +515,10 @@ function BitstampStreamer(symbol, callback) {
 
 BitstampStreamer.config = {
     exchange: 'bitstamp',
+};
+
+BitstampStreamer.prototype.stop = function () {
+    this.client.stop();
 };
 
 Broadcaster.registerStreamer(BitstampStreamer);
