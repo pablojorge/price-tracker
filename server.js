@@ -11,7 +11,11 @@ var ws = require('ws'),
     messages = require('./messages.js'),
 
     app = express(),
-    port = process.env.PORT || 5000;
+    port = process.env.PORT || 5000,
+    cache_type = process.env.CACHE || 'internal',
+    cache_ttl = parseInt(process.env.CACHE_TTL || '60'),
+    rediscloud_url = process.env.REDISCLOUD_URL || '',
+    streaming_interval = parseInt(process.env.STREAMING_INTERVAL || '60');
 
 app.use(express.static(__dirname + '/'));
 
@@ -120,7 +124,7 @@ PriceRequestHandler.requesters = {};
 PriceRequestHandler.cache = new ({
     "internal" : InternalCache,
     "redis" : RedisCache
-}[process.env.CACHE])(parseInt(process.env.CACHE_TTL));
+}[cache_type])(cache_ttl);
 
 PriceRequestHandler.addRequester = function(requester) {
     PriceRequestHandler.requesters[requester.config.exchange] = requester;
@@ -379,7 +383,7 @@ InternalCache.prototype.getEntry = function (entry, callback) {
 /**
  */
 function RedisCache(ttl) {
-    var redisURL = url.parse(process.env.REDISCLOUD_URL),
+    var redisURL = url.parse(rediscloud_url),
         client = redis.createClient(redisURL.port, 
                                     redisURL.hostname, 
                                     {no_ready_check: true});
@@ -815,7 +819,7 @@ PriceRequestHandler.addRequester(VirWoxPriceRequester);
                 requesterObj.doRequest(callback, function (e) {
                     console.log("Error while streaming:", e);
                 });
-            }, 30 * 1000);
+            }, streaming_interval * 1000);
         };
         streamer.prototype.stop = function () {
             clearInterval(this.intervalId);
