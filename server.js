@@ -803,30 +803,39 @@ VirWoxPriceRequester.prototype.processResponse = function (response, body) {
 PriceRequestHandler.addRequester(VirWoxPriceRequester);
 /**/
 
-/**
- * Automatically declare Streamers based on PriceRequesters
- */
-(function () {
-    [AmbitoPriceRequester,
-     LaNacionPriceRequester,
-     CoinbasePriceRequester,
-     BTCePriceRequester,
-     BullionVaultPriceRequester,
-     VirWoxPriceRequester].forEach(function (requester) {
-        var streamer = function (symbol, callback) {
-            var requesterObj = new requester(symbol);
-            this.intervalId = setInterval(function () {
-                requesterObj.doRequest(callback, function (e) {
-                    console.log("Error while streaming:", e);
-                });
-            }, streaming_interval * 1000);
-        };
-        streamer.prototype.stop = function () {
-            clearInterval(this.intervalId);
-        };
-        streamer.config = {
-            exchange: requester.config.exchange,
-        };
-        Broadcaster.registerStreamer(streamer);
-    });
-})();
+function Streamer(requester, interval) {
+    var ret = function (symbol, callback) {
+        var requesterObj = new requester(symbol);
+        this.intervalId = setInterval(function () {
+            requesterObj.doRequest(callback, function (e) {
+                console.log("Error while streaming:", e);
+            });
+        }, interval * 1000);
+    };
+    ret.prototype.stop = function () {
+        clearInterval(this.intervalId);
+    };
+    ret.config = {
+        exchange: requester.config.exchange,
+    };
+    return ret;
+}
+
+var AmbitoStreamer = Streamer(AmbitoPriceRequester, streaming_interval);
+Broadcaster.registerStreamer(AmbitoStreamer);
+
+var LaNacionStreamer = Streamer(LaNacionPriceRequester, streaming_interval);
+Broadcaster.registerStreamer(LaNacionStreamer);
+
+var CoinbaseStreamer = Streamer(CoinbasePriceRequester, streaming_interval);
+Broadcaster.registerStreamer(CoinbaseStreamer);
+
+var BTCeStreamer = Streamer(BTCePriceRequester, streaming_interval);
+Broadcaster.registerStreamer(BTCeStreamer);
+
+var BullionVaultStreamer = Streamer(BullionVaultPriceRequester, streaming_interval);
+Broadcaster.registerStreamer(BullionVaultStreamer);
+
+var VirWoxStreamer = Streamer(VirWoxPriceRequester, streaming_interval);
+Broadcaster.registerStreamer(VirWoxStreamer);
+
