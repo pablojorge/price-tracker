@@ -1,33 +1,5 @@
 /**
  */
-function Subject(events) {
-    var handlers = {};
-
-    events.forEach(function(event) {
-        handlers[event] = [];
-    });
-
-    this.handlers = handlers;
-}
-
-Subject.prototype.addHandler = function(event, handler) {
-    if (!(event in this.handlers)) {
-        throw ("Invalid event! " + event);
-    }
-
-    this.handlers[event].push(handler);
-};
-
-Subject.prototype.emit = function(event, args) {
-    var _this = this;
-
-    this.handlers[event].forEach(function(handler) {
-        handler.apply(_this, args);
-    });
-};
-
-/**
- */
 function Client() {
     Subject.call(this, ["onConnect",
                         "onDisconnect",
