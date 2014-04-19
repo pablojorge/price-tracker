@@ -1,4 +1,5 @@
-var ws = require('ws'),
+var fs = require('fs'),
+    ws = require('ws'),
     http = require('http'),
     express = require('express'),
 
@@ -8,7 +9,7 @@ var ws = require('ws'),
 
     InternalCache = require('./lib/InternalCache.js'),
     RedisCache = require('./lib/RedisCache.js'),
-    CachedPriceRequester = require('./lib/CachedPriceRequester.js')
+    CachedPriceRequester = require('./lib/CachedPriceRequester.js'),
     Broadcaster = require('./lib/Broadcaster.js'),
 
     // global objects
@@ -28,10 +29,22 @@ var ws = require('ws'),
 
 // load plugins
 (function () {
-    var options = {
-        streaming_interval: streaming_interval,
-    };
-    require('./plugins/Bitstamp.js').register(requesters, streamers, options);    
+    var plugins_dir = './plugins/';        
+
+    fs.readdir(plugins_dir, function (err, files) {
+        var extension = '.js';
+        
+        files.forEach(function (file) {
+            if (file.lastIndexOf(extension) != 
+                (file.length - extension.length))
+                return;
+
+            var plugin = require(plugins_dir + file);
+            plugin.register(requesters, streamers, {
+                streaming_interval: streaming_interval,
+            });
+        });
+    });
 })();
 
 app.use(express.static(__dirname + '/'));
@@ -153,16 +166,15 @@ function ExchangesRequestHandler(request) {
 
 ExchangesRequestHandler.prototype.processRequest = function (callback, errback) {
     try {
-        var exchanges = new messages.Exchanges(),
-            keys = requesters.keys();
-        for (var exchange_idx in keys) {
-            var requester = requesters.get(keys[exchange_idx]),
+        var exchanges = new messages.Exchanges();
+        requesters.keys().forEach(function (key) {
+            var requester = requesters.get(key),
                 symbols = [];
             for (var symbol in requester.config.symbol_map) {
                 symbols.push(symbol);
             }
             exchanges.addExchange(requester.config.exchange, symbols);
-        }
+        });
         callback(exchanges);
     } catch(e) {
         errback(e);

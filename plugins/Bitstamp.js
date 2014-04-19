@@ -56,7 +56,7 @@ BitstampStreamer.prototype.stop = function () {
 };
 
 module.exports = {
-    register: function (requesters, streamers) {
+    register: function (requesters, streamers, options) {
         requesters.register(BitstampPriceRequester.config.exchange,
                             BitstampPriceRequester);
         streamers.register(BitstampStreamer.config.exchange,
