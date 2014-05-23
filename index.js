@@ -234,6 +234,7 @@ QuotesView.prototype.renderPriceError = function (error) {
 
 QuotesView.prototype.renderGenericError = function (error) {
     $("#global-error").removeClass("hide");
+    $("#global-error-msgs").empty();
     $("#global-error-msgs").append($__(
         "<li>", error.message, "</li>"
     ));
@@ -878,6 +879,8 @@ GlobalController.prototype.start = function() {
 };
 
 GlobalController.prototype.onPriceUpdated = function (price) {
+    // TODO: add support for selecting symbol and exchange
+
     if (price.symbol != 'BTCUSD')
         return;
 
@@ -931,15 +934,10 @@ function main() {
         });
     
         wsclient.addHandler("onDisconnect", function() {
-            var delay = 10000;
-
-            console.log('Disconnected, reconnecting in', delay, 'ms.');
-
-            setTimeout(initClient, delay);
+            setTimeout(initClient, 10000);
         });
 
         var url = location.origin.replace(/^http/, 'ws');
-        console.log('Connecting to', url);
         wsclient.connect(url);
     }
 

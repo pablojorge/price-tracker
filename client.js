@@ -75,7 +75,7 @@ WSClient.prototype.connect = function(host) {
     };
 
     _this.socket.onerror = function (event) {
-        _this.emit("onError", [new Error(event.toString())]);
+        _this.emit("onError", [new Error('WebSocket error')]);
     };
 };
 
