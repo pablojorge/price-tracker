@@ -239,6 +239,11 @@ QuotesView.prototype.renderGenericError = function (error) {
     ));
 };
 
+QuotesView.prototype.clearGenericError = function () {
+    $("#global-error").addClass("hide");
+    $("#global-error-msgs").empty();
+};
+
 function QuotesModel() {
     this.quotes = {};
 }
@@ -272,6 +277,10 @@ QuotesController.prototype.start = function () {
 QuotesController.prototype.onPriceUpdated = function (price) {
     this.model.updateQuote(price);
     this.view.renderPrice(price);
+};
+
+QuotesController.prototype.onConnect = function (error) {
+    this.view.clearGenericError();
 };
 
 QuotesController.prototype.onError = function (error) {
@@ -855,6 +864,10 @@ GlobalView.prototype.activateSection = function (section) {
     $__(".navbar-button[target='", section, "']").click();
 };
 
+GlobalView.prototype.setWindowTitle = function (title) {
+    document.title = title;
+};
+
 function GlobalController(view) {
     this.view = view;
 }
@@ -862,6 +875,16 @@ function GlobalController(view) {
 GlobalController.prototype.start = function() {
     this.view.hookSidebarButtons();
     this.view.activateSection("quotes");
+};
+
+GlobalController.prototype.onPriceUpdated = function (price) {
+    if (price.symbol != 'BTCUSD')
+        return;
+
+    if (price.exchange != 'bitstamp')
+        return;
+
+    this.view.setWindowTitle('($' + price.sell + ') - Price Tracker');
 };
 
 function main() {
@@ -883,38 +906,44 @@ function main() {
     portfolio_controller.start();
 
     // initalize WS connection:
-    var wsclient = new WSClient();
+    var wsclient;
 
-    function connectHandlers(client) {
-        client.addHandler("onConnect", function() {
+    function initClient() {
+        wsclient = new WSClient();
+
+        wsclient.addHandler("onConnect", function() {
+            quotes_controller.onConnect();
             this.requestExchanges();
         });
 
-        client.addHandler("onExchangesListReceived", function(exchanges) {
+        wsclient.addHandler("onExchangesListReceived", function(exchanges) {
             this.requestPrices(exchanges);
         });
 
-        client.addHandler("onPriceUpdated", function(price) {
+        wsclient.addHandler("onPriceUpdated", function(price) {
+            global_controller.onPriceUpdated(price);
             quotes_controller.onPriceUpdated(price);
             portfolio_controller.onPriceUpdated(price);
         });
 
-        client.addHandler("onError", function (error) {
+        wsclient.addHandler("onError", function (error) {
             quotes_controller.onError(error);
         });
+    
+        wsclient.addHandler("onDisconnect", function() {
+            var delay = 10000;
+
+            console.log('Disconnected, reconnecting in', delay, 'ms.');
+
+            setTimeout(initClient, delay);
+        });
+
+        var url = location.origin.replace(/^http/, 'ws');
+        console.log('Connecting to', url);
+        wsclient.connect(url);
     }
 
-    wsclient.addHandler("onDisconnect", function() {
-        // assuming websocket connectivity unavailable, fallback to AJAX 
-        // (TODO: add support for wss or socket.io for proper handling
-        //        of this condition)
-        restclient = new RESTClient();
-        connectHandlers(restclient);
-        restclient.connect(location.origin);
-    });
-
-    connectHandlers(wsclient);
-    wsclient.connect(location.origin.replace(/^http/, 'ws'));
+    initClient(wsclient);
 }
 
 $(document).ready(function() {
