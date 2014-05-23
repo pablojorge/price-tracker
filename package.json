@@ -13,6 +13,10 @@
     "cheerio" : "0.13.x",
     "redis" : "0.10.x"
   },
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
+  },
   "engines": {
     "node": "0.10.x",
     "npm": "1.2.x"

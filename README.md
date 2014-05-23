@@ -66,5 +66,5 @@ To obtain a particular rate:
 
 ## Live site
 
-The application can be previewed live at <http://young-river-7409.herokuapp.com/>
+The application can be previewed live at <http://price-tracker.herokuapp.com/>
 
