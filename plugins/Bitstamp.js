@@ -37,10 +37,12 @@ BitstampPriceRequester.prototype.processResponse = function (response, body) {
  */
 
 function BitstampStreamer(symbol, callback) {
-    this.client = new PusherClient('de504dc5763aeef9ff52');
+    this.client = new PusherClient('de504dc5763aeef9ff52', function (err) {
+        callback(err);        
+    });
     this.client.subscribe('order_book');
     this.client.bind('data', function (data) {
-        callback(new messages.Price("bitstamp", 
+        callback(null, new messages.Price("bitstamp", 
                                     symbol, 
                                     parseFloat(data.bids[0][0]), 
                                     parseFloat(data.asks[0][0])));

@@ -193,7 +193,7 @@ SubscribeRequestHandler.prototype.processRequest = function (callback, errback) 
     try {
         var exchange = this.request.exchange,
             symbol = this.request.symbol;
-        return broadcaster.addListener(exchange, symbol, callback);
+        return broadcaster.addListener(exchange, symbol, callback, errback);
     } catch(e) {
         errback(e, {
             exchange: this.request.exchange,
