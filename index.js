@@ -890,7 +890,7 @@ GlobalController.prototype.onPriceUpdated = function (price) {
     this.view.setWindowTitle('($' + price.sell + ') - Price Tracker');
 };
 
-function main() {
+function init_app () {
     global_view = new GlobalView();
     global_controller = new GlobalController(global_view);
 
@@ -907,42 +907,40 @@ function main() {
     global_controller.start();
     quotes_controller.start();
     portfolio_controller.start();
+}
 
-    function initClient() { // TODO: remove
-        var url = location.origin.replace(/^http/, 'ws');
+function init_client () {
+    var url = location.origin.replace(/^http/, 'ws');
 
-        var wsclient = new WSClient(url);
+    var wsclient = new WSClient(url);
 
-        wsclient.addHandler("onConnect", function() {
-            quotes_controller.onConnect();
-            this.requestExchanges();
-        });
+    wsclient.addHandler("onConnect", function() {
+        quotes_controller.onConnect();
+        this.requestExchanges();
+    });
 
-        wsclient.addHandler("onExchangesListReceived", function(exchanges) {
-            this.requestPrices(exchanges);
-        });
+    wsclient.addHandler("onExchangesListReceived", function(exchanges) {
+        this.requestPrices(exchanges);
+    });
 
-        wsclient.addHandler("onPriceUpdated", function(price) {
-            global_controller.onPriceUpdated(price);
-            quotes_controller.onPriceUpdated(price);
-            portfolio_controller.onPriceUpdated(price);
-        });
+    wsclient.addHandler("onPriceUpdated", function(price) {
+        global_controller.onPriceUpdated(price);
+        quotes_controller.onPriceUpdated(price);
+        portfolio_controller.onPriceUpdated(price);
+    });
 
-        wsclient.addHandler("onError", function (error) {
-            quotes_controller.onError(error);
-        });
-    
-        wsclient.addHandler("onDisconnect", function() {
-            quotes_controller.onError({message:'Disconnected'});
-        });
+    wsclient.addHandler("onError", function (error) {
+        quotes_controller.onError(error);
+    });
 
-        wsclient.connect();
-    }
+    wsclient.addHandler("onDisconnect", function() {
+        quotes_controller.onError({message:'Disconnected'});
+    });
 
-    // initalize WS connection:
-    initClient();
+    wsclient.connect();
 }
 
 $(document).ready(function() {
-    main();
+    init_app();
+    init_client();
 });

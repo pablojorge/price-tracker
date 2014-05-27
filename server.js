@@ -54,12 +54,12 @@ function serveRequest(request, req, res) {
 
     handler.processRequest(
         function(response) {
-            console.log("response sent: " + response);
+            console.log("serveRequest: response sent:", response);
             res.json(response);
         },
         function(exception, info) {
             res.status(500);
-            console.log("error sent: " + exception);
+            console.log("serverRequest: error sent: ", exception);
             res.json(new messages.Error(exception.toString(), info));
         }
     );
@@ -80,17 +80,17 @@ app.get("/request/exchanges", function(req, res) {
 var server = http.createServer(app);
 server.listen(port);
 
-console.log('http server listening on %d', port);
+console.log('main: http server listening on %d', port);
 
 var wss = new ws.Server({server: server});
 
-console.log('websocket server created');
+console.log('main: websocket server created');
 
 wss.on('connection', function(ws) {
-    console.log('websocket connection open');
+    console.log('WSServer: websocket connection open');
 
     ws.on('message', function(message) {
-        console.log("message received: " + message);
+        console.log("WSServer: message received: " + message);
         try {
             var request = messages.Request.fromString(message);
             var handler = handlers.create(request.constructor.name, [request]);
@@ -98,14 +98,14 @@ wss.on('connection', function(ws) {
             var ret = handler.processRequest(
                 function(response) {
                     ws.send(response.toString(), function() {
-                        console.log("response sent: " + response);
+                        console.log("WSServer: response sent: " + response);
                     });
                 }, 
                 function(exception, info) {
                     error = new messages.Error(exception.toString(), info);
-                    console.log("exception: " + exception);
+                    console.log("WSServer: errback: exception: " + exception);
                     ws.send(error.toString(), function() {
-                        console.log("error sent");
+                        console.log("WSServer: error sent");
                     });
                 }
             );
@@ -115,7 +115,7 @@ wss.on('connection', function(ws) {
             }
         } catch(exception) {
             error = new messages.Error(exception.toString());
-            console.log("exception: " + exception);
+            console.log("WSServer: catch exception: " + exception);
             ws.send(error.toString(), function() {
                 console.log("error sent");
             });
@@ -123,7 +123,7 @@ wss.on('connection', function(ws) {
     });
 
     ws.on('close', function() {
-        console.log('websocket connection close');
+        console.log('WSServer: websocket connection close');
     });
 });
 
