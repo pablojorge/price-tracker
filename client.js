@@ -36,19 +36,25 @@ Client.prototype.requestPrices = function(exchanges) {
 
 /**
  */
-function WSClient() {
+function WSClient(host) {
     Client.call(this);
 
+    this.host = host;
+
     this.socket = undefined;
+    this.updated_on = undefined;
 }
+
+WSClient.WATCHDOG_INTERVAL = 10;
+WSClient.MAX_INACTIVITY = 60;
 
 WSClient.prototype = Object.create(Client.prototype);
 WSClient.prototype.constructor = WSClient;
 
-WSClient.prototype.connect = function(host) {
+WSClient.prototype.connect = function() {
     var _this = this;
 
-    _this.socket = new WebSocket(host);
+    _this.socket = new WebSocket(this.host);
 
     _this.socket.onopen = function (event) {
         _this.emit("onConnect");
@@ -68,6 +74,8 @@ WSClient.prototype.connect = function(host) {
             console.log("got error..");
             _this.emit("onError", [object.response]);
         }
+    
+        _this.updated_on = new Date();
     };
 
     _this.socket.onclose = function (event) {
@@ -77,6 +85,25 @@ WSClient.prototype.connect = function(host) {
     _this.socket.onerror = function (event) {
         _this.emit("onError", [new Error('WebSocket error')]);
     };
+
+    this.updated_on = new Date();
+    setTimeout(this.watchdog.bind(this), 
+               WSClient.WATCHDOG_INTERVAL * 1000);    
+};
+
+WSClient.prototype.watchdog = function () {
+    var inactive_for = ((new Date()) - this.updated_on) / 1000;
+
+    console.log('Inactive for', inactive_for, 'seconds');
+
+    if (inactive_for > WSClient.MAX_INACTIVITY) {
+        console.log('Excessive inactivity, restarting connection');
+        this.socket.close();
+        this.connect(this.host);
+    } else {
+        setTimeout(this.watchdog.bind(this), 
+                   WSClient.WATCHDOG_INTERVAL * 1000);
+    }
 };
 
 WSClient.prototype.requestExchanges = function() {
@@ -96,18 +123,16 @@ WSClient.prototype.subscribe = function(exchange, symbol) {
 
 /**
  */
-function RESTClient() {
+function RESTClient(host) {
     Client.call(this);
 
-    this.host = undefined;
+    this.host = host;
 }
 
 RESTClient.prototype = Object.create(Client.prototype);
 RESTClient.prototype.constructor = WSClient;
 
-RESTClient.prototype.connect = function(host) {
-    this.host = host;
-
+RESTClient.prototype.connect = function() {
     this.emit("onConnect");
 };
 
@@ -138,4 +163,8 @@ RESTClient.prototype.requestPrice = function(exchange, symbol) {
             _this.emit("onError", [new Error(data.message, data.info)]);
         }
     });
+};
+
+RESTClient.prototype.subscribe = function(exchange, symbol) {
+    // TODO: use setInterval() to simulate streaming..
 };

@@ -908,11 +908,10 @@ function main() {
     quotes_controller.start();
     portfolio_controller.start();
 
-    // initalize WS connection:
-    var wsclient;
+    function initClient() { // TODO: remove
+        var url = location.origin.replace(/^http/, 'ws');
 
-    function initClient() {
-        wsclient = new WSClient();
+        var wsclient = new WSClient(url);
 
         wsclient.addHandler("onConnect", function() {
             quotes_controller.onConnect();
@@ -934,14 +933,14 @@ function main() {
         });
     
         wsclient.addHandler("onDisconnect", function() {
-            setTimeout(initClient, 10000);
+            quotes_controller.onError({message:'Disconnected'});
         });
 
-        var url = location.origin.replace(/^http/, 'ws');
-        wsclient.connect(url);
+        wsclient.connect();
     }
 
-    initClient(wsclient);
+    // initalize WS connection:
+    initClient();
 }
 
 $(document).ready(function() {
