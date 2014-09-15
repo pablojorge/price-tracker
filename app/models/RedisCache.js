@@ -1,6 +1,6 @@
 var redis = require('redis'),
     url = require('url'),
-    messages = require('../public/lib/messages.js');
+    messages = require('../../public/lib/messages.js');
 
 /**
  */

@@ -1,7 +1,7 @@
 var cheerio = require('cheerio'), 
-    messages = require('../public/lib/messages.js'),
-    PriceRequester = require('../lib/PriceRequester.js'),
-    Streamer = require('../lib/Streamer.js');
+    messages = require('../../public/lib/messages.js'),
+    PriceRequester = require('../models/PriceRequester.js'),
+    Streamer = require('../models/Streamer.js');
 
 /**
  * BullionVault

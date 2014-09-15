@@ -1,6 +1,6 @@
-var messages = require('../public/lib/messages.js'),
-    PriceRequester = require('../lib/PriceRequester.js'),
-    Streamer = require('../lib/Streamer.js');
+var messages = require('../../public/lib/messages.js'),
+    PriceRequester = require('../models/PriceRequester.js'),
+    Streamer = require('../models/Streamer.js');
 
 /**
  * VirWox

@@ -7,10 +7,10 @@ var fs = require('fs'),
     messages = require('./public/lib/messages.js'),
     patterns = require('./public/lib/patterns.js'),
 
-    InternalCache = require('./lib/InternalCache.js'),
-    RedisCache = require('./lib/RedisCache.js'),
-    CachedPriceRequester = require('./lib/CachedPriceRequester.js'),
-    Broadcaster = require('./lib/Broadcaster.js'),
+    InternalCache = require('./app/models/InternalCache.js'),
+    RedisCache = require('./app/models/RedisCache.js'),
+    CachedPriceRequester = require('./app/models/CachedPriceRequester.js'),
+    Broadcaster = require('./app/models/Broadcaster.js'),
 
     // global objects
     app = express(),
@@ -29,7 +29,7 @@ var fs = require('fs'),
 
 // load plugins
 (function () {
-    var plugins_dir = './plugins/';        
+    var plugins_dir = './app/plugins/';
 
     fs.readdir(plugins_dir, function (err, files) {
         var extension = '.js';
