@@ -9,7 +9,6 @@ var fs = require('fs'),
 
     InternalCache = require('./app/models/InternalCache.js'),
     RedisCache = require('./app/models/RedisCache.js'),
-    CachedPriceRequester = require('./app/models/CachedPriceRequester.js'),
     Broadcaster = require('./app/models/Broadcaster.js'),
 
     // global objects
@@ -43,6 +42,29 @@ var fs = require('fs'),
             plugin.register(requesters, streamers, {
                 streaming_interval: streaming_interval,
             });
+        });
+    });
+})();
+
+// load controllers
+(function () {
+    var controllers_dir = './app/controllers/';
+
+    fs.readdir(controllers_dir, function (err, files) {
+        var extension = '.js';
+
+        files.forEach(function (file) {
+            if (file.lastIndexOf(extension) !=
+                (file.length - extension.length))
+                return;
+
+            var controller = require(controllers_dir + file);
+            controller.register(
+                handlers,
+                requesters,
+                broadcaster,
+                cache
+            );
         });
     });
 })();
@@ -127,79 +149,3 @@ wss.on('connection', function(ws) {
     });
 });
 
-/**
- */
-function PriceRequestHandler(request) {
-    this.request = request;
-}
-
-PriceRequestHandler.prototype.getRequester = function() {
-    try {
-        var requester = requesters.create(this.request.exchange, 
-                                          [this.request.symbol,
-                                           this.request.options]);
-        return new CachedPriceRequester(cache, this.request, requester);
-    } catch(e) {
-        throw ("Unknown exchange: " + this.request.exchange);
-    }
-};
-
-PriceRequestHandler.prototype.processRequest = function (callback, errback) {
-    try {
-        var requester = this.getRequester();
-        requester.doRequest(callback, errback);
-    } catch(e) {
-        errback(e, {
-            exchange: this.request.exchange,
-            symbol: this.request.symbol
-        });
-    }
-};
-
-handlers.register("PriceRequest", PriceRequestHandler);
-
-/**
- */
-function ExchangesRequestHandler(request) {
-    this.request = request;
-}
-
-ExchangesRequestHandler.prototype.processRequest = function (callback, errback) {
-    try {
-        var exchanges = new messages.Exchanges();
-        requesters.keys().forEach(function (key) {
-            var requester = requesters.get(key),
-                symbols = [];
-            for (var symbol in requester.config.symbol_map) {
-                symbols.push(symbol);
-            }
-            exchanges.addExchange(requester.config.exchange, symbols);
-        });
-        callback(exchanges);
-    } catch(e) {
-        errback(e);
-    }
-};
-
-handlers.register("ExchangesRequest", ExchangesRequestHandler);
-
-/**
- */
-function SubscribeRequestHandler(request) {
-    this.request = request;
-}
-
-SubscribeRequestHandler.prototype.processRequest = function (callback, errback) {
-    try {
-        var exchange = this.request.exchange,
-            symbol = this.request.symbol;
-        return broadcaster.addListener(exchange, symbol, callback, errback);
-    } catch(e) {
-        errback(e, {
-            exchange: this.request.exchange,
-            symbol: this.request.symbol
-        });
-    }
-};
-
-handlers.register("SubscribeRequest", SubscribeRequestHandler);
