@@ -40,6 +40,10 @@ function QuotesView() {
             description: 'La Nacion',
             link: 'http://www.lanacion.com.ar/dolar-hoy-t1369'
         },
+        'cronista' : {
+            description: 'Cronista',
+            link: 'http://www.cronista.com'
+        },
         'infobae' : {
             description: 'Infobae',
             link: 'http://www.infobae.com'
@@ -69,12 +73,12 @@ function QuotesView() {
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'lanacion', 'infobae'],
+            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae'],
             prefix: 'AR$'
         }, 
         'USDARSB' : {
             description: '(Dolar blue)',
-            exchanges: ['ambito', 'lanacion', 'infobae'],
+            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae'],
             prefix: 'AR$'
         }, 
         'BTCUSD' : {
