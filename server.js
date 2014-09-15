@@ -4,8 +4,8 @@ var fs = require('fs'),
     express = require('express'),
 
     // custom modules:
-    messages = require('./common/messages.js'),
-    patterns = require('./common/patterns.js'),
+    messages = require('./public/lib/messages.js'),
+    patterns = require('./public/lib/patterns.js'),
 
     InternalCache = require('./lib/InternalCache.js'),
     RedisCache = require('./lib/RedisCache.js'),
@@ -47,7 +47,7 @@ var fs = require('fs'),
     });
 })();
 
-app.use(express.static(__dirname + '/'));
+app.use(express.static(__dirname + '/public'));
 
 function serveRequest(request, req, res) {
     var handler = handlers.create(request.constructor.name, [request]);

@@ -1,5 +1,5 @@
 var cheerio = require('cheerio'), 
-    messages = require('../common/messages.js'),
+    messages = require('../public/lib/messages.js'),
     PriceRequester = require('../lib/PriceRequester.js'),
     Streamer = require('../lib/Streamer.js');
 
