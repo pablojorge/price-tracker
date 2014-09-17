@@ -13,29 +13,9 @@ var fs = require('fs'),
     app = express(),
     registry = Registry.getInstance();
 
-// load plugins
-(function () {
-    var plugins_dir = './app/plugins/';
 
-    fs.readdir(plugins_dir, function (err, files) {
-        var extension = '.js';
-        
-        files.forEach(function (file) {
-            if (file.lastIndexOf(extension) != 
-                (file.length - extension.length))
-                return;
-
-            var plugin = require(plugins_dir + file);
-            plugin.register();
-        });
-    });
-})();
-
-// load controllers
-(function () {
-    var controllers_dir = './app/controllers/';
-
-    fs.readdir(controllers_dir, function (err, files) {
+function loadModules(modules_dir) {
+    fs.readdir(modules_dir, function (err, files) {
         var extension = '.js';
 
         files.forEach(function (file) {
@@ -43,11 +23,16 @@ var fs = require('fs'),
                 (file.length - extension.length))
                 return;
 
-            var controller = require(controllers_dir + file);
-            controller.register();
+            var module = require(modules_dir + file);
+            module.register();
         });
     });
-})();
+}
+
+// load plugins
+loadModules('./app/plugins/');
+// load controllers
+loadModules('./app/controllers/');
 
 app.use(express.static(__dirname + '/public'));
 
