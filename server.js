@@ -1,18 +1,15 @@
 var fs = require('fs'),
     ws = require('ws'),
     http = require('http'),
-    express = require('express'),
+    express = require('express');
 
-    // custom modules:
-    config = require('./config/config.js'),
+var config = require('./config/config.js'),
     messages = require('./public/lib/messages.js'),
-
     Registry = require('./app/models/Registry.js'),
+    WSClientHandler = require('./app/controllers/WSClientHandler.js');
 
-    // global objects
-    app = express(),
+var app = express(),
     registry = Registry.getInstance();
-
 
 function loadModules(modules_dir) {
     fs.readdir(modules_dir, function (err, files) {
@@ -74,37 +71,11 @@ console.log('main: websocket server created');
 wss.on('connection', function(ws) {
     console.log('WSServer: websocket connection open');
 
+    var handler = new WSClientHandler(ws);
+
     ws.on('message', function(message) {
         console.log("WSServer: message received: " + message);
-        try {
-            var request = messages.Request.fromString(message);
-            var handler = registry.handlers.create(request.constructor.name, [request]);
-
-            var ret = handler.processRequest(
-                function(response) {
-                    ws.send(response.toString(), function() {
-                        console.log("WSServer: response sent: " + response);
-                    });
-                }, 
-                function(exception, info) {
-                    error = new messages.Error(exception.toString(), info);
-                    console.log("WSServer: errback: exception: " + exception);
-                    ws.send(error.toString(), function() {
-                        console.log("WSServer: error sent");
-                    });
-                }
-            );
-
-            if (ret !== undefined) {
-                ws.on('close', ret);
-            }
-        } catch(exception) {
-            error = new messages.Error(exception.toString());
-            console.log("WSServer: catch exception: " + exception);
-            ws.send(error.toString(), function() {
-                console.log("error sent");
-            });
-        }
+        handler.handle_message(message);
     });
 
     ws.on('close', function() {
