@@ -1,11 +1,12 @@
 var redis = require('redis'),
     url = require('url'),
+    config = require('../../config/config'),
     messages = require('../../public/lib/messages.js');
 
 /**
  */
-function RedisCache(ttl, options) {
-    var redisURL = url.parse(options.rediscloud_url),
+function RedisCache(ttl) {
+    var redisURL = url.parse(config.redis.url),
         client = redis.createClient(redisURL.port, 
                                     redisURL.hostname, 
                                     {no_ready_check: true});

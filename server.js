@@ -4,27 +4,14 @@ var fs = require('fs'),
     express = require('express'),
 
     // custom modules:
+    config = require('./config/config.js'),
     messages = require('./public/lib/messages.js'),
-    patterns = require('./public/lib/patterns.js'),
 
-    InternalCache = require('./app/models/InternalCache.js'),
-    RedisCache = require('./app/models/RedisCache.js'),
-    Broadcaster = require('./app/models/Broadcaster.js'),
+    Registry = require('./app/models/Registry.js'),
 
     // global objects
     app = express(),
-    port = process.env.PORT || 5000,
-    cache = new ({
-        'internal' : InternalCache,
-        'redis' : RedisCache
-    }[process.env.CACHE])(parseInt(process.env.CACHE_TTL), {
-        rediscloud_url: process.env.REDISCLOUD_URL,
-    }),
-    handlers = new patterns.Factory(),
-    requesters = new patterns.Factory(),
-    streamers = new patterns.Factory(),
-    broadcaster = new Broadcaster(streamers),
-    streaming_interval = parseInt(process.env.STREAMING_INTERVAL);
+    registry = Registry.getInstance();
 
 // load plugins
 (function () {
@@ -39,9 +26,7 @@ var fs = require('fs'),
                 return;
 
             var plugin = require(plugins_dir + file);
-            plugin.register(requesters, streamers, {
-                streaming_interval: streaming_interval,
-            });
+            plugin.register();
         });
     });
 })();
@@ -59,12 +44,7 @@ var fs = require('fs'),
                 return;
 
             var controller = require(controllers_dir + file);
-            controller.register(
-                handlers,
-                requesters,
-                broadcaster,
-                cache
-            );
+            controller.register();
         });
     });
 })();
@@ -72,7 +52,7 @@ var fs = require('fs'),
 app.use(express.static(__dirname + '/public'));
 
 function serveRequest(request, req, res) {
-    var handler = handlers.create(request.constructor.name, [request]);
+    var handler = registry.handlers.create(request.constructor.name, [request]);
 
     handler.processRequest(
         function(response) {
@@ -100,9 +80,9 @@ app.get("/request/exchanges", function(req, res) {
 });
 
 var server = http.createServer(app);
-server.listen(port);
+server.listen(config.server.port);
 
-console.log('main: http server listening on %d', port);
+console.log('main: http server listening on %d', config.server.port);
 
 var wss = new ws.Server({server: server});
 
@@ -115,7 +95,7 @@ wss.on('connection', function(ws) {
         console.log("WSServer: message received: " + message);
         try {
             var request = messages.Request.fromString(message);
-            var handler = handlers.create(request.constructor.name, [request]);
+            var handler = registry.handlers.create(request.constructor.name, [request]);
 
             var ret = handler.processRequest(
                 function(response) {

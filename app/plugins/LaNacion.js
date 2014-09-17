@@ -1,4 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
+    config = require('../../config/config'),
+    Registry = require('../models/Registry.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -61,11 +63,12 @@ LaNacionPriceRequester.prototype.processResponse = function (response, body) {
 
 module.exports = {
     register: function (requesters, streamers, options) {
-        var LaNacionStreamer = Streamer(LaNacionPriceRequester, 
-                                        options.streaming_interval);
-        requesters.register(LaNacionPriceRequester.config.exchange,
-                            LaNacionPriceRequester);
-        streamers.register(LaNacionStreamer.config.exchange,
-                           LaNacionStreamer);
+        var LaNacionStreamer = Streamer(LaNacionPriceRequester,
+                                        config.streaming.interval);
+        registry = Registry.getInstance();
+        registry.requesters.register(LaNacionPriceRequester.config.exchange,
+                                     LaNacionPriceRequester);
+        registry.streamers.register(LaNacionStreamer.config.exchange,
+                                    LaNacionStreamer);
     }
 };

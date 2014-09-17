@@ -1,5 +1,7 @@
-var cheerio = require('cheerio'), 
+var cheerio = require('cheerio'),
+    config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
+    Registry = require('../models/Registry.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
     
@@ -48,12 +50,13 @@ AmbitoPriceRequester.prototype.processResponse = function (response, body) {
 /**/
 
 module.exports = {
-    register: function (requesters, streamers, options) {
-        var AmbitoStreamer = Streamer(AmbitoPriceRequester, 
-                                      options.streaming_interval);
-        requesters.register(AmbitoPriceRequester.config.exchange,
-                            AmbitoPriceRequester);
-        streamers.register(AmbitoStreamer.config.exchange,
-                           AmbitoStreamer);
+    register: function () {
+        var AmbitoStreamer = Streamer(AmbitoPriceRequester,
+                                      config.streaming.interval);
+        registry = Registry.getInstance();
+        registry.requesters.register(AmbitoPriceRequester.config.exchange,
+                                     AmbitoPriceRequester);
+        registry.streamers.register(AmbitoStreamer.config.exchange,
+                                    AmbitoStreamer);
     }
 };

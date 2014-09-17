@@ -1,5 +1,7 @@
-var async = require('async'), 
+var async = require('async'),
+    config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
+    Registry = require('../models/Registry.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -65,11 +67,12 @@ CoinbasePriceRequester.prototype.processResponse = function (response, body) {
 
 module.exports = {
     register: function (requesters, streamers, options) {
-        var CoinbaseStreamer = Streamer(CoinbasePriceRequester, 
-                                        options.streaming_interval);
-        requesters.register(CoinbasePriceRequester.config.exchange,
-                            CoinbasePriceRequester);
-        streamers.register(CoinbaseStreamer.config.exchange,
-                           CoinbaseStreamer);
+        var CoinbaseStreamer = Streamer(CoinbasePriceRequester,
+                                        config.streaming.interval);
+        registry = Registry.getInstance();
+        registry.requesters.register(CoinbasePriceRequester.config.exchange,
+                                     CoinbasePriceRequester);
+        registry.streamers.register(CoinbaseStreamer.config.exchange,
+                                    CoinbaseStreamer);
     }
 };
