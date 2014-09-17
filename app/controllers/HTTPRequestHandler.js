@@ -23,3 +23,4 @@ HTTPRequestHandler.prototype.handle = function(request, req, res) {
     );
 };
 
+module.exports = HTTPRequestHandler;
