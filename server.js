@@ -29,10 +29,8 @@ function loadModules(modules_dir) {
     });
 }
 
-// load plugins
 loadModules('./app/plugins/');
-// load controllers
-loadModules('./app/controllers/');
+loadModules('./app/handlers/');
 
 app.use(express.static(__dirname + '/public'));
 
