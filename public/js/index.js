@@ -40,6 +40,14 @@ function QuotesView() {
             description: 'La Nacion',
             link: 'http://www.lanacion.com.ar/dolar-hoy-t1369'
         },
+        'cronista' : {
+            description: 'Cronista',
+            link: 'http://www.cronista.com'
+        },
+        'infobae' : {
+            description: 'Infobae',
+            link: 'http://www.infobae.com'
+        },
         'coinbase' : {
             description: 'Coinbase',
             link: 'https://coinbase.com/charts',
@@ -65,12 +73,12 @@ function QuotesView() {
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'lanacion'],
+            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae'],
             prefix: 'AR$'
         }, 
         'USDARSB' : {
             description: '(Dolar blue)',
-            exchanges: ['ambito', 'lanacion'],
+            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae'],
             prefix: 'AR$'
         }, 
         'BTCUSD' : {
@@ -210,10 +218,12 @@ QuotesView.prototype.renderPrice = function (price) {
         updated_on_selector = __(selector_base, "-updated_on"),
         progress_selector = __(selector_base, "-progress");
     
-    $(buy_selector).html(__(this.symbols[price.symbol].prefix, 
-                            price.buy.toFixed(2)));
-    $(sell_selector).html(__(this.symbols[price.symbol].prefix, 
-                             price.sell.toFixed(2)));
+    $(buy_selector).html(price.buy ?
+                         __(this.symbols[price.symbol].prefix, 
+                            price.buy.toFixed(2)) : "N/A");
+    $(sell_selector).html(price.sell ?
+                          __(this.symbols[price.symbol].prefix, 
+                             price.sell.toFixed(2)) : "N/A");
     $(updated_on_selector).html((new Date(price.updated_on)).toLocaleString());
 
     $(prices_selector).removeClass("hide");
