@@ -6,12 +6,16 @@ var fs = require('fs'),
 var config = require('./config/config.js'),
     messages = require('./public/lib/messages.js'),
     Registry = require('./app/models/Registry.js'),
+    HTTPRequestHandler = require('./app/controllers/HTTPRequestHandler.js'),
     WSClientHandler = require('./app/controllers/WSClientHandler.js');
 
 var app = express(),
     registry = Registry.getInstance();
 
-function loadModules(modules_dir) {
+var modules_dirs = ['./app/plugins/',
+                   './app/handlers/'];
+
+modules_dirs.forEach(function (modules_dir) {
     fs.readdir(modules_dir, function (err, files) {
         var extension = '.js';
 
@@ -24,39 +28,22 @@ function loadModules(modules_dir) {
             module.register();
         });
     });
-}
-
-loadModules('./app/plugins/');
-loadModules('./app/handlers/');
+});
 
 app.use(express.static(__dirname + '/public'));
-
-function serveRequest(request, req, res) {
-    var handler = registry.handlers.create(request.constructor.name, [request]);
-
-    handler.processRequest(
-        function(response) {
-            console.log("serveRequest: response sent:", response);
-            res.json(response);
-        },
-        function(exception, info) {
-            res.status(500);
-            console.log("serverRequest: error sent: ", exception);
-            res.json(new messages.Error(exception.toString(), info));
-        }
-    );
-}
 
 app.get("/request/price/:exchange/:symbol", function(req, res) {
     var exchange = req.params.exchange,
         symbol = req.params.symbol,
         request = new messages.PriceRequest(exchange, symbol);
-    serveRequest(request, req, res);
+    var handler = new HTTPRequestHandler(ws);
+    handler.handle(request, req, res);
 });
 
 app.get("/request/exchanges", function(req, res) {
     var request = new messages.ExchangesRequest();
-    serveRequest(request, req, res);
+    var handler = new HTTPRequestHandler(ws);
+    handler.handle(request, req, res);
 });
 
 var server = http.createServer(app);
