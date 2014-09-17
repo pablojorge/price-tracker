@@ -153,7 +153,7 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '<div class="row">',
         '  <div class="col-xs-4 col-sm-3">', 
         '    <h5>',
-        '       <img src="img/', exchange, '_icon.ico" ',
+        '       <img src="img/icon/', exchange, '.ico" ',
         '            width=16 height=16> ', 
         '       <a href="', this.exchanges[exchange].link,'">',
                   this.exchanges[exchange].description, 
