@@ -1,4 +1,4 @@
-var messages = require('../common/messages.js');
+var messages = require('../../public/lib/messages.js');
 
 /**
  */

@@ -1,6 +1,8 @@
-var messages = require('../common/messages.js'),
-    PriceRequester = require('../lib/PriceRequester.js'),
-    Streamer = require('../lib/Streamer.js');
+var messages = require('../../public/lib/messages.js'),
+    config = require('../../config/config'),
+    Registry = require('../models/Registry.js'),
+    PriceRequester = require('../models/PriceRequester.js'),
+    Streamer = require('../models/Streamer.js');
 
 /**
  * BTC-e
@@ -35,12 +37,13 @@ BTCePriceRequester.prototype.processResponse = function (response, body) {
 /**/
 
 module.exports = {
-    register: function (requesters, streamers, options) {
-        var BTCeStreamer = Streamer(BTCePriceRequester, 
-                                    options.streaming_interval);
-        requesters.register(BTCePriceRequester.config.exchange,
-                            BTCePriceRequester);
-        streamers.register(BTCeStreamer.config.exchange,
-                           BTCeStreamer);
+    register: function () {
+        var BTCeStreamer = Streamer(BTCePriceRequester,
+                                    config.streaming.interval);
+        registry = Registry.getInstance();
+        registry.requesters.register(BTCePriceRequester.config.exchange,
+                                     BTCePriceRequester);
+        registry.streamers.register(BTCeStreamer.config.exchange,
+                                    BTCeStreamer);
     }
 };

@@ -1,7 +1,7 @@
 var ws = require('ws');
 var should = require('chai').should();
 
-var messages = require('../common/messages.js');
+var messages = require('../public/lib/messages.js');
 
 describe('Server', function () {
     it('should start', function (done) {

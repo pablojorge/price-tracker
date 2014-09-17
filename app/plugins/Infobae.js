@@ -1,6 +1,8 @@
-var messages = require('../common/messages.js'),
-    PriceRequester = require('../lib/PriceRequester.js'),
-    Streamer = require('../lib/Streamer.js');
+var config = require('../../config/config'),
+    messages = require('../../public/lib/messages.js'),
+    Registry = require('../models/Registry.js'),
+    PriceRequester = require('../models/PriceRequester.js'),
+    Streamer = require('../models/Streamer.js');
 
 /**
  * infobae.com
@@ -47,12 +49,13 @@ InfobaePriceRequester.prototype.processResponse = function (response, body) {
 /**/
 
 module.exports = {
-    register: function (requesters, streamers, options) {
+    register: function () {
         var InfobaeStreamer = Streamer(InfobaePriceRequester,
-                                       options.streaming_interval);
-        requesters.register(InfobaePriceRequester.config.exchange,
-                            InfobaePriceRequester);
-        streamers.register(InfobaeStreamer.config.exchange,
-                           InfobaeStreamer);
+                                       config.streaming.interval);
+        registry = Registry.getInstance();
+        registry.requesters.register(InfobaePriceRequester.config.exchange,
+                                     InfobaePriceRequester);
+        registry.streamers.register(InfobaeStreamer.config.exchange,
+                                    InfobaeStreamer);
     }
 };

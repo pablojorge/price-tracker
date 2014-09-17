@@ -1,9 +1,28 @@
+var Registry = require('../models/Registry.js');
+
+var registry = Registry.getInstance();
+
 /**
  */
-function Broadcaster(streamers) {
-    this.streamers = streamers;
+function Broadcaster() {
     this.stream = {};
 }
+
+Broadcaster.instance = null;
+
+Broadcaster.getInstance = function () {
+    if (!Broadcaster.instance) {
+        Broadcaster.instance = new Broadcaster();
+    }
+
+    return Broadcaster.instance;
+};
+
+Broadcaster.deleteInstance = function () {
+    if (Broadcaster.instance) {
+        Broadcaster.instance = null;
+    }
+};
 
 Broadcaster.prototype.addListener = function(exchange, symbol, callback, errback) {
     var self = this;
@@ -23,7 +42,7 @@ Broadcaster.prototype.addListener = function(exchange, symbol, callback, errback
             });
         };
 
-        var streamer = this.streamers.create(exchange, [symbol, updateFn]);
+        var streamer = registry.streamers.create(exchange, [symbol, updateFn]);
 
         this.stream[exchange][symbol] = {
             streamer: streamer,

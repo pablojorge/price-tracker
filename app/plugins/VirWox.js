@@ -1,6 +1,8 @@
-var messages = require('../common/messages.js'),
-    PriceRequester = require('../lib/PriceRequester.js'),
-    Streamer = require('../lib/Streamer.js');
+var messages = require('../../public/lib/messages.js'),
+    config = require('../../config/config'),
+    Registry = require('../models/Registry.js'),
+    PriceRequester = require('../models/PriceRequester.js'),
+    Streamer = require('../models/Streamer.js');
 
 /**
  * VirWox
@@ -35,11 +37,12 @@ VirWoxPriceRequester.prototype.processResponse = function (response, body) {
 
 module.exports = {
     register: function (requesters, streamers, options) {
-        var VirWoxStreamer = Streamer(VirWoxPriceRequester, 
-                                        options.streaming_interval);
-        requesters.register(VirWoxPriceRequester.config.exchange,
-                            VirWoxPriceRequester);
-        streamers.register(VirWoxStreamer.config.exchange,
-                           VirWoxStreamer);
+        var VirWoxStreamer = Streamer(VirWoxPriceRequester,
+                                      config.streaming.interval);
+        registry = Registry.getInstance();
+        registry.requesters.register(VirWoxPriceRequester.config.exchange,
+                                     VirWoxPriceRequester);
+        registry.streamers.register(VirWoxStreamer.config.exchange,
+                                    VirWoxStreamer);
     }
 };

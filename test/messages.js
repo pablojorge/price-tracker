@@ -1,5 +1,5 @@
 var should = require('chai').should();
-var messages = require('../common/messages.js');
+var messages = require('../public/lib/messages.js');
 
 describe("PriceRequest", function () {
 	var options = {opt1: 'value1', opt2: 'value2'};
