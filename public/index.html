@@ -23,35 +23,16 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Settings</a></li>
-            <li><a href="#">Profile</a></li>
-            <li><a href="#">Help</a></li>
+            <li class="navbar-button" target="quotes"><a>Quotes</a></li>
+            <li class="navbar-button" target="portfolio"><a>Portfolio</a></li>
           </ul>
-          <form class="navbar-form navbar-right">
-            <input type="text" class="form-control" placeholder="Search...">
-          </form>
         </div>
       </div>
     </div>
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li class="navbar-button" target="quotes"><a>Quotes</a></li>
-            <li class="navbar-button" target="analytics"><a>Analytics</a></li>
-            <li class="navbar-button" target="live"><a>Live</a></li>
-          </ul>
-          <ul class="nav nav-sidebar">
-            <li class="navbar-button" target="portfolio"><a>Portfolio</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
-             id="main-quotes">
+        <div class="main hide" id="main-quotes">
           <h1 class="page-header">Quotes</h1>
           <div class="row hide" id="global-error">
             <div class="alert alert-danger">
@@ -63,26 +44,7 @@
       </div>
 
       <div class="row">
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
-             id="main-analytics">
-          <h1 class="page-header">Analytics</h1>
-
-          <div class="row placeholders">
-            <div class="col-sm-12">
-              <div class="progress">
-                <div class="progress-bar" style="width: 30%;"></div>
-                <div class="progress-bar progress-bar-success" style="width: 40%;">
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
-             id="main-portfolio">
+        <div class="main hide" id="main-portfolio">
           <h1 class="page-header">
             <div style="padding-bottom: 10px;">
               Portfolio
