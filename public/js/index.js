@@ -205,6 +205,7 @@ QuotesView.prototype.renderPrice = function (price) {
         prices_selector = __(selector_base, "-prices"),
         buy_selector = __(selector_base, "-buy"),
         sell_selector = __(selector_base, "-sell"),
+        error_selector = __(selector_base, "-error"),
         progress_selector = __(selector_base, "-progress");
     
     var updated_on = (new Date(price.updated_on)).toLocaleString(),
@@ -223,11 +224,13 @@ QuotesView.prototype.renderPrice = function (price) {
     $(sell_selector).attr("title", date_info);
 
     $(prices_selector).removeClass("hide");
+    $(error_selector).addClass("hide");
     $(progress_selector).addClass("hide");
 };
 
 QuotesView.prototype.renderPriceError = function (error) {
     var selector_base = __("#", error.info.symbol, "-", error.info.exchange),
+        prices_selector = __(selector_base, "-prices"),
         error_selector = __(selector_base, "-error"),
         error_msg_selector = __(selector_base, "-error-msg"),
         progress_selector = __(selector_base, "-progress");
@@ -235,6 +238,7 @@ QuotesView.prototype.renderPriceError = function (error) {
     $(error_msg_selector).html(error.message);
 
     $(error_selector).removeClass("hide");
+    $(prices_selector).addClass("hide");
     $(progress_selector).addClass("hide");
 };
 
