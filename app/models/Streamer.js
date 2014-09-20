@@ -2,17 +2,10 @@
  * Metaclass to generate streamers, using a specific PriceRequester
  */
 function Streamer(requester, interval) {
-    var ret = function (symbol, callback) {
+    var ret = function (symbol, callback, errback) {
         var requesterObj = new requester(symbol);
         this.intervalId = setInterval(function () {
-            requesterObj.doRequest(
-                function (data) {
-                    callback(null, data);
-                }, 
-                function (err) {
-                    callback(err);
-                }
-            );
+            requesterObj.doRequest(callback, errback);
         }, interval * 1000);
     };
     ret.prototype.stop = function () {

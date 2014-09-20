@@ -32,17 +32,21 @@ Broadcaster.prototype.addListener = function(exchange, symbol, callback, errback
     }
 
     if (this.stream[exchange][symbol] === undefined) {
-        var updateFn = function (error, data) {
-            self.stream[exchange][symbol].listeners.forEach(function (listener) {
-                if (error) {
-                    listener.errback(error);
-                } else {
-                    listener.callback(data);
-                }
-            });
-        };
-
-        var streamer = registry.streamers.create(exchange, [symbol, updateFn]);
+        var streamer = registry.streamers.create(
+            exchange, [
+                symbol,
+                function (response) {
+                    self.stream[exchange][symbol].listeners.forEach(function (listener) {
+                        listener.callback(response);
+                    });
+                },
+                function (exception, info) {
+                    self.stream[exchange][symbol].listeners.forEach(function (listener) {
+                        listener.errback(exception, info);
+                    });
+                },
+            ]
+        );
 
         this.stream[exchange][symbol] = {
             streamer: streamer,
