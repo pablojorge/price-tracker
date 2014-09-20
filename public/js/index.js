@@ -249,6 +249,10 @@ function QuotesModel() {
     this.quotes = {};
 }
 
+QuotesView.prototype.updateTimer = function (age) {
+    $("#quotes-updated-secs-ago").html(age);
+};
+
 QuotesModel.prototype.updateQuote = function(quote) {
     if (!(quote.symbol in this.quotes))
         this.quotes[quote.symbol] = {};
@@ -269,6 +273,8 @@ QuotesModel.prototype.getQuote = function(symbol, exchange) {
 function QuotesController(view, model) {
     this.view = view;
     this.model = model;
+    this.updated_on = new Date();
+    this.watchdog();
 }
 
 QuotesController.prototype.start = function () {
@@ -276,6 +282,7 @@ QuotesController.prototype.start = function () {
 };
 
 QuotesController.prototype.onPriceUpdated = function (price) {
+    this.updated_on = new Date();
     this.model.updateQuote(price);
     this.view.renderPrice(price);
 };
@@ -290,6 +297,14 @@ QuotesController.prototype.onError = function (error) {
     } else {
         this.view.renderPriceError(error);
     }
+};
+
+QuotesController.prototype.watchdog = function () {
+    var age = ((new Date()) - this.updated_on) / 1000;
+
+    this.view.updateTimer(age.toFixed(2));
+
+    setTimeout(this.watchdog.bind(this), 1000);
 };
 
 QuotesController.prototype.getQuote = function (symbol, exchange) {
