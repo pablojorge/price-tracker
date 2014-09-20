@@ -205,16 +205,22 @@ QuotesView.prototype.renderPrice = function (price) {
         prices_selector = __(selector_base, "-prices"),
         buy_selector = __(selector_base, "-buy"),
         sell_selector = __(selector_base, "-sell"),
-        updated_on_selector = __(selector_base, "-updated_on"),
         progress_selector = __(selector_base, "-progress");
     
+    var updated_on = (new Date(price.updated_on)).toLocaleString(),
+        retrieved_on = (new Date(price.retrieved_on)).toLocaleString(),
+        date_info = ("Last published on " + updated_on + "\n" +
+                     "Retrieved on " + retrieved_on);
+
     $(buy_selector).html(price.buy ?
                          __(this.symbols[price.symbol].prefix, 
                             price.buy.toFixed(2)) : "N/A");
     $(sell_selector).html(price.sell ?
                           __(this.symbols[price.symbol].prefix, 
                              price.sell.toFixed(2)) : "N/A");
-    $(updated_on_selector).html((new Date(price.updated_on)).toLocaleString());
+
+    $(buy_selector).attr("title", date_info);
+    $(sell_selector).attr("title", date_info);
 
     $(prices_selector).removeClass("hide");
     $(progress_selector).addClass("hide");
@@ -245,13 +251,13 @@ QuotesView.prototype.clearGenericError = function () {
     $("#global-error-msgs").empty();
 };
 
-function QuotesModel() {
-    this.quotes = {};
-}
-
 QuotesView.prototype.updateTimer = function (age) {
     $("#quotes-updated-secs-ago").html(age);
 };
+
+function QuotesModel() {
+    this.quotes = {};
+}
 
 QuotesModel.prototype.updateQuote = function(quote) {
     if (!(quote.symbol in this.quotes))
