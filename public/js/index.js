@@ -120,12 +120,38 @@ QuotesView.prototype.render = function() {
     for (var symbol in this.symbols) {
         _this.addSymbol(symbol, this.symbols[symbol]);
     }
+
+    this.hookCollapseButtons();
+};
+
+QuotesView.prototype.hookCollapseButtons = function () {
+    $(".collapse-symbol").unbind('click').bind('click', function(event) {
+        event.preventDefault();
+
+        if ($(this).hasClass("expanded")) {
+            $(this).removeClass("expanded");
+            $(this).removeClass("glyphicon-chevron-down");
+            $(this).addClass("glyphicon-chevron-right");
+            $__("#prices-body-", $(this).attr("target")).slideUp();
+        } else {
+            $(this).addClass("expanded");
+            $(this).addClass("glyphicon-chevron-down");
+            $(this).removeClass("glyphicon-chevron-right");
+            $__("#prices-body-", $(this).attr("target")).slideDown();
+        }
+
+        return false;
+    });
 };
 
 QuotesView.prototype.renderSymbol = function (symbol, info) {
     return $__(
         '<div class="col-xs-12 col-sm-6">',
-        '  <h3>', symbol,
+        '  <h3>',
+        '    <span target="', symbol, '"',
+        '          class="collapse-symbol glyphicon glyphicon-chevron-down expanded"',
+        '          style="font-size: small;"></span> ',
+             symbol,
         '    <small>', info.description, '</small>',
         '  </h3>',
         '  <div style="margin-top: 10px" ',
@@ -289,6 +315,7 @@ function QuotesController(view, model) {
 
 QuotesController.prototype.start = function () {
     this.view.render();
+    this.view.hookCollapseButtons();
 };
 
 QuotesController.prototype.onPriceUpdated = function (price) {
