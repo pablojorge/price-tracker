@@ -150,6 +150,24 @@ QuotesView.prototype.hookCollapseButtons = function () {
 
         return false;
     });
+
+    $(".collapse-exchange").unbind('click').bind('click', function(event) {
+        event.preventDefault();
+
+        if ($(this).hasClass("expanded")) {
+            $(this).removeClass("expanded");
+            $(this).removeClass("glyphicon-chevron-down");
+            $(this).addClass("glyphicon-chevron-right");
+            $__('#', $(this).attr("target"), '-details').slideUp();
+        } else {
+            $(this).addClass("expanded");
+            $(this).addClass("glyphicon-chevron-down");
+            $(this).removeClass("glyphicon-chevron-right");
+            $__('#', $(this).attr("target"), '-details').slideDown();
+        }
+
+        return false;
+    });
 };
 
 QuotesView.prototype.renderSymbol = function (symbol, info) {
@@ -185,6 +203,9 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '<div class="row">',
         '  <div class="col-xs-4">', 
         '    <h5>',
+        '      <span target="', base_id, '"',
+        '            class="collapse-exchange glyphicon glyphicon-chevron-right"',
+        '            style="font-size: xx-small;"></span>  ',
         '       <img src="img/icon/', exchange, '.ico" ',
         '            width=16 height=16> ', 
         '       <a href="', this.exchanges[exchange].link,'">',
@@ -222,8 +243,54 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '      </h4>',
         '    </div>',
         '  </div>',
+        '</div>',
+        '<div id="', base_id, '-details" style="display: none;">',
+        '  <div class="row">',
+        '    <div class="col-xs-4">',
+        '      <span style="font-size: small;">',
+        '        <strong>Last published:</strong>',
+        '      </span>',
+        '    </div>',
+        '    <div class="col-xs-8"',
+        '         id="', base_id, '-last-published-progress">',
+        '      <div class="progress progress-striped active">',
+        '        <div class="progress-bar" style="width: 100%">',
+        '        </div>',
+        '      </div>',
+        '    </div>',
+        '    <div id="', base_id, '-last-published" class="hide">',
+        '      <div class="col-xs-8">',
+        '        <span id="', base_id, '-last-published-date" style="font-size: small;">',
+        '        </span>',
+        '        <span id="', base_id, '-last-published-ago" style="font-size: small;">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '  </div>',
+        '  <div class="row">',
+        '    <div class="col-xs-4">',
+        '      <span style="font-size: small;">',
+        '        <strong>Last updated:</strong>',
+        '      </span>',
+        '    </div>',
+        '    <div class="col-xs-8"',
+        '         id="', base_id, '-last-updated-progress">',
+        '      <div class="progress progress-striped active">',
+        '        <div class="progress-bar" style="width: 100%">',
+        '        </div>',
+        '      </div>',
+        '    </div>',
+        '    <div id="', base_id, '-last-updated" class="hide">',
+        '      <div class="col-xs-8">',
+        '        <span id="', base_id, '-last-updated-date" style="font-size: small;">',
+        '        </span>',
+        '        <span id="', base_id, '-last-updated-ago" style="font-size: small;">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '  </div>',
         '</div>'
-    );
+    );  
 };
 
 QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
@@ -240,7 +307,15 @@ QuotesView.prototype.renderPrice = function (price) {
         buy_selector = __(selector_base, "-buy"),
         sell_selector = __(selector_base, "-sell"),
         error_selector = __(selector_base, "-error"),
-        progress_selector = __(selector_base, "-progress");
+        progress_selector = __(selector_base, "-progress"),
+        last_published_selector = __(selector_base, "-last-published"),
+        last_published_date_selector = __(selector_base, "-last-published-date"),
+        last_published_ago_selector = __(selector_base, "-last-published-ago"),
+        last_published_progress_selector = __(selector_base, "-last-published-progress"),
+        last_updated_selector = __(selector_base, "-last-updated"),
+        last_updated_date_selector = __(selector_base, "-last-updated-date"),
+        last_updated_ago_selector = __(selector_base, "-last-updated-ago"),
+        last_updated_progress_selector = __(selector_base, "-last-updated-progress");
     
     var updated_on = (new Date(price.updated_on)).toLocaleString(),
         retrieved_on = (new Date(price.retrieved_on)).toLocaleString(),
@@ -253,13 +328,18 @@ QuotesView.prototype.renderPrice = function (price) {
     $(sell_selector).html(price.sell ?
                           __(this.symbols[price.symbol].prefix, 
                              price.sell.toFixed(2)) : "N/A");
-
-    $(buy_selector).attr("title", date_info);
-    $(sell_selector).attr("title", date_info);
+    $(last_published_date_selector).html(updated_on);
+    $(last_published_ago_selector).html(__('(0.00 ', 'seconds ago)'));
+    $(last_updated_date_selector).html(retrieved_on);
+    $(last_updated_ago_selector).html(__('(0.00 ', 'seconds ago)'));
 
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
     $(progress_selector).addClass("hide");
+    $(last_published_selector).removeClass("hide");
+    $(last_published_progress_selector).addClass("hide");
+    $(last_updated_selector).removeClass("hide");
+    $(last_updated_progress_selector).addClass("hide");
 };
 
 QuotesView.prototype.renderPriceError = function (error) {
