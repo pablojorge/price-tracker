@@ -74,42 +74,50 @@ function QuotesView() {
         'USDARS' : {
             description: '(Dolar oficial)',
             exchanges: ['ambito', 'lanacion', 'cronista', 'infobae'],
-            prefix: 'AR$'
+            prefix: 'AR$',
+            column: '1'
         }, 
         'USDARSB' : {
             description: '(Dolar blue)',
             exchanges: ['ambito', 'lanacion', 'cronista', 'infobae'],
-            prefix: 'AR$'
+            prefix: 'AR$',
+            column: '1'
         }, 
         'BTCUSD' : {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e'],
-            prefix: '$'
+            prefix: '$',
+            column: '2'
         },  
         'LTCUSD' : {
             description: '(Litecoin)',
             exchanges: ['btc-e'],
-            prefix: '$'
+            prefix: '$',
+            column: '2'
         },
         'XAUUSD' : {
             description: '(Gold)',
             exchanges: ['bullionvault'],
-            prefix: '$'
+            prefix: '$',
+            column: '2'
         },           
         'XAGUSD' : {
             description: '(Silver)',
             exchanges: ['bullionvault'],
-            prefix: '$'
+            prefix: '$',
+            column: '2'
         }, 
         'USDSLL' : {
             description: '(Linden/USD)',
             exchanges: ['virwox'],
-            prefix: ''
+            prefix: '',
+            column: '2'
         }, 
         'BTCSLL' : {
             description: '(Linden/Bitcoin)',
             exchanges: ['virwox'],
-            prefix: 'SLL '
+            prefix: 'SLL ',
+            column: '2'
         }, 
     };
 }
@@ -146,7 +154,7 @@ QuotesView.prototype.hookCollapseButtons = function () {
 
 QuotesView.prototype.renderSymbol = function (symbol, info) {
     return $__(
-        '<div class="col-xs-12 col-sm-6">',
+        '<div class="row">',
         '  <h3>',
         '    <span target="', symbol, '"',
         '          class="collapse-symbol glyphicon glyphicon-chevron-down expanded"',
@@ -162,7 +170,7 @@ QuotesView.prototype.renderSymbol = function (symbol, info) {
 };
 
 QuotesView.prototype.addSymbol = function (symbol, info) {
-    $("#main-quotes").append(this.renderSymbol(symbol, info));
+    $__("#main-quotes-", info.column).append(this.renderSymbol(symbol, info));
 
     var _this = this;
     info.exchanges.forEach(function(exchange) {
