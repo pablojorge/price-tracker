@@ -371,25 +371,13 @@ QuotesView.prototype.clearGenericError = function () {
 
 QuotesView.prototype.timedelta = function(last_update) {
     var delta = ((new Date()) - last_update) / 1000,
-        frames = {
-            minute: {
-                seconds: 60,
-                suffix: 'm'
-            },
-            hour: {
-                seconds: 60 * 60,
-                suffix: 'h'
-            },
-            day: {
-                seconds: 60 * 60 * 24,
-                suffix: 'd'
-            },
-            week: {
-                seconds: 60 * 60 * 24 * 7,
-                suffix: 'w'
-            },
-        },
+        frames = {},
         ret = '';
+
+    frames.minute = {seconds: 60, suffix: 'm'};
+    frames.hour = {seconds: frames.minute.seconds * 60, suffix: 'h'};
+    frames.day = {seconds: frames.hour.seconds * 24, suffix: 'd'};
+    frames.week = {seconds: frames.day.seconds * 7, suffix: 'w'};
 
     ['week', 'day', 'hour', 'minute'].forEach(function (frame) {
         if (delta >= frames[frame].seconds) {
