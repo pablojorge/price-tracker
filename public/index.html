@@ -19,70 +19,60 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Price Tracker</a>
+          <a class="navbar-brand" href="#">
+            Price Tracker
+            <iframe class="github-btn hidden-xs"
+                  src="http://ghbtns.com/github-btn.html?user=pablojorge&amp;repo=price-tracker&amp;type=watch&amp;count=true"
+                  allowtransparency="true"
+                  frameborder="0"
+                  style="margin-left: 15px"
+                  scrolling="0"
+                  width="80px"
+                  height="20px">
+            </iframe>
+            <iframe class="github-btn hidden-xs"
+                  src="http://ghbtns.com/github-btn.html?user=pablojorge&amp;repo=price-tracker&amp;type=fork&amp;count=true"
+                  allowtransparency="true"
+                  frameborder="0"
+                  scrolling="0"
+                  width="80px"
+                  height="20px">
+            </iframe>
+          </a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Settings</a></li>
-            <li><a href="#">Profile</a></li>
-            <li><a href="#">Help</a></li>
+            <li class="navbar-button" target="quotes"><a>Quotes</a></li>
+            <li class="navbar-button" target="portfolio"><a>Portfolio</a></li>
           </ul>
-          <form class="navbar-form navbar-right">
-            <input type="text" class="form-control" placeholder="Search...">
-          </form>
         </div>
       </div>
     </div>
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li class="navbar-button" target="quotes"><a>Quotes</a></li>
-            <li class="navbar-button" target="analytics"><a>Analytics</a></li>
-            <li class="navbar-button" target="live"><a>Live</a></li>
-          </ul>
-          <ul class="nav nav-sidebar">
-            <li class="navbar-button" target="portfolio"><a>Portfolio</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
-             id="main-quotes">
-          <h1 class="page-header">Quotes</h1>
+        <div class="main hide" id="main-quotes">
+          <h1 class="page-header">
+            Quotes
+            <small style="font-size: x-small;">
+              (Updated <span id="quotes-updated-ago">0.00</span> ago)
+            </small>
+          </h1>
           <div class="row hide" id="global-error">
             <div class="alert alert-danger">
               <ul id="global-error-msgs" class="list-unstyled">
               </ul>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
-             id="main-analytics">
-          <h1 class="page-header">Analytics</h1>
-
-          <div class="row placeholders">
-            <div class="col-sm-12">
-              <div class="progress">
-                <div class="progress-bar" style="width: 30%;"></div>
-                <div class="progress-bar progress-bar-success" style="width: 40%;">
-                </div>
-              </div>
-            </div>
+          <div class="col-xs-12 col-sm-6" id="main-quotes-1">
           </div>
-
+          <div class="col-xs-12 col-sm-6" id="main-quotes-2">
+          </div>
         </div>
       </div>
 
       <div class="row">
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main hide" 
-             id="main-portfolio">
+        <div class="main hide" id="main-portfolio">
           <h1 class="page-header">
             <div style="padding-bottom: 10px;">
               Portfolio

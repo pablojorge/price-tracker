@@ -24,7 +24,7 @@ WSClientHandler.prototype.handle_message = function(message) {
                 error = new messages.Error(exception.toString(), info);
                 console.log("WSServer: errback: exception: " + exception);
                 self.ws.send(error.toString(), function() {
-                    console.log("WSServer: error sent");
+                    console.log("WSServer: error sent: " + error);
                 });
             }
         );
