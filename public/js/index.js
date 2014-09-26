@@ -330,8 +330,8 @@ QuotesView.prototype.renderPrice = function (price) {
     $(last_published_date_selector).html(updated_on);
     $(last_updated_date_selector).html(retrieved_on);
 
-    $(last_published_ago_selector).html(__('(0.00 ', 'seconds ago)'));
-    $(last_updated_ago_selector).html(__('(0.00 ', 'seconds ago)'));
+    $(last_published_ago_selector).html(__('(?.??s ', 'ago)'));
+    $(last_updated_ago_selector).html(__('(0.00s ', 'ago)'));
 
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
@@ -369,26 +369,52 @@ QuotesView.prototype.clearGenericError = function () {
     $("#global-error-msgs").empty();
 };
 
-QuotesView.prototype.updateGlobalTimer = function (last_update) {
-    var age = ((new Date()) - last_update) / 1000;
+QuotesView.prototype.timedelta = function(last_update) {
+    var delta = ((new Date()) - last_update) / 1000,
+        frames = {
+            minute: {
+                seconds: 60,
+                suffix: 'm'
+            },
+            hour: {
+                seconds: 60 * 60,
+                suffix: 'h'
+            },
+            day: {
+                seconds: 60 * 60 * 24,
+                suffix: 'd'
+            },
+            week: {
+                seconds: 60 * 60 * 24 * 7,
+                suffix: 'w'
+            },
+        },
+        ret = '';
 
-    $("#quotes-updated-secs-ago").html(age.toFixed(2));
+    ['week', 'day', 'hour', 'minute'].forEach(function (frame) {
+        if (delta >= frames[frame].seconds) {
+            var units = Math.floor(delta / frames[frame].seconds);
+            ret += units + frames[frame].suffix + ' ';
+            delta = delta % frames[frame].seconds;
+        }
+    });
+
+    return ret + delta.toFixed(2) + 's';
+};
+
+QuotesView.prototype.updateGlobalTimer = function (last_update) {
+    $("#quotes-updated-ago").html(this.timedelta(last_update));
 };
 
 QuotesView.prototype.updateQuoteTimer = function (quote) {
-    var selector_base = __("#", quote.symbol, "-", quote.exchange),
-        last_published_ago_selector = __(selector_base, "-last-published-ago"),
-        last_updated_ago_selector = __(selector_base, "-last-updated-ago");
+    var selector_base = __("#", quote.symbol, "-", quote.exchange);
 
-    var last_published_ago = ((new Date()) - new Date(quote.updated_on)) / 1000,
-        last_updated_ago = ((new Date()) - new Date(quote.retrieved_on)) / 1000;
-
-    $(last_published_ago_selector).html(
-        __('(', last_published_ago.toFixed(2), ' seconds ago)')
-     );
-    $(last_updated_ago_selector).html(
-        __('(', last_updated_ago.toFixed(2), ' seconds ago)')
-     );
+    $__(selector_base, "-last-published-ago").html(
+        __('(', this.timedelta(new Date(quote.updated_on)), ' ago)')
+    );
+    $__(selector_base, "-last-updated-ago").html(
+        __('(', this.timedelta(new Date(quote.retrieved_on)), ' ago)')
+    );
 };
 
 function QuotesModel() {
