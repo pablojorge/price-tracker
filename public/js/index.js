@@ -318,9 +318,7 @@ QuotesView.prototype.renderPrice = function (price) {
         last_updated_progress_selector = __(selector_base, "-last-updated-progress");
     
     var updated_on = (new Date(price.updated_on)).toLocaleString(),
-        retrieved_on = (new Date(price.retrieved_on)).toLocaleString(),
-        date_info = ("Last published on " + updated_on + "\n" +
-                     "Retrieved on " + retrieved_on);
+        retrieved_on = (new Date(price.retrieved_on)).toLocaleString();
 
     $(buy_selector).html(price.buy ?
                          __(this.symbols[price.symbol].prefix, 
@@ -328,9 +326,11 @@ QuotesView.prototype.renderPrice = function (price) {
     $(sell_selector).html(price.sell ?
                           __(this.symbols[price.symbol].prefix, 
                              price.sell.toFixed(2)) : "N/A");
+
     $(last_published_date_selector).html(updated_on);
-    $(last_published_ago_selector).html(__('(0.00 ', 'seconds ago)'));
     $(last_updated_date_selector).html(retrieved_on);
+
+    $(last_published_ago_selector).html(__('(0.00 ', 'seconds ago)'));
     $(last_updated_ago_selector).html(__('(0.00 ', 'seconds ago)'));
 
     $(prices_selector).removeClass("hide");
@@ -369,8 +369,26 @@ QuotesView.prototype.clearGenericError = function () {
     $("#global-error-msgs").empty();
 };
 
-QuotesView.prototype.updateTimer = function (age) {
-    $("#quotes-updated-secs-ago").html(age);
+QuotesView.prototype.updateGlobalTimer = function (last_update) {
+    var age = ((new Date()) - last_update) / 1000;
+
+    $("#quotes-updated-secs-ago").html(age.toFixed(2));
+};
+
+QuotesView.prototype.updateQuoteTimer = function (quote) {
+    var selector_base = __("#", quote.symbol, "-", quote.exchange),
+        last_published_ago_selector = __(selector_base, "-last-published-ago"),
+        last_updated_ago_selector = __(selector_base, "-last-updated-ago");
+
+    var last_published_ago = ((new Date()) - new Date(quote.updated_on)) / 1000,
+        last_updated_ago = ((new Date()) - new Date(quote.retrieved_on)) / 1000;
+
+    $(last_published_ago_selector).html(
+        __('(', last_published_ago.toFixed(2), ' seconds ago)')
+     );
+    $(last_updated_ago_selector).html(
+        __('(', last_updated_ago.toFixed(2), ' seconds ago)')
+     );
 };
 
 function QuotesModel() {
@@ -425,9 +443,14 @@ QuotesController.prototype.onError = function (error) {
 };
 
 QuotesController.prototype.watchdog = function () {
-    var age = ((new Date()) - this.updated_on) / 1000;
+    this.view.updateGlobalTimer(this.updated_on);
 
-    this.view.updateTimer(age.toFixed(2));
+    for (var symbol in this.model.quotes) {
+        for (var exchange in this.model.quotes[symbol]) {
+            var quote = this.model.getQuote(symbol, exchange);
+            this.view.updateQuoteTimer(quote);
+        }
+    }
 
     setTimeout(this.watchdog.bind(this), 1000);
 };
