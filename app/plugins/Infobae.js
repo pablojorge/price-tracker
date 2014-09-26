@@ -17,6 +17,7 @@ InfobaePriceRequester.config = {
     symbol_map: {
         "USDARS" : undefined,
         "USDARSB" : undefined,
+        "USDARSCL": undefined
     },
     url_template: (
         'http://www.infobae.com/adjuntos/servicios/cotizacion.json'
@@ -29,7 +30,8 @@ InfobaePriceRequester.prototype.constructor = InfobaePriceRequester;
 InfobaePriceRequester.prototype.processResponse = function (response, body) {
     var selectors = {
         USDARS: 'dólar oficial',
-        USDARSB: 'dólar blue'
+        USDARSB: 'dólar blue',
+        USDARSCL: 'contado con liqui'
     };
 
     var resp = JSON.parse(body),

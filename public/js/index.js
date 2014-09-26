@@ -83,6 +83,18 @@ function QuotesView() {
             prefix: 'AR$',
             column: '1'
         }, 
+        'USDARSCL' : {
+            description: '(Contado c/liqui)',
+            exchanges: ['ambito', 'cronista', 'infobae'],
+            prefix: 'AR$',
+            column: '1'
+        },
+        'USDARSBOL' : {
+            description: '(Dolar bolsa)',
+            exchanges: ['ambito'],
+            prefix: 'AR$',
+            column: '1'
+        },
         'BTCUSD' : {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e'],

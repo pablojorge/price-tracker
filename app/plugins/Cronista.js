@@ -18,6 +18,7 @@ CronistaPriceRequester.config = {
     symbol_map: {
         "USDARS" : undefined,
         "USDARSB" : undefined,
+        "USDARSCL" : undefined
     },
     url_template: (
         'http://indigocontenidos.com.ar/cronista-cotizaciones/cotizaciones-nueva/cotizacion.php'
@@ -29,13 +30,15 @@ CronistaPriceRequester.prototype.constructor = CronistaPriceRequester;
 
 CronistaPriceRequester.prototype.processResponse = function (response, body) {
     var selectors = {
-        USDARS: '.large',
-        USDARSB: '.mid'
+        USDARS: {_class: '.large', pos: 0 },
+        USDARSB: {_class: '.mid', pos: 0 },
+        USDARSCL: {_class: '.mid', pos: 2 },
     };
 
     var $ = cheerio.load(body),
         buy = null,
-        value = $(selectors[this.symbol] + " > strong > span").first().text(),
+        value = $(selectors[this.symbol]._class + " > strong > span")
+                    .eq(selectors[this.symbol].pos).text(),
         sell = parseFloat(value.replace(',','.')),
         retrieved_on = new Date(),
         updated_on = new Date();
