@@ -60,6 +60,10 @@ function QuotesView() {
             description: 'BTC-e',
             link: 'https://btc-e.com',
         },
+        'okcoin' : {
+            description: 'OKCoin',
+            link: 'https://www.okcoin.com',
+        },
         'bullionvault' : {
             description: 'BullionVault',
             link: 'https://www.bullionvault.com',
@@ -97,13 +101,13 @@ function QuotesView() {
         },
         'BTCUSD' : {
             description: '(Bitcoin)',
-            exchanges: ['bitstamp', 'coinbase', 'btc-e'],
+            exchanges: ['bitstamp', 'coinbase', 'btc-e', 'okcoin'],
             prefix: '$',
             column: '2'
         },  
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e'],
+            exchanges: ['btc-e', 'okcoin'],
             prefix: '$',
             column: '2'
         },
