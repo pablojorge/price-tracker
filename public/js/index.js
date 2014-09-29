@@ -150,13 +150,9 @@ QuotesView.prototype.hookCollapseButtons = function () {
 
         if ($(this).hasClass("expanded")) {
             $(this).removeClass("expanded");
-            $(this).removeClass("glyphicon-chevron-down");
-            $(this).addClass("glyphicon-chevron-right");
             $__("#prices-body-", $(this).attr("target")).slideUp();
         } else {
             $(this).addClass("expanded");
-            $(this).addClass("glyphicon-chevron-down");
-            $(this).removeClass("glyphicon-chevron-right");
             $__("#prices-body-", $(this).attr("target")).slideDown();
         }
 
@@ -168,13 +164,9 @@ QuotesView.prototype.hookCollapseButtons = function () {
 
         if ($(this).hasClass("expanded")) {
             $(this).removeClass("expanded");
-            $(this).removeClass("glyphicon-chevron-down");
-            $(this).addClass("glyphicon-chevron-right");
             $__('#', $(this).attr("target"), '-details').slideUp();
         } else {
             $(this).addClass("expanded");
-            $(this).addClass("glyphicon-chevron-down");
-            $(this).removeClass("glyphicon-chevron-right");
             $__('#', $(this).attr("target"), '-details').slideDown();
         }
 
@@ -185,13 +177,14 @@ QuotesView.prototype.hookCollapseButtons = function () {
 QuotesView.prototype.renderSymbol = function (symbol, info) {
     return $__(
         '<div class="row">',
-        '  <h3>',
         '    <span target="', symbol, '"',
-        '          class="collapse-symbol glyphicon glyphicon-chevron-down expanded"',
-        '          style="font-size: small;"></span> ',
-             symbol,
+        '          class="collapse-symbol expanded"',
+        '          style="font-size: small;">',
+        '      <img src="img/symbol/', symbol, '.png" ',
+        '           width=32 height=32> </img>', 
+        '      <span style="font-size: x-large">', symbol, '</span>',
+        '    </span> ',
         '    <small>', info.description, '</small>',
-        '  </h3>',
         '  <div style="margin-top: 10px" ',
         '       id="prices-body-', symbol, '">',
         '  </div>',
@@ -212,18 +205,20 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
 
     return $__(
-        '<div class="row">',
+        '<div class="row" style="margin-bottom: 5px">',
         '  <div class="col-xs-4">', 
-        '    <h5>',
-        '      <span target="', base_id, '"',
-        '            class="collapse-exchange glyphicon glyphicon-chevron-right"',
-        '            style="font-size: xx-small;"></span>  ',
-        '       <img src="img/icon/', exchange, '.ico" ',
+        '    <span target="', base_id, '"',
+        '          class="collapse-exchange"',
+        '          style="font-size: xx-small;"> ',
+        '       <img src="img/exchange/', exchange, '.ico" ',
         '            width=16 height=16> ', 
-        '       <a href="', this.exchanges[exchange].link,'">',
-                  this.exchanges[exchange].description, 
-        '       </a>',
-        '    </h5>',
+        '      <span style="font-size: small">', this.exchanges[exchange].description, '</span>',
+        '    </span>',
+        '    <a href="', this.exchanges[exchange].link,'">',
+        '      <span class="glyphicon glyphicon-share"',
+        '            style="font-size: x-small;"> ',
+        '      </span>',
+        '    </a>',
         '  </div>',
         '  <div class="col-xs-8"',
         '       id="', base_id, '-progress">',
@@ -241,18 +236,14 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '  </div>',
         '  <div id="', base_id, '-prices" class="hide">',
         '    <div class="col-xs-4">',
-        '      <h4>',
-        '        <span class="label label-primary" ',
-        '            id="', base_id, '-buy">',
-        '        </span>',
-        '      </h4>',
+        '      <span class="label label-info" style="font-size: small"',
+        '          id="', base_id, '-buy">',
+        '      </span>',
         '    </div>',
         '    <div class="col-xs-4">',
-        '      <h4>',
-        '        <span class="label label-primary" ',
-        '              id="', base_id, '-sell">',
-        '        </span>',
-        '      </h4>',
+        '      <span class="label label-primary" style="font-size: small" ',
+        '            id="', base_id, '-sell">',
+        '      </span>',
         '    </div>',
         '  </div>',
         '</div>',
