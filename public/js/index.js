@@ -213,7 +213,7 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
 
     return $__(
-        '<div class="row" style="margin-bottom: 5px">',
+        '<div class="row" style="margin-bottom: 10px; margin-left: 0px;">',
         '  <div class="col-xs-4">', 
         '    <span target="', base_id, '"',
         '          class="collapse-exchange"',
@@ -222,7 +222,7 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '            width=16 height=16> ', 
         '      <span style="font-size: small">', this.exchanges[exchange].description, '</span>',
         '    </span>',
-        '    <a href="', this.exchanges[exchange].link,'">',
+        '    <a href="', this.exchanges[exchange].link,'" target="_blank">',
         '      <span class="glyphicon glyphicon-share"',
         '            style="font-size: x-small;"> ',
         '      </span>',
@@ -255,7 +255,7 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '    </div>',
         '  </div>',
         '</div>',
-        '<div id="', base_id, '-details" style="display: none;">',
+        '<div id="', base_id, '-details" style="display: none; margin: 10px; margin-left: 25px">',
         '  <div class="row">',
         '    <div class="col-xs-4">',
         '      <span style="font-size: small;">',
