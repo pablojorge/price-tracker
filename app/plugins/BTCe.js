@@ -27,12 +27,12 @@ BTCePriceRequester.prototype.constructor = BTCePriceRequester;
 BTCePriceRequester.prototype.processResponse = function (response, body) {
     var ticker = JSON.parse(body).ticker,
         // Yes, we want to invert them here:
-        buy = ticker.sell,
-        sell = ticker.buy;
+        bid = ticker.sell,
+        ask = ticker.buy;
     return new messages.Price(this.getExchange(), 
                               this.symbol, 
-                              buy, 
-                              sell);
+                              bid, 
+                              ask);
 };
 /**/
 

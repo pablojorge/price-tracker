@@ -29,35 +29,36 @@ LaNacionPriceRequester.prototype.constructor = LaNacionPriceRequester;
 LaNacionPriceRequester.prototype.processResponse = function (response, body) {
     var selectors = {
         USDARS: {
-            buy: 'CasaCambioCompraValue',
-            sell: 'CasaCambioVentaValue'
+            bid: 'CasaCambioCompraValue',
+            ask: 'CasaCambioVentaValue'
         },
         USDARSB : {
-            buy: 'InformalCompraValue',
-            sell: 'InformalVentaValue'
+            bid: 'InformalCompraValue',
+            ask: 'InformalVentaValue'
         }
     };
     
     var payload = body.substring(body.indexOf('{'), body.lastIndexOf('}') + 1),
         resp = JSON.parse(payload),
-        buy = parseFloat(resp[selectors[this.symbol].buy].replace(',', '.')),
-        sell = parseFloat(resp[selectors[this.symbol].sell].replace(',', '.')),
-        retrieved_on = new Date(),
+        bid = parseFloat(resp[selectors[this.symbol].bid].replace(',', '.')),
+        ask = parseFloat(resp[selectors[this.symbol].ask].replace(',', '.')),
+        updated_on = new Date(),
         date_format = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/,
         match = date_format.exec(resp['Date']),
-        updated_on = new Date(parseInt(match[1]),
-                              parseInt(match[2]) - 1,
-                              parseInt(match[3]),
-                              parseInt(match[4]),
-                              parseInt(match[5]),
-                              parseInt(match[6]));
+        published_on = new Date(parseInt(match[1]),
+                                parseInt(match[2]) - 1,
+                                parseInt(match[3]),
+                                parseInt(match[4]),
+                                parseInt(match[5]),
+                                parseInt(match[6]));
 
     return new messages.Price(this.getExchange(), 
                               this.symbol, 
-                              buy, 
-                              sell,
-                              retrieved_on,
-                              updated_on);
+                              bid, 
+                              ask,
+                              updated_on, {
+                                  published_on: published_on
+                              });
 };
 /**/
 

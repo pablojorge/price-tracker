@@ -36,19 +36,15 @@ CronistaPriceRequester.prototype.processResponse = function (response, body) {
     };
 
     var $ = cheerio.load(body),
-        buy = null,
+        bid = null,
         value = $(selectors[this.symbol]._class + " > strong > span")
                     .eq(selectors[this.symbol].pos).text(),
-        sell = parseFloat(value.replace(',','.')),
-        retrieved_on = new Date(),
-        updated_on = new Date();
+        ask = parseFloat(value.replace(',','.'));
 
     return new messages.Price(this.getExchange(),
                               this.symbol,
-                              buy,
-                              sell,
-                              retrieved_on,
-                              updated_on);
+                              bid,
+                              ask);
 };
 /**/
 

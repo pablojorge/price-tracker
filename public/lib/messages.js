@@ -90,13 +90,13 @@ function Error(message, info) {
 Error.prototype = Object.create(Response.prototype);
 Error.prototype.constructor = Error;
 
-function Price(exchange, symbol, buy, sell, retrieved_on, updated_on) {
+function Price(exchange, symbol, bid, ask, updated_on, custom) {
     this.exchange = exchange;
     this.symbol = symbol;
-    this.buy = buy;
-    this.sell = sell;
-    this.retrieved_on = retrieved_on || new Date();
+    this.bid = bid;
+    this.ask = ask;
     this.updated_on = updated_on || new Date();
+    this.custom = custom || {};
 }
 
 Price.prototype = Object.create(Response.prototype);

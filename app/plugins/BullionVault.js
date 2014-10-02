@@ -37,10 +37,10 @@ BullionVaultPriceRequester.prototype.processResponse = function (response, body)
             });
             return Math.min.apply(null, prices) / 32.15;
         },
-        buy = get_price("buy"),
-        sell = get_price("sell");
+        bid = get_price("buy"),
+        ask = get_price("sell");
     
-    return new messages.Price(this.getExchange(), this.symbol, buy, sell);
+    return new messages.Price(this.getExchange(), this.symbol, bid, ask);
 };
 /**/
 

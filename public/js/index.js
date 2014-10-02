@@ -245,39 +245,17 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '  <div id="', base_id, '-prices" class="hide">',
         '    <div class="col-xs-4">',
         '      <span class="label label-info" style="font-size: small"',
-        '          id="', base_id, '-buy">',
+        '          id="', base_id, '-bid">',
         '      </span>',
         '    </div>',
         '    <div class="col-xs-4">',
         '      <span class="label label-primary" style="font-size: small" ',
-        '            id="', base_id, '-sell">',
+        '            id="', base_id, '-ask">',
         '      </span>',
         '    </div>',
         '  </div>',
         '</div>',
         '<div id="', base_id, '-details" style="display: none; margin: 10px; margin-left: 25px">',
-        '  <div class="row">',
-        '    <div class="col-xs-4">',
-        '      <span style="font-size: small;">',
-        '        <strong>Last published:</strong>',
-        '      </span>',
-        '    </div>',
-        '    <div class="col-xs-8"',
-        '         id="', base_id, '-last-published-progress">',
-        '      <div class="progress progress-striped active">',
-        '        <div class="progress-bar" style="width: 100%">',
-        '        </div>',
-        '      </div>',
-        '    </div>',
-        '    <div id="', base_id, '-last-published" class="hide">',
-        '      <div class="col-xs-8">',
-        '        <span id="', base_id, '-last-published-date" style="font-size: small;">',
-        '        </span>',
-        '        <span id="', base_id, '-last-published-ago" style="font-size: small;">',
-        '        </span>',
-        '      </div>',
-        '    </div>',
-        '  </div>',
         '  <div class="row">',
         '    <div class="col-xs-4">',
         '      <span style="font-size: small;">',
@@ -315,43 +293,33 @@ QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
 QuotesView.prototype.renderPrice = function (price) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
         prices_selector = __(selector_base, "-prices"),
-        buy_selector = __(selector_base, "-buy"),
-        sell_selector = __(selector_base, "-sell"),
+        bid_selector = __(selector_base, "-bid"),
+        ask_selector = __(selector_base, "-ask"),
         error_selector = __(selector_base, "-error"),
         progress_selector = __(selector_base, "-progress"),
-        last_published_selector = __(selector_base, "-last-published"),
-        last_published_date_selector = __(selector_base, "-last-published-date"),
-        last_published_ago_selector = __(selector_base, "-last-published-ago"),
-        last_published_progress_selector = __(selector_base, "-last-published-progress"),
         last_updated_selector = __(selector_base, "-last-updated"),
         last_updated_date_selector = __(selector_base, "-last-updated-date"),
         last_updated_ago_selector = __(selector_base, "-last-updated-ago"),
         last_updated_progress_selector = __(selector_base, "-last-updated-progress");
     
-    var updated_on = (new Date(price.updated_on)).toLocaleString(),
-        retrieved_on = (new Date(price.retrieved_on)).toLocaleString();
+    var updated_on = (new Date(price.updated_on)).toLocaleString();
 
-    $(buy_selector).html(price.buy ?
+    $(bid_selector).html(price.bid ?
                          __(this.symbols[price.symbol].prefix, 
-                            price.buy.toFixed(2)) : "N/A");
-    $(sell_selector).html(price.sell ?
+                            price.bid.toFixed(2)) : "N/A");
+    $(ask_selector).html(price.ask ?
                           __(this.symbols[price.symbol].prefix, 
-                             price.sell.toFixed(2)) : "N/A");
+                             price.ask.toFixed(2)) : "N/A");
 
-    $(buy_selector).effect("highlight");
-    $(sell_selector).effect("highlight");
+    $(bid_selector).effect("highlight");
+    $(ask_selector).effect("highlight");
 
-    $(last_published_date_selector).html(updated_on);
-    $(last_updated_date_selector).html(retrieved_on);
-
-    $(last_published_ago_selector).html(__('(?.??s ', 'ago)'));
+    $(last_updated_date_selector).html(updated_on);
     $(last_updated_ago_selector).html(__('(0.00s ', 'ago)'));
 
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
     $(progress_selector).addClass("hide");
-    $(last_published_selector).removeClass("hide");
-    $(last_published_progress_selector).addClass("hide");
     $(last_updated_selector).removeClass("hide");
     $(last_updated_progress_selector).addClass("hide");
 };
@@ -411,11 +379,8 @@ QuotesView.prototype.updateGlobalTimer = function (last_update) {
 QuotesView.prototype.updateQuoteTimer = function (quote) {
     var selector_base = __("#", quote.symbol, "-", quote.exchange);
 
-    $__(selector_base, "-last-published-ago").html(
-        __('(', this.timedelta(new Date(quote.updated_on)), ' ago)')
-    );
     $__(selector_base, "-last-updated-ago").html(
-        __('(', this.timedelta(new Date(quote.retrieved_on)), ' ago)')
+        __('(', this.timedelta(new Date(quote.updated_on)), ' ago)')
     );
 };
 
@@ -911,7 +876,7 @@ PortfolioController.prototype.getInvestmentInfo = function (investment) {
 
     var average = ((investment.amount > 0) 
                      ? (investment.price / investment.amount) : 0),
-        current_value = investment.amount * quote.buy,
+        current_value = investment.amount * quote.bid,
         profit = current_value - investment.price,
         gain = ((investment.price > 0 && investment.amount > 0) 
                  ? (current_value / investment.price) - 1 : 0);
@@ -921,7 +886,7 @@ PortfolioController.prototype.getInvestmentInfo = function (investment) {
         cost: investment.price,
         average: average,
         current_value: current_value,
-        current_price: quote.buy,
+        current_price: quote.bid,
         profit: profit,
         gain: gain
     };
@@ -984,7 +949,7 @@ PortfolioController.prototype.updateInvestments = function() {
 PortfolioController.prototype.updateExchangePrice = function(price) {    
     var quote = this.quotes_controller.getQuote(price.symbol, price.exchange);
 
-    this.view.updateExchangePrice(price.exchange, quote.buy);
+    this.view.updateExchangePrice(price.exchange, quote.bid);
 };
 
 PortfolioController.prototype.setMainExchange = function(exchange) {
@@ -1078,7 +1043,7 @@ GlobalController.prototype.onPriceUpdated = function (price) {
     if (price.exchange != 'bitstamp')
         return;
 
-    this.view.setWindowTitle('($' + price.sell + ') - Price Tracker');
+    this.view.setWindowTitle('($' + price.ask + ') - Price Tracker');
 };
 
 function init_app () {

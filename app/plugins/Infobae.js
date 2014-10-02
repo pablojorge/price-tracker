@@ -35,18 +35,14 @@ InfobaePriceRequester.prototype.processResponse = function (response, body) {
     };
 
     var resp = JSON.parse(body),
-        buy = null,
+        bid = null,
         value = resp[0][selectors[this.symbol]].compra.precio,
-        sell = parseFloat(value.replace(',', '.')),
-        retrieved_on = new Date(),
-        updated_on = new Date();
+        ask = parseFloat(value.replace(',', '.'));
 
     return new messages.Price(this.getExchange(),
                               this.symbol,
-                              buy,
-                              sell,
-                              retrieved_on,
-                              updated_on);
+                              bid,
+                              ask);
 };
 /**/
 

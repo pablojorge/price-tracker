@@ -48,8 +48,8 @@ To obtain a particular rate:
     {
       "exchange": "btc-e",
       "symbol": "LTCUSD",
-      "buy": 16.773,
-      "sell": 16.8,
+      "bid": 16.773,
+      "ask": 16.8,
       "retrieved_on": "2014-03-05T04:27:52.141Z",
       "updated_on": "2014-03-05T04:27:52.141Z"
     }
