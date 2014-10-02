@@ -338,6 +338,9 @@ QuotesView.prototype.renderPrice = function (price) {
                           __(this.symbols[price.symbol].prefix, 
                              price.sell.toFixed(2)) : "N/A");
 
+    $(buy_selector).effect("highlight");
+    $(sell_selector).effect("highlight");
+
     $(last_published_date_selector).html(updated_on);
     $(last_updated_date_selector).html(retrieved_on);
 
