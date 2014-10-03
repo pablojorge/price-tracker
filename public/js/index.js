@@ -148,33 +148,31 @@ QuotesView.prototype.render = function() {
     for (var symbol in this.symbols) {
         _this.addSymbol(symbol, this.symbols[symbol]);
     }
-
-    this.hookCollapseButtons();
 };
 
-QuotesView.prototype.hookCollapseButtons = function () {
-    $(".collapse-symbol").unbind('click').bind('click', function(event) {
+QuotesView.prototype.hookCollapseButtons = function (model) {
+    $(".collapse-symbol").bind('click', function(event) {
         event.preventDefault();
 
-        if ($(this).hasClass("expanded")) {
-            $(this).removeClass("expanded");
+        if (!model.isSymbolCollapsed($(this).attr("target"))) {
+            model.setSymbolCollapsed($(this).attr("target"), true);
             $__("#prices-body-", $(this).attr("target")).slideUp();
         } else {
-            $(this).addClass("expanded");
+            model.setSymbolCollapsed($(this).attr("target"), false);
             $__("#prices-body-", $(this).attr("target")).slideDown();
         }
 
         return false;
     });
 
-    $(".collapse-exchange").unbind('click').bind('click', function(event) {
+    $(".collapse-exchange").bind('click', function(event) {
         event.preventDefault();
 
-        if ($(this).hasClass("expanded")) {
-            $(this).removeClass("expanded");
+        if (!model.isExchangeCollapsed($(this).attr("target"))) {
+            model.setExchangeCollapsed($(this).attr("target"), true);
             $__('#', $(this).attr("target"), '-details').slideUp();
         } else {
-            $(this).addClass("expanded");
+            model.setExchangeCollapsed($(this).attr("target"), false);
             $__('#', $(this).attr("target"), '-details').slideDown();
         }
 
@@ -182,11 +180,25 @@ QuotesView.prototype.hookCollapseButtons = function () {
     });
 };
 
+QuotesView.prototype.restoreCollapseStatus = function (model) {
+    for (var symbol in this.symbols) {
+        if (model.isSymbolCollapsed(symbol)) { // expanded by default
+            $__("#prices-body-", symbol).slideUp();
+        }
+        this.symbols[symbol].exchanges.forEach(function (exchange) {
+            var exchange_id = __(symbol, '-', exchange);
+            if (!model.isExchangeCollapsed(exchange_id)) { // collapsed by default
+                $__('#', exchange_id, '-details').slideDown();
+            }
+        });
+    }
+};
+
 QuotesView.prototype.renderSymbol = function (symbol, info) {
     return $__(
         '<div class="row">',
         '    <span target="', symbol, '"',
-        '          class="collapse-symbol expanded"',
+        '          class="collapse-symbol"',
         '          style="font-size: small;">',
         '      <img src="img/symbol/', symbol, '.png" ',
         '           width=32 height=32> </img>', 
@@ -456,7 +468,43 @@ QuotesView.prototype.updateQuoteTimer = function (quote) {
 
 function QuotesModel() {
     this.quotes = {};
+    this.collapsed = undefined;
 }
+
+QuotesModel.prototype.save = function () {
+    localStorage["quotes.collapsed"] = JSON.stringify(this.collapsed);
+};
+
+QuotesModel.prototype.load = function () {
+    this.collapsed = JSON.parse(localStorage["quotes.collapsed"] || null) || {
+        symbol: {},
+        exchange: {}
+    };
+};
+
+QuotesModel.prototype.isSymbolCollapsed = function (symbol) {
+    if (this.collapsed.symbol[symbol] === undefined)
+        return false; // expanded by default
+
+    return this.collapsed.symbol[symbol];
+};
+
+QuotesModel.prototype.isExchangeCollapsed = function (exchange) {
+    if (this.collapsed.exchange[exchange] === undefined)
+        return true; // collapsed by default
+
+    return this.collapsed.exchange[exchange];
+};
+
+QuotesModel.prototype.setSymbolCollapsed = function (symbol, collapsed) {
+    this.collapsed.symbol[symbol] = collapsed;
+    this.save();
+};
+
+QuotesModel.prototype.setExchangeCollapsed = function (exchange, collapsed) {
+    this.collapsed.exchange[exchange] = collapsed;
+    this.save();
+};
 
 QuotesModel.prototype.updateQuote = function(quote) {
     if (!(quote.symbol in this.quotes))
@@ -483,8 +531,10 @@ function QuotesController(view, model) {
 }
 
 QuotesController.prototype.start = function () {
+    this.model.load();
     this.view.render();
-    this.view.hookCollapseButtons();
+    this.view.hookCollapseButtons(this.model);
+    this.view.restoreCollapseStatus(this.model);
 };
 
 QuotesController.prototype.onPriceUpdated = function (price) {
