@@ -31,23 +31,24 @@ AmbitoPriceRequester.prototype.constructor = AmbitoPriceRequester;
 
 AmbitoPriceRequester.prototype.processResponse = function (response, body) {
     var $ = cheerio.load(body),
-        buy = parseFloat($('#compra > big').text().replace(',','.')),
-        sell = parseFloat($("#venta > big").text().replace(',','.')),
-        retrieved_on = new Date(),
+        bid = parseFloat($('#compra > big').text().replace(',','.')),
+        ask = parseFloat($("#venta > big").text().replace(',','.')),
+        updated_on = new Date(),
         uact_format = /(\d{2})\/(\d{2})\/(\d{4})(\d{2}):(\d{2})/,
         match = uact_format.exec($(".uact > b").text().trim()),
-        updated_on = new Date(parseInt(match[3]),
-                              parseInt(match[2]) - 1,
-                              parseInt(match[1]),
-                              parseInt(match[4]),
-                              parseInt(match[5]));
+        published_on = new Date(parseInt(match[3]),
+                                parseInt(match[2]) - 1,
+                                parseInt(match[1]),
+                                parseInt(match[4]),
+                                parseInt(match[5]));
     
     return new messages.Price(this.getExchange(), 
                               this.symbol, 
-                              buy, 
-                              sell,
-                              retrieved_on,
-                              updated_on);
+                              bid, 
+                              ask,
+                              updated_on, {
+                                  published_on: published_on
+                              });
 };
 /**/
 

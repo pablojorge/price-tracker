@@ -26,13 +26,12 @@ BitfinexPriceRequester.prototype.constructor = BitfinexPriceRequester;
 
 BitfinexPriceRequester.prototype.processResponse = function (response, body) {
     var ticker = JSON.parse(body),
-        // Yes, we want to invert them here:
-        buy = parseFloat(ticker.bid),
-        sell = parseFloat(ticker.ask);
+        bid = parseFloat(ticker.bid),
+        ask = parseFloat(ticker.ask);
     return new messages.Price(this.getExchange(), 
                               this.symbol, 
-                              buy, 
-                              sell);
+                              bid, 
+                              ask);
 };
 /**/
 

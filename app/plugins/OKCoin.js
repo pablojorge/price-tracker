@@ -27,12 +27,12 @@ OKCoinPriceRequester.prototype.constructor = OKCoinPriceRequester;
 OKCoinPriceRequester.prototype.processResponse = function (response, body) {
     var ticker = JSON.parse(body).ticker,
         // Yes, we want to invert them here:
-        buy = parseFloat(ticker.sell),
-        sell = parseFloat(ticker.buy);
+        bid = parseFloat(ticker.sell),
+        ask = parseFloat(ticker.buy);
     return new messages.Price(this.getExchange(), 
                               this.symbol, 
-                              buy, 
-                              sell);
+                              bid, 
+                              ask);
 };
 /**/
 

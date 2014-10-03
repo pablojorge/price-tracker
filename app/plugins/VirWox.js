@@ -29,9 +29,9 @@ VirWoxPriceRequester.prototype.constructor = VirWoxPriceRequester;
 
 VirWoxPriceRequester.prototype.processResponse = function (response, body) {
     var result = JSON.parse(body).result,
-        buy = parseFloat(result[0].bestBuyPrice),
-        sell = parseFloat(result[0].bestSellPrice);
-    return new messages.Price(this.getExchange(), this.symbol, buy, sell);
+        bid = parseFloat(result[0].bestBuyPrice),
+        ask = parseFloat(result[0].bestSellPrice);
+    return new messages.Price(this.getExchange(), this.symbol, bid, ask);
 };
 /**/
 

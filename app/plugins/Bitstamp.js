@@ -28,9 +28,9 @@ BitstampPriceRequester.prototype.constructor = BitstampPriceRequester;
 
 BitstampPriceRequester.prototype.processResponse = function (response, body) {
     var object = JSON.parse(body),
-        buy = parseFloat(object.bid),
-        sell = parseFloat(object.ask);
-    return new messages.Price(this.getExchange(), this.symbol, buy, sell);
+        bid = parseFloat(object.bid),
+        ask = parseFloat(object.ask);
+    return new messages.Price(this.getExchange(), this.symbol, bid, ask);
 };
 /**/
 
