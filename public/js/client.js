@@ -43,6 +43,8 @@ function WSClient(host) {
 
     this.socket = undefined;
     this.updated_on = undefined;
+
+    this.connected = false;
 }
 
 WSClient.WATCHDOG_INTERVAL = 10;
@@ -57,7 +59,11 @@ WSClient.prototype.connect = function() {
     _this.socket = new WebSocket(_this.host);
 
     _this.socket.onopen = function (event) {
+        _this.connected = true;
         _this.emit("onConnect");
+        _this.updated_on = new Date();
+        setTimeout(_this.watchdog.bind(_this),
+                   WSClient.WATCHDOG_INTERVAL * 1000);
     };
 
     _this.socket.onmessage = function (event) {
@@ -77,15 +83,12 @@ WSClient.prototype.connect = function() {
 
     _this.socket.onclose = function (event) {
         _this.emit("onDisconnect");
+        _this.connected = false;
     };
 
     _this.socket.onerror = function (event) {
         _this.emit("onError", [new Error('WebSocket error')]);
     };
-
-    _this.updated_on = new Date();
-    setTimeout(_this.watchdog.bind(_this), 
-               WSClient.WATCHDOG_INTERVAL * 1000);    
 };
 
 WSClient.prototype.watchdog = function () {
@@ -120,10 +123,11 @@ WSClient.prototype.subscribe = function(exchange, symbol) {
 
 /**
  */
-function RESTClient(host) {
+function RESTClient(host, interval) {
     Client.call(this);
 
     this.host = host;
+    this.interval = interval;
 }
 
 RESTClient.prototype = Object.create(Client.prototype);
@@ -136,10 +140,13 @@ RESTClient.prototype.connect = function() {
 RESTClient.prototype.requestExchanges = function() {
     var _this = this;
 
+    console.log("RESTClient: requesting exchanges list...");
+
     $.ajax({
         url: _this.host + "/request/exchanges", 
         dataType: 'json', 
         success: function(data) {
+            console.log("RESTClient.requestExchanges(): received: ", data);
             _this.emit("onExchangesListReceived", [data]);
         },
     });
@@ -148,11 +155,14 @@ RESTClient.prototype.requestExchanges = function() {
 RESTClient.prototype.requestPrice = function(exchange, symbol) {
     var _this = this;
 
+    console.log("RESTClient: requesting price for", symbol, "in", exchange);
+
     $.ajax({
         url: _this.host + "/request/price/" + 
              exchange + "/" + symbol, 
         dataType: 'json',
         success: function(data) {
+            console.log("RESTClient.requestPrice(): received: ", data);
             _this.emit("onPriceUpdated", [data]);
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -163,5 +173,10 @@ RESTClient.prototype.requestPrice = function(exchange, symbol) {
 };
 
 RESTClient.prototype.subscribe = function(exchange, symbol) {
-    // TODO: use setInterval() to simulate streaming..
+    var self = this;
+
+    console.log("RESTClient: subscribing to", symbol, "in", exchange);
+    setInterval(function () {
+        self.requestPrice(exchange, symbol);
+    }, this.interval * 1000);
 };
