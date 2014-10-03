@@ -296,13 +296,7 @@ QuotesView.prototype.renderPrice = function (price) {
         bid_selector = __(selector_base, "-bid"),
         ask_selector = __(selector_base, "-ask"),
         error_selector = __(selector_base, "-error"),
-        progress_selector = __(selector_base, "-progress"),
-        last_updated_selector = __(selector_base, "-last-updated"),
-        last_updated_date_selector = __(selector_base, "-last-updated-date"),
-        last_updated_ago_selector = __(selector_base, "-last-updated-ago"),
-        last_updated_progress_selector = __(selector_base, "-last-updated-progress");
-    
-    var updated_on = (new Date(price.updated_on)).toLocaleString();
+        progress_selector = __(selector_base, "-progress");
 
     $(bid_selector).html(price.bid ?
                          __(this.symbols[price.symbol].prefix, 
@@ -314,14 +308,84 @@ QuotesView.prototype.renderPrice = function (price) {
     $(bid_selector).effect("highlight");
     $(ask_selector).effect("highlight");
 
-    $(last_updated_date_selector).html(updated_on);
-    $(last_updated_ago_selector).html(__('(0.00s ', 'ago)'));
-
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
     $(progress_selector).addClass("hide");
+};
+
+QuotesView.prototype.renderDetails = function (price) {
+    var selector_base = __("#", price.symbol, "-", price.exchange),
+        last_updated_selector = __(selector_base, "-last-updated"),
+        last_updated_date_selector = __(selector_base, "-last-updated-date"),
+        last_updated_ago_selector = __(selector_base, "-last-updated-ago"),
+        last_updated_progress_selector = __(selector_base, "-last-updated-progress");
+
+    var updated_on = (new Date(price.updated_on)).toLocaleString();
+
+    $(last_updated_date_selector).html(updated_on);
+    $(last_updated_ago_selector).html(__('(0.00s ', 'ago)'));
+
     $(last_updated_selector).removeClass("hide");
     $(last_updated_progress_selector).addClass("hide");
+};
+
+QuotesView.prototype.renderCustomFields = function (price) {
+    var selector_base = __("#", price.symbol, "-", price.exchange);
+
+    var render_func = {
+        published_on: function (value) {
+            $__(selector_base, '-last-published-date').html(
+                (new Date(value)).toLocaleString()
+            );
+        }
+    };
+
+    for (var field in price.custom) {
+        render_func[field](price.custom[field]);
+    }
+};
+
+QuotesView.prototype.addCustomFields = function (price) {
+    var selector_base = __("#", price.symbol, "-", price.exchange);
+
+    for (var field in price.custom) {
+        var custom_selector = __(selector_base, "-", field);
+        if (!$(custom_selector).length) {
+            $__(selector_base, '-details').append(
+                this.addCustomField(price.symbol, price.exchange, field)
+            );
+        }
+    }
+};
+
+QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
+    var base_id = __(symbol, '-', exchange);
+
+    var field_desc = {
+        published_on: "Last published:"
+    };
+
+    var field_body = {
+        published_on: __(
+            '<div class="col-xs-8">',
+            '  <span id="', base_id, '-last-published-date" style="font-size: small;">',
+            '  </span>',
+            '  <span id="', base_id, '-last-published-ago" style="font-size: small;">',
+            '  </span>',
+            '</div>'
+        )
+    };
+
+    return $__(
+        '<div class="row" id="', base_id, '-', field, '">',
+        '  <div class="col-xs-4">',
+        '    <span style="font-size: small;">',
+        '      <strong>', field_desc[field], '</strong>',
+        '    </span>',
+        '  </div>',
+        '  <div>', field_body[field], '</div>',
+        '</div>'
+    );
 };
 
 QuotesView.prototype.renderPriceError = function (error) {
@@ -382,6 +446,12 @@ QuotesView.prototype.updateQuoteTimer = function (quote) {
     $__(selector_base, "-last-updated-ago").html(
         __('(', this.timedelta(new Date(quote.updated_on)), ' ago)')
     );
+
+    if ("published_on" in quote.custom) {
+        $__(selector_base, "-last-published-ago").html(
+            __('(', this.timedelta(new Date(quote.custom.published_on)), ' ago)')
+        );
+    }
 };
 
 function QuotesModel() {
@@ -420,7 +490,10 @@ QuotesController.prototype.start = function () {
 QuotesController.prototype.onPriceUpdated = function (price) {
     this.updated_on = new Date();
     this.model.updateQuote(price);
+    this.view.addCustomFields(price);
     this.view.renderPrice(price);
+    this.view.renderDetails(price);
+    this.view.renderCustomFields(price);
 };
 
 QuotesController.prototype.onConnect = function (error) {
