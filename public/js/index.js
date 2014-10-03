@@ -157,9 +157,11 @@ QuotesView.prototype.hookCollapseButtons = function (model) {
         if (!model.isSymbolCollapsed($(this).attr("target"))) {
             model.setSymbolCollapsed($(this).attr("target"), true);
             $__("#prices-body-", $(this).attr("target")).slideUp();
+            // stop/hide
         } else {
             model.setSymbolCollapsed($(this).attr("target"), false);
             $__("#prices-body-", $(this).attr("target")).slideDown();
+            // start/show
         }
 
         return false;
@@ -171,9 +173,11 @@ QuotesView.prototype.hookCollapseButtons = function (model) {
         if (!model.isExchangeCollapsed($(this).attr("target"))) {
             model.setExchangeCollapsed($(this).attr("target"), true);
             $__('#', $(this).attr("target"), '-details').slideUp();
+            // stop/hide
         } else {
             model.setExchangeCollapsed($(this).attr("target"), false);
             $__('#', $(this).attr("target"), '-details').slideDown();
+            // start/show
         }
 
         return false;
@@ -323,6 +327,40 @@ QuotesView.prototype.renderPrice = function (price) {
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
     $(progress_selector).addClass("hide");
+};
+
+QuotesView.prototype.updateLabelsColors = function (price, prev) {
+    var selector_base = __("#", price.symbol, "-", price.exchange),
+        bid_selector = __(selector_base, "-bid"),
+        ask_selector = __(selector_base, "-ask");
+
+    var set_label_class = function(selector, label_class) {
+        $(selector)
+            .removeClass(__("label-info ",
+                            "label-primary ",
+                            "label-danger ",
+                            "label-success ",
+                            "label-default"))
+            .addClass(__("label-", label_class));
+    };
+
+    if (prev && price.bid && prev.bid < price.bid)
+        set_label_class(bid_selector, "success");
+
+    if (prev && price.bid && prev.bid > price.bid)
+        set_label_class(bid_selector, "danger");
+
+    if (prev && price.ask && prev.ask < price.ask)
+        set_label_class(ask_selector, "success");
+
+    if (prev && price.ask && prev.ask > price.ask)
+        set_label_class(ask_selector, "danger");
+
+    if (!price.bid)
+        set_label_class(bid_selector, "default");
+
+    if (!price.ask)
+        set_label_class(ask_selector, "default");
 };
 
 QuotesView.prototype.renderDetails = function (price) {
@@ -510,7 +548,9 @@ QuotesModel.prototype.updateQuote = function(quote) {
     if (!(quote.symbol in this.quotes))
         this.quotes[quote.symbol] = {};
 
+    var prev = this.quotes[quote.symbol][quote.exchange];
     this.quotes[quote.symbol][quote.exchange] = quote;
+    return prev;
 };
 
 QuotesModel.prototype.getQuote = function(symbol, exchange) {
@@ -538,9 +578,12 @@ QuotesController.prototype.start = function () {
 };
 
 QuotesController.prototype.onPriceUpdated = function (price) {
+    var prev;
+
     this.updated_on = new Date();
-    this.model.updateQuote(price);
+    prev = this.model.updateQuote(price);
     this.view.addCustomFields(price);
+    this.view.updateLabelsColors(price, prev);
     this.view.renderPrice(price);
     this.view.renderDetails(price);
     this.view.renderCustomFields(price);
