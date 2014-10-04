@@ -32,6 +32,10 @@ $__ = function() {
 
 function QuotesView() {
     this.exchanges = {
+        'amagi' : {
+            description: 'Amagi Metals',
+            link: 'https://www.amagimetals.com/',
+        },
         'ambito' : {
             description: 'Ambito.com',
             link: 'http://www.ambito.com/economia/mercados/monedas/dolar/',
@@ -117,13 +121,13 @@ function QuotesView() {
         },
         'XAUUSD' : {
             description: '(Gold)',
-            exchanges: ['bullionvault'],
+            exchanges: ['bullionvault', 'amagi'],
             prefix: '$',
             column: '2'
         },           
         'XAGUSD' : {
             description: '(Silver)',
-            exchanges: ['bullionvault'],
+            exchanges: ['bullionvault', 'amagi'],
             prefix: '$',
             column: '2'
         }, 
