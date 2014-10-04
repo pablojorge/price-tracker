@@ -306,7 +306,7 @@ QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
     );
 };
 
-QuotesView.prototype.renderPrice = function (price) {
+QuotesView.prototype.renderPrice = function (price, prev) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
         prices_selector = __(selector_base, "-prices"),
         bid_selector = __(selector_base, "-bid"),
@@ -321,8 +321,11 @@ QuotesView.prototype.renderPrice = function (price) {
                           __(this.symbols[price.symbol].prefix, 
                              price.ask.toFixed(2)) : "N/A");
 
-    $(bid_selector).effect("highlight");
-    $(ask_selector).effect("highlight");
+    if (!prev || prev.bid != price.bid)
+        $(bid_selector).effect("highlight");
+
+    if (!prev || prev.ask != price.ask)
+        $(ask_selector).effect("highlight");
 
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
@@ -584,7 +587,7 @@ QuotesController.prototype.onPriceUpdated = function (price) {
     prev = this.model.updateQuote(price);
     this.view.addCustomFields(price);
     this.view.updateLabelsColors(price, prev);
-    this.view.renderPrice(price);
+    this.view.renderPrice(price, prev);
     this.view.renderDetails(price);
     this.view.renderCustomFields(price);
 };
