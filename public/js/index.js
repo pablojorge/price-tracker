@@ -44,6 +44,10 @@ function QuotesView() {
             description: 'La Nacion',
             link: 'http://www.lanacion.com.ar/dolar-hoy-t1369'
         },
+        'clarin' : {
+            description: 'Clarin',
+            link: 'http://www.ieco.clarin.com/'
+        },
         'cronista' : {
             description: 'Cronista',
             link: 'http://www.cronista.com'
@@ -89,13 +93,13 @@ function QuotesView() {
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae'],
+            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae', 'clarin'],
             prefix: 'AR$',
             column: '1'
         }, 
         'USDARSB' : {
             description: '(Dolar blue)',
-            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae'],
+            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae', 'clarin'],
             prefix: 'AR$',
             column: '1'
         }, 
