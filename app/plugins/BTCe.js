@@ -29,10 +29,15 @@ BTCePriceRequester.prototype.processResponse = function (response, body) {
         // Yes, we want to invert them here:
         bid = ticker.sell,
         ask = ticker.buy;
-    return new messages.Price(this.getExchange(), 
-                              this.symbol, 
-                              bid, 
-                              ask);
+    return new messages.Price(this.getExchange(),
+                              this.symbol,
+                              bid,
+                              ask,
+                              new Date(), {
+                                  volume24: ticker.vol_cur,
+                                  high24: ticker.high,
+                                  low24: ticker.low,
+                              });
 };
 /**/
 

@@ -28,10 +28,15 @@ BitfinexPriceRequester.prototype.processResponse = function (response, body) {
     var ticker = JSON.parse(body),
         bid = parseFloat(ticker.bid),
         ask = parseFloat(ticker.ask);
-    return new messages.Price(this.getExchange(), 
-                              this.symbol, 
-                              bid, 
-                              ask);
+    return new messages.Price(this.getExchange(),
+                              this.symbol,
+                              bid,
+                              ask,
+                              new Date(), {
+                                  volume24: parseFloat(ticker.volume),
+                                  high24: parseFloat(ticker.high),
+                                  low24: parseFloat(ticker.low),
+                              });
 };
 /**/
 

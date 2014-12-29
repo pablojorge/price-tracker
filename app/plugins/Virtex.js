@@ -35,7 +35,9 @@ VirtexPriceRequester.prototype.processResponse = function (response, body) {
                               bid,
                               ask,
                               updated_on, {
-                                  volume: parseFloat(ticker.volume)
+                                  volume24: parseFloat(ticker.volume),
+                                  high24: parseFloat(ticker.high),
+                                  low24: parseFloat(ticker.low),
                               });
 };
 /**/

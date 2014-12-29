@@ -30,7 +30,15 @@ BitstampPriceRequester.prototype.processResponse = function (response, body) {
     var object = JSON.parse(body),
         bid = parseFloat(object.bid),
         ask = parseFloat(object.ask);
-    return new messages.Price(this.getExchange(), this.symbol, bid, ask);
+    return new messages.Price(this.getExchange(),
+                              this.symbol,
+                              bid,
+                              ask,
+                              new Date(), {
+                                  volume24: parseFloat(object.volume),
+                                  high24: parseFloat(object.high),
+                                  low24: parseFloat(object.low),
+                              });
 };
 /**/
 
