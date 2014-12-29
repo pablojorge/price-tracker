@@ -415,17 +415,17 @@ QuotesView.prototype.renderCustomFields = function (price) {
         },
         volume24: function (value) {
             $__(selector_base, '-volume24-value').html(
-                value + ' BTC'
+                __(value.toFixed(2), ' BTC')
             );
         },
         low24: function (value) {
             $__(selector_base, '-low24-value').html(
-                value + ' BTC'
+                __('$', value.toFixed(2))
             );
         },
         high24: function (value) {
             $__(selector_base, '-high24-value').html(
-                value + ' BTC'
+                __('$', value.toFixed(2))
             );
         }
     };

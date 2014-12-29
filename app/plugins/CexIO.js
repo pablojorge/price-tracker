@@ -39,8 +39,8 @@ CexIOPriceRequester.prototype.processResponse = function (response, body) {
                               ask,
                               updated_on, {
                                   volume24: parseFloat(object.volume),
-                                  low24: parseFloat(object.low),
-                                  high24: parseFloat(object.high)
+                                  high24: parseFloat(object.high),
+                                  low24: parseFloat(object.low)
                               });
 };
 /**/
