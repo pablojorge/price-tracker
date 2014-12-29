@@ -37,7 +37,7 @@ CoinsetterPriceRequester.prototype.processResponse = function (response, body) {
                               bid,
                               ask,
                               updated_on, {
-                                  volume24: object.volume24
+                                  volume24: parseFloat(object.volume24)
                               });
 };
 /**/
@@ -47,10 +47,12 @@ CoinsetterPriceRequester.prototype.processResponse = function (response, body) {
  */
 
 function CoinsetterStreamer(symbol, callback, errback) {
+    var self = this;
+
     this.socket = io.connect('https://plug.coinsetter.com:3000');
 
     this.socket.on('connect', function (data) {
-        this.socket.emit('ticker room', '');
+        self.socket.emit('ticker room', '');
     });
 
     this.socket.on('ticker', function (data){
@@ -59,7 +61,7 @@ function CoinsetterStreamer(symbol, callback, errback) {
                                     parseFloat(data.bid.price),
                                     parseFloat(data.ask.price)),
                                     new Date(), {
-                                        volume24: data.volume24
+                                        volume24: parseFloat(data.volume24)
                                     });
     });
 }

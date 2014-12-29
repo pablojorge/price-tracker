@@ -48,6 +48,10 @@ function QuotesView() {
             description: 'Clarin',
             link: 'http://www.ieco.clarin.com/'
         },
+        'cexio' : {
+            description: 'Cex.IO',
+            link: 'https://cex.io/'
+        },
         'cronista' : {
             description: 'Cronista',
             link: 'http://www.cronista.com'
@@ -123,13 +127,13 @@ function QuotesView() {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e',
                         'okcoin', 'bitfinex', 'virtex',
-                        'coinsetter'],
+                        'coinsetter', 'cexio'],
             prefix: '$',
             column: '2'
         },  
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'virtex'],
+            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'virtex', 'cexio'],
             prefix: '$',
             column: '2'
         },
