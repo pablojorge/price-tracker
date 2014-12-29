@@ -60,6 +60,10 @@ function QuotesView() {
             description: 'Coinbase',
             link: 'https://coinbase.com/charts',
         },
+        'coinsetter' : {
+            description: 'Coinsetter',
+            link: 'https://www.coinsetter.com/',
+        },
         'bitstamp' : {
             description: 'Bitstamp',
             link: 'https://www.bitstamp.net',
@@ -118,7 +122,8 @@ function QuotesView() {
         'BTCUSD' : {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e',
-                        'okcoin', 'bitfinex', 'virtex'],
+                        'okcoin', 'bitfinex', 'virtex',
+                        'coinsetter'],
             prefix: '$',
             column: '2'
         },  
@@ -403,6 +408,11 @@ QuotesView.prototype.renderCustomFields = function (price) {
             $__(selector_base, '-last-published-date').html(
                 (new Date(value)).toLocaleString()
             );
+        },
+        volume24: function (value) {
+            $__(selector_base, '-volume24-value').html(
+                value + ' BTC'
+            );
         }
     };
 
@@ -428,7 +438,8 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
     var base_id = __(symbol, '-', exchange);
 
     var field_desc = {
-        published_on: "Last published:"
+        published_on: "Last published:",
+        volume24: 'Volume (24hs):'
     };
 
     var field_body = {
@@ -437,6 +448,12 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
             '  <span id="', base_id, '-last-published-date" style="font-size: small;">',
             '  </span>',
             '  <span id="', base_id, '-last-published-ago" style="font-size: small;">',
+            '  </span>',
+            '</div>'
+        ),
+        volume24: __(
+            '<div class="col-xs-7">',
+            '  <span id="', base_id, '-volume24-value" style="font-size: small;">',
             '  </span>',
             '</div>'
         )
