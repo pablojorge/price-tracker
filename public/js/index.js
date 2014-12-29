@@ -417,6 +417,16 @@ QuotesView.prototype.renderCustomFields = function (price) {
             $__(selector_base, '-volume24-value').html(
                 value + ' BTC'
             );
+        },
+        low24: function (value) {
+            $__(selector_base, '-low24-value').html(
+                value + ' BTC'
+            );
+        },
+        high24: function (value) {
+            $__(selector_base, '-high24-value').html(
+                value + ' BTC'
+            );
         }
     };
 
@@ -443,7 +453,9 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
 
     var field_desc = {
         published_on: "Last published:",
-        volume24: 'Volume (24hs):'
+        volume24: 'Volume (24hs):',
+        high24: 'High (24hs)',
+        low24: 'Low (24hs)'
     };
 
     var field_body = {
@@ -458,6 +470,18 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
         volume24: __(
             '<div class="col-xs-7">',
             '  <span id="', base_id, '-volume24-value" style="font-size: small;">',
+            '  </span>',
+            '</div>'
+        ),
+        high24: __(
+            '<div class="col-xs-7">',
+            '  <span id="', base_id, '-high24-value" style="font-size: small;">',
+            '  </span>',
+            '</div>'
+        ),
+        low24: __(
+            '<div class="col-xs-7">',
+            '  <span id="', base_id, '-low24-value" style="font-size: small;">',
             '  </span>',
             '</div>'
         )
