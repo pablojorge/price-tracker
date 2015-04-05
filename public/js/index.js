@@ -88,10 +88,6 @@ function QuotesView() {
             description: 'BullionVault',
             link: 'https://www.bullionvault.com',
         },
-        'virtex' : {
-            description: 'Virtex',
-            link: 'https://virtex.com/market/order-book',
-        },
         'virwox' : {
             description: 'VirWox',
             link: 'https://www.virwox.com',
@@ -126,14 +122,14 @@ function QuotesView() {
         'BTCUSD' : {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e',
-                        'okcoin', 'bitfinex', 'virtex',
+                        'okcoin', 'bitfinex',
                         'coinsetter', 'cexio'],
             prefix: '$',
             column: '2'
         },  
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'virtex', 'cexio'],
+            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'cexio'],
             prefix: '$',
             column: '2'
         },
