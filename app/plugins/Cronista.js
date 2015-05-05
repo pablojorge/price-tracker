@@ -21,7 +21,7 @@ CronistaPriceRequester.config = {
         "USDARSCL" : undefined
     },
     url_template: (
-        'http://indigocontenidos.com.ar/cronista-cotizaciones/cotizaciones-nueva/cotizacion.php'
+        'http://www.cronista.com'
     ),
 };
 
@@ -30,16 +30,20 @@ CronistaPriceRequester.prototype.constructor = CronistaPriceRequester;
 
 CronistaPriceRequester.prototype.processResponse = function (response, body) {
     var selectors = {
-        USDARS: {_class: '.large', pos: 0 },
-        USDARSB: {_class: '.mid', pos: 0 },
-        USDARSCL: {_class: '.mid', pos: 2 },
+        USDARS: {pos: 1},
+        USDARSB: {pos: 4},
+        USDARSCL: {pos: 13},
     };
 
-    var $ = cheerio.load(body),
-        bid = null,
-        value = $(selectors[this.symbol]._class + " > strong > span")
-                    .eq(selectors[this.symbol].pos).text(),
-        ask = parseFloat(value.replace(',','.'));
+    var $ = cheerio.load(body);
+
+    var value_extractor = function (pos) {
+        var value = $(".tablaHomeCompraVenta > span")[pos].children[0].data;
+        return parseFloat(value.replace(',','.'));
+    };
+
+    var bid = value_extractor(selectors[this.symbol].pos),
+        ask = value_extractor(selectors[this.symbol].pos + 1);
 
     return new messages.Price(this.getExchange(),
                               this.symbol,
