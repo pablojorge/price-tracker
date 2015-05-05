@@ -1,4 +1,5 @@
 var request = require('request');
+var zlib = require('zlib');
 
 /**
  */
@@ -10,7 +11,12 @@ function PriceRequester(symbol, options) {
 PriceRequester.prototype.__doRequest = function (url, callback, errback) {
     var _this = this;
 
-    request(url,
+    var req_obj = {
+        url: url,
+        encoding: null
+    };
+
+    request(req_obj,
         function (error, response, body) {
             try {
                 if (error !== null) {
@@ -19,7 +25,13 @@ PriceRequester.prototype.__doRequest = function (url, callback, errback) {
                 if (response.statusCode != 200) {
                     throw ("Error, status code: " + response.statusCode);
                 }
-                callback(_this.processResponse(response, body));
+                if (response.headers['content-encoding'] == 'gzip'){
+                    zlib.gunzip(body, function(err, dezipped) {
+                        callback(_this.processResponse(response, dezipped.toString()));
+                    });
+                } else {
+                    callback(_this.processResponse(response, body.toString()));
+                }
             } catch(e) {
                 errback(e, {
                     exchange: _this.getExchange(),
