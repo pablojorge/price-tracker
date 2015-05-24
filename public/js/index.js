@@ -161,10 +161,10 @@ function QuotesView() {
 }
 
 QuotesView.prototype.render = function() {
-    var _this = this;
+    var self = this;
 
     for (var symbol in this.symbols) {
-        _this.addSymbol(symbol, this.symbols[symbol]);
+        self.addSymbol(symbol, this.symbols[symbol]);
     }
 };
 
@@ -237,9 +237,9 @@ QuotesView.prototype.renderSymbol = function (symbol, info) {
 QuotesView.prototype.addSymbol = function (symbol, info) {
     $__("#main-quotes-", info.column).append(this.renderSymbol(symbol, info));
 
-    var _this = this;
+    var self = this;
     info.exchanges.forEach(function(exchange) {
-        _this.addExchangeForSymbol(symbol, exchange);
+        self.addExchangeForSymbol(symbol, exchange);
     });
 };
 
@@ -709,11 +709,11 @@ PortfolioModel.prototype.savePortfolio = function (portfolio) {
 };
 
 PortfolioModel.prototype.deletePortfolio = function (guid) {
-    var _this = this;
+    var self = this;
 
     this.portfolios.forEach(function(portfolio, index) {
         if (portfolio.guid == guid) {
-            _this.portfolios.splice(index, 1);
+            self.portfolios.splice(index, 1);
         }
     });
 
@@ -721,7 +721,7 @@ PortfolioModel.prototype.deletePortfolio = function (guid) {
 };
 
 PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
-    var _this = this;
+    var self = this;
 
     this.portfolios.forEach(function(portfolio_) {
         if (portfolio_.guid == portfolio.guid) {
@@ -733,7 +733,7 @@ PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
 };
 
 PortfolioModel.prototype.deleteTrade = function (guid) {
-    var _this = this;
+    var self = this;
 
     this.portfolios.forEach(function(portfolio) {
         portfolio.trades.forEach(function(trade, index) {
@@ -755,12 +755,12 @@ PortfolioView.prototype.setController = function (controller) {
 };
 
 PortfolioView.prototype.render = function (portfolios) {
-    var _this = this;
+    var self = this;
 
     portfolios.forEach(function(portfolio) {
-        _this.addPortfolio(portfolio);
+        self.addPortfolio(portfolio);
         portfolio.trades.forEach(function(trade) {
-            _this.addTrade(portfolio, trade);
+            self.addTrade(portfolio, trade);
         });
     });
 };
@@ -814,7 +814,7 @@ PortfolioView.prototype.renderTrade = function(portfolio, trade) {
 };
 
 PortfolioView.prototype.addTrade = function(portfolio, trade) {
-    var _this = this;
+    var self = this;
 
     $__("#portfolio-", portfolio.guid, "-trades").append(
         this.renderTrade(portfolio, trade)
@@ -822,7 +822,7 @@ PortfolioView.prototype.addTrade = function(portfolio, trade) {
 
     $__("#btn-", trade.guid, "-remove").click(function (event) {
         event.preventDefault();
-        _this.controller.deleteTrade(trade.guid);
+        self.controller.deleteTrade(trade.guid);
     });
 };
 
@@ -943,7 +943,7 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
 };
 
 PortfolioView.prototype.addPortfolio = function(portfolio) {
-    var _this = this;
+    var self = this;
 
     $("#portfolios").append(this.renderPortfolio(portfolio));
 
@@ -973,13 +973,13 @@ PortfolioView.prototype.addPortfolio = function(portfolio) {
         if (valid) {
             $__(amount_selector, " > div > :input").val("");
             $__(price_selector, " > div > :input").val("");
-            _this.controller.createTrade(portfolio, amount, price);
+            self.controller.createTrade(portfolio, amount, price);
         }
     });
 
     $__("#btn-", portfolio.guid, "-remove").click(function (event) {
         event.preventDefault();
-        _this.controller.deletePortfolio(portfolio.guid);
+        self.controller.deletePortfolio(portfolio.guid);
     });
 };
 
@@ -1134,7 +1134,7 @@ PortfolioController.prototype.onPriceUpdated = function (price) {
 };
 
 PortfolioController.prototype.updateInvestments = function() {
-    var _this = this;
+    var self = this;
 
     var global_total = {
         amount: 0,
@@ -1151,22 +1151,22 @@ PortfolioController.prototype.updateInvestments = function() {
             portfolio_total.amount += trade.amount;
             portfolio_total.price += trade.price;
 
-            _this.view.updateTradeReturn(
+            self.view.updateTradeReturn(
                 trade, 
-                _this.getInvestmentInfo(trade)
+                self.getInvestmentInfo(trade)
             );
         });
 
         global_total.amount += portfolio_total.amount;
         global_total.price += portfolio_total.price;
 
-        _this.view.updatePortfolioReturn(
+        self.view.updatePortfolioReturn(
             portfolio,
-            _this.getInvestmentInfo(portfolio_total)
+            self.getInvestmentInfo(portfolio_total)
         );
     });
 
-    _this.view.updateGlobalReturn(_this.getInvestmentInfo(global_total));
+    self.view.updateGlobalReturn(self.getInvestmentInfo(global_total));
 };
 
 PortfolioController.prototype.updateExchangePrice = function(price) {    

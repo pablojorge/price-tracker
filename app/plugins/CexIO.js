@@ -49,7 +49,7 @@ CexIOPriceRequester.prototype.processResponse = function (response, body) {
  * CexIO streamer
  */
 
-function CexIOStreamer(symbol, callback, errback) {
+function CexIOStreamer(symbol, callback) {
     var self = this;
 
     this.socket = ws.connect('wss://ws.cex.io/ws');
@@ -70,7 +70,8 @@ function CexIOStreamer(symbol, callback, errback) {
 
         if ((payload.data.symbol1 === 'LTC' && symbol === 'LTCUSD') ||
             (payload.data.symbol1 === 'BTC' && symbol === 'BTCUSD')) {
-            callback(new messages.Price("cexio",
+            callback(null,
+                     new messages.Price("cexio",
                                         symbol,
                                         parseFloat(payload.data.price),
                                         parseFloat(payload.data.price)));

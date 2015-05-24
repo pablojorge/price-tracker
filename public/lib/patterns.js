@@ -19,10 +19,10 @@ Subject.prototype.addHandler = function(event, handler) {
 };
 
 Subject.prototype.emit = function(event, args) {
-    var _this = this;
+    var self = this;
 
     this.handlers[event].forEach(function(handler) {
-        handler.apply(_this, args);
+        handler.apply(self, args);
     });
 };
 

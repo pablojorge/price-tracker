@@ -26,14 +26,17 @@ PriceRequestHandler.prototype.getRequester = function() {
     }
 };
 
-PriceRequestHandler.prototype.processRequest = function (callback, errback) {
+PriceRequestHandler.prototype.processRequest = function (callback) {
     try {
         var requester = this.getRequester();
-        requester.doRequest(callback, errback);
+        requester.doRequest(callback);
     } catch(e) {
-        errback(e, {
-            exchange: this.request.exchange,
-            symbol: this.request.symbol
+        callback({
+            exception: e,
+            info: {
+                exchange: this.request.exchange,
+                symbol: this.request.symbol
+            }
         });
     }
 };

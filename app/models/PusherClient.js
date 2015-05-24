@@ -4,12 +4,16 @@ var ws = require('ws');
  * Simple client for Pusher
  */
 
-function PusherClient(pusherId, errback) {
+function PusherClient(pusherId, callback) {
     var url = ("wss://ws.pusherapp.com/app/" + pusherId + 
                "?protocol=7&client=js&version=2.1.6&flash=false");
 
     this.connection = ws.connect(url);
-    this.connection.on('error', errback);
+    this.connection.on('error', function (error) {
+        callback({
+            exception: error
+        });
+    });
 }
 
 PusherClient.prototype.subscribe = function (channel) {
