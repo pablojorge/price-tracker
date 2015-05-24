@@ -72,7 +72,7 @@ WSClient.prototype.connect = function() {
 
         if (object.type == "Exchanges") {
             self.emit("onExchangesListReceived", [object.response]);
-        } else if (object.type == "Price") {
+        } else if (object.type == "Symbol") {
             self.emit("onPriceUpdated", [object.response]);
         } else if (object.type == "Error") {
             self.emit("onError", [object.response]);
