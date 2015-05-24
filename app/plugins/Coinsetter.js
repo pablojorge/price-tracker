@@ -46,7 +46,7 @@ CoinsetterPriceRequester.prototype.processResponse = function (response, body) {
  * Coinsetter streamer
  */
 
-function CoinsetterStreamer(symbol, callback, errback) {
+function CoinsetterStreamer(symbol, callback) {
     var self = this;
 
     this.socket = io.connect('https://plug.coinsetter.com:3000');
@@ -56,7 +56,8 @@ function CoinsetterStreamer(symbol, callback, errback) {
     });
 
     this.socket.on('ticker', function (data){
-        callback(new messages.Price("coinsetter",
+        callback(null,
+                 new messages.Price("coinsetter",
                                     symbol,
                                     parseFloat(data.bid.price),
                                     parseFloat(data.ask.price)),

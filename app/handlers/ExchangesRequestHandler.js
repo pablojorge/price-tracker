@@ -13,7 +13,7 @@ ExchangesRequestHandler.config = {
     handles: 'ExchangesRequest',
 };
 
-ExchangesRequestHandler.prototype.processRequest = function (callback, errback) {
+ExchangesRequestHandler.prototype.processRequest = function (callback) {
     try {
         var exchanges = new messages.Exchanges();
         registry.requesters.keys().forEach(function (key) {
@@ -24,9 +24,11 @@ ExchangesRequestHandler.prototype.processRequest = function (callback, errback) 
             }
             exchanges.addExchange(requester.config.exchange, symbols);
         });
-        callback(exchanges);
+        callback(null, exchanges);
     } catch(e) {
-        errback(e);
+        callback({
+            exception: e
+        });
     }
 };
 

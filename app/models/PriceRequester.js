@@ -8,7 +8,7 @@ function PriceRequester(symbol, options) {
     this.options = options;
 }
 
-PriceRequester.prototype.__doRequest = function (url, callback, errback) {
+PriceRequester.prototype.__doRequest = function (url, callback) {
     var _this = this;
 
     var req_obj = {
@@ -27,23 +27,26 @@ PriceRequester.prototype.__doRequest = function (url, callback, errback) {
                 }
                 if (response.headers['content-encoding'] == 'gzip'){
                     zlib.gunzip(body, function(err, dezipped) {
-                        callback(_this.processResponse(response, dezipped.toString()));
+                        callback(null, _this.processResponse(response, dezipped.toString()));
                     });
                 } else {
-                    callback(_this.processResponse(response, body.toString()));
+                    callback(null, _this.processResponse(response, body.toString()));
                 }
             } catch(e) {
-                errback(e, {
-                    exchange: _this.getExchange(),
-                    symbol: _this.symbol,
+                callback({
+                    exception: e,
+                    info: {
+                        exchange: _this.getExchange(),
+                        symbol: _this.symbol,
+                    }
                 });
             }
         }
     );
 };
 
-PriceRequester.prototype.doRequest = function (callback, errback) {
-    this.__doRequest(this.buildRequest(), callback, errback);
+PriceRequester.prototype.doRequest = function (callback) {
+    this.__doRequest(this.buildRequest(), callback);
 };
 
 PriceRequester.prototype.getExchange = function() {

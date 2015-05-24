@@ -24,7 +24,7 @@ Broadcaster.deleteInstance = function () {
     }
 };
 
-Broadcaster.prototype.addListener = function(exchange, symbol, callback, errback) {
+Broadcaster.prototype.addListener = function(exchange, symbol, callback) {
     var self = this;
 
     if (this.stream[exchange] === undefined) {
@@ -35,25 +35,29 @@ Broadcaster.prototype.addListener = function(exchange, symbol, callback, errback
         var streamer = registry.streamers.create(
             exchange, [
                 symbol,
-                function (response) {
-                    if (!self.stream[exchange][symbol]) {
-                        console.log("Broadcaster: WARNING tried to broadcast data from",
-                                    exchange, symbol);
-                        return;
+                function (error, response) {
+                    if (error === null) {
+                        if (!self.stream[exchange][symbol]) {
+                            console.log("Broadcaster: WARNING tried to broadcast data from",
+                                        exchange, symbol);
+                            return;
+                        }
+                        self.stream[exchange][symbol].listeners.forEach(function (listener) {
+                            listener(null, response);
+                        });
+                    } else {
+                        if (!self.stream[exchange][symbol]) {
+                            console.log("Broadcaster: WARNING tried to broadcast error from",
+                                        exchange, symbol);
+                            return;
+                        }
+                        self.stream[exchange][symbol].listeners.forEach(function (listener) {
+                            listener({
+                                exception: exception,
+                                info: info
+                            });
+                        });
                     }
-                    self.stream[exchange][symbol].listeners.forEach(function (listener) {
-                        listener.callback(response);
-                    });
-                },
-                function (exception, info) {
-                    if (!self.stream[exchange][symbol]) {
-                        console.log("Broadcaster: WARNING tried to broadcast error from",
-                                    exchange, symbol);
-                        return;
-                    }
-                    self.stream[exchange][symbol].listeners.forEach(function (listener) {
-                        listener.errback(exception, info);
-                    });
                 },
             ]
         );
@@ -64,16 +68,11 @@ Broadcaster.prototype.addListener = function(exchange, symbol, callback, errback
         };        
     }
 
-    var listener = {
-        errback: errback,
-        callback: callback
-    };
-
     var removeCb = function () {
-        self.removeListener(exchange, symbol, listener);
+        self.removeListener(exchange, symbol, callback);
     };
 
-    this.stream[exchange][symbol].listeners.push(listener);
+    this.stream[exchange][symbol].listeners.push(callback);
     return removeCb;
 };
 

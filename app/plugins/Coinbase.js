@@ -26,7 +26,7 @@ CoinbasePriceRequester.prototype.constructor = CoinbasePriceRequester;
 
 // We must override doRequest() because two different requests are needed
 // to get the buy and sell prices
-CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
+CoinbasePriceRequester.prototype.doRequest = function (callback) {
     var _this = this;
 
     async.map(
@@ -45,14 +45,18 @@ CoinbasePriceRequester.prototype.doRequest = function (callback, errback) {
         },
         function (err, results) {
             if (err !== null) {
-                errback(err, {
-                    exchange: _this.getExchange(),
-                    symbol: _this.symbol,
+                callback({
+                    exception: err,
+                    info: {
+                        exchange: _this.getExchange(),
+                        symbol: _this.symbol,
+                    }
                 });                
             }
 
             // Yes, we want to invert 'buy' and 'sell' here:
-            callback(new messages.Price(_this.getExchange(), 
+            callback(null,
+                     new messages.Price(_this.getExchange(), 
                                         _this.symbol, 
                                         results[0], 
                                         results[1]));
