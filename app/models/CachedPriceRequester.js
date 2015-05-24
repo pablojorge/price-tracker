@@ -9,15 +9,15 @@ function CachedPriceRequester(cache, request, requester) {
 }
 
 CachedPriceRequester.prototype.doRequest = function (callback) {
-    var _this = this;
+    var self = this;
 
     this.cache.getEntry(this.request.hash(), function (error, value) {
         if (!value) {
             console.log("Cache: '%s' NOT found in cache...", 
-                        _this.request.hash());
-            _this.requester.doRequest(function (error, response) {
+                        self.request.hash());
+            self.requester.doRequest(function (error, response) {
                 if (error === null) {
-                    _this.cache.setEntry(_this.request.hash(), response);
+                    self.cache.setEntry(self.request.hash(), response);
                     callback(null, response);
                 } else {
                     callback(error);
@@ -25,7 +25,7 @@ CachedPriceRequester.prototype.doRequest = function (callback) {
             });
         } else {
             console.log("Cache: '%s' found in cache!", 
-                        _this.request.hash());
+                        self.request.hash());
             callback(null, value);
         }
     });

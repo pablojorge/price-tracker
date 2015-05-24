@@ -9,7 +9,7 @@ function PriceRequester(symbol, options) {
 }
 
 PriceRequester.prototype.__doRequest = function (url, callback) {
-    var _this = this;
+    var self = this;
 
     var req_obj = {
         url: url,
@@ -27,17 +27,17 @@ PriceRequester.prototype.__doRequest = function (url, callback) {
                 }
                 if (response.headers['content-encoding'] == 'gzip'){
                     zlib.gunzip(body, function(err, dezipped) {
-                        callback(null, _this.processResponse(response, dezipped.toString()));
+                        callback(null, self.processResponse(response, dezipped.toString()));
                     });
                 } else {
-                    callback(null, _this.processResponse(response, body.toString()));
+                    callback(null, self.processResponse(response, body.toString()));
                 }
             } catch(e) {
                 callback({
                     exception: e,
                     info: {
-                        exchange: _this.getExchange(),
-                        symbol: _this.symbol,
+                        exchange: self.getExchange(),
+                        symbol: self.symbol,
                     }
                 });
             }

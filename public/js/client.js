@@ -24,12 +24,12 @@ Client.prototype = Object.create(Subject.prototype);
 Client.prototype.constructor = Client;
 
 Client.prototype.requestPrices = function(exchanges) {
-    var _this = this;
+    var self = this;
 
     for (var exchange in exchanges) {
         exchanges[exchange].forEach(function(symbol) {
-            _this.requestPrice(exchange, symbol);
-            _this.subscribe(exchange, symbol);
+            self.requestPrice(exchange, symbol);
+            self.subscribe(exchange, symbol);
         });
     }
 };
@@ -54,40 +54,40 @@ WSClient.prototype = Object.create(Client.prototype);
 WSClient.prototype.constructor = WSClient;
 
 WSClient.prototype.connect = function() {
-    var _this = this;
+    var self = this;
 
-    _this.socket = new WebSocket(_this.host);
+    self.socket = new WebSocket(self.host);
 
-    _this.socket.onopen = function (event) {
-        _this.connected = true;
-        _this.emit("onConnect");
-        _this.updated_on = new Date();
-        setTimeout(_this.watchdog.bind(_this),
+    self.socket.onopen = function (event) {
+        self.connected = true;
+        self.emit("onConnect");
+        self.updated_on = new Date();
+        setTimeout(self.watchdog.bind(self),
                    WSClient.WATCHDOG_INTERVAL * 1000);
     };
 
-    _this.socket.onmessage = function (event) {
+    self.socket.onmessage = function (event) {
         var object = JSON.parse(event.data);
         console.log("WSClient: onmessage: ", object);
 
         if (object.type == "Exchanges") {
-            _this.emit("onExchangesListReceived", [object.response]);
+            self.emit("onExchangesListReceived", [object.response]);
         } else if (object.type == "Price") {
-            _this.emit("onPriceUpdated", [object.response]);
+            self.emit("onPriceUpdated", [object.response]);
         } else if (object.type == "Error") {
-            _this.emit("onError", [object.response]);
+            self.emit("onError", [object.response]);
         }
     
-        _this.updated_on = new Date();
+        self.updated_on = new Date();
     };
 
-    _this.socket.onclose = function (event) {
-        _this.emit("onDisconnect");
-        _this.connected = false;
+    self.socket.onclose = function (event) {
+        self.emit("onDisconnect");
+        self.connected = false;
     };
 
-    _this.socket.onerror = function (event) {
-        _this.emit("onError", [new Error('WebSocket error')]);
+    self.socket.onerror = function (event) {
+        self.emit("onError", [new Error('WebSocket error')]);
     };
 };
 
@@ -138,36 +138,36 @@ RESTClient.prototype.connect = function() {
 };
 
 RESTClient.prototype.requestExchanges = function() {
-    var _this = this;
+    var self = this;
 
     console.log("RESTClient: requesting exchanges list...");
 
     $.ajax({
-        url: _this.host + "/request/exchanges", 
+        url: self.host + "/request/exchanges", 
         dataType: 'json', 
         success: function(data) {
             console.log("RESTClient.requestExchanges(): received: ", data);
-            _this.emit("onExchangesListReceived", [data]);
+            self.emit("onExchangesListReceived", [data]);
         },
     });
 };
 
 RESTClient.prototype.requestPrice = function(exchange, symbol) {
-    var _this = this;
+    var self = this;
 
     console.log("RESTClient: requesting price for", symbol, "in", exchange);
 
     $.ajax({
-        url: _this.host + "/request/price/" + 
+        url: self.host + "/request/price/" + 
              exchange + "/" + symbol, 
         dataType: 'json',
         success: function(data) {
             console.log("RESTClient.requestPrice(): received: ", data);
-            _this.emit("onPriceUpdated", [data]);
+            self.emit("onPriceUpdated", [data]);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             var data = JSON.parse(jqXHR.responseText);
-            _this.emit("onError", [new Error(data.message, data.info)]);
+            self.emit("onError", [new Error(data.message, data.info)]);
         }
     });
 };
