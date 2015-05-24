@@ -100,33 +100,45 @@ Error.prototype = Object.create(Response.prototype);
 Error.prototype.constructor = Error;
 
 function Symbol(exchange, symbol, bid, ask, updated_on, custom) {
-    this.exchange = exchange;
-    this.symbol = symbol;
-    this.bid = bid;
-    this.ask = ask;
-    this.updated_on = updated_on || new Date();
-    this.custom = custom || {};
+    this.data = {
+        exchange: exchange,
+        symbol: symbol,
+        bid: bid,
+        ask: ask,
+        updated_on: updated_on || new Date(),
+        custom: custom || {}
+    };
 }
 
 Symbol.prototype = Object.create(Response.prototype);
 Symbol.prototype.constructor = Symbol;
 
-function Exchanges() {}
+function Exchanges() {
+    this.data = [];
+}
 
 Exchanges.prototype = Object.create(Response.prototype);
 Exchanges.prototype.constructor = Exchanges;
 
 Exchanges.prototype.addExchange = function (exchange, symbols) {
-    this[exchange] = symbols;
+    this.data.push({
+        exchange: exchange,
+        symbols: symbols
+    });
 };
 
-function Symbols() {}
+function Symbols() {
+    this.data = [];
+}
 
 Symbols.prototype = Object.create(Response.prototype);
 Symbols.prototype.constructor = Symbols;
 
 Symbols.prototype.addSymbol = function (symbol, exchanges) {
-    this[symbol] = exchanges;
+    this.data.push({
+        symbol: symbol,
+        exchanges: exchanges
+    });
 };
 
 /**

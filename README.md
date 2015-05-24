@@ -19,66 +19,113 @@ Example:
     GET http://localhost:5000/api/v1/exchanges
     
     {
-      "amagi": [
-        "XAUUSD",
-        "XAGUSD"
-      ],
-      "ambito": [
-        "USDARS",
-        "USDARSB",
-        "USDARSCL",
-        "USDARSBOL"
-      ],
-      "btc-e": [
-        "BTCUSD",
-        "LTCUSD"
-      ],
-      "bitfinex": [
-        "BTCUSD",
-        "LTCUSD"
-      ],
-      "bitstamp": [
-        "BTCUSD"
-      ],
-      "bullionvault": [
-        "XAUUSD",
-        "XAGUSD"
-      ],
-      "cexio": [
-        "BTCUSD",
-        "LTCUSD"
-      ],
-      "clarin": [
-        "USDARS",
-        "USDARSB"
-      ],
-      "coinbase": [
-        "BTCUSD"
-      ],
-      "coinsetter": [
-        "BTCUSD"
-      ],
-      "cronista": [
-        "USDARS",
-        "USDARSB",
-        "USDARSCL"
-      ],
-      "infobae": [
-        "USDARS",
-        "USDARSB",
-        "USDARSCL"
-      ],
-      "lanacion": [
-        "USDARS",
-        "USDARSB"
-      ],
-      "okcoin": [
-        "BTCUSD",
-        "LTCUSD"
-      ],
-      "virwox": [
-        "BTCSLL",
-        "USDSLL"
+      "data": [
+        {
+          "exchange": "amagi",
+          "symbols": [
+            "XAUUSD",
+            "XAGUSD"
+          ]
+        },
+        {
+          "exchange": "ambito",
+          "symbols": [
+            "USDARS",
+            "USDARSB",
+            "USDARSCL",
+            "USDARSBOL"
+          ]
+        },
+        {
+          "exchange": "btc-e",
+          "symbols": [
+            "BTCUSD",
+            "LTCUSD"
+          ]
+        },
+        {
+          "exchange": "bitfinex",
+          "symbols": [
+            "BTCUSD",
+            "LTCUSD"
+          ]
+        },
+        {
+          "exchange": "bitstamp",
+          "symbols": [
+            "BTCUSD"
+          ]
+        },
+        {
+          "exchange": "bullionvault",
+          "symbols": [
+            "XAUUSD",
+            "XAGUSD"
+          ]
+        },
+        {
+          "exchange": "cexio",
+          "symbols": [
+            "BTCUSD",
+            "LTCUSD"
+          ]
+        },
+        {
+          "exchange": "clarin",
+          "symbols": [
+            "USDARS",
+            "USDARSB"
+          ]
+        },
+        {
+          "exchange": "coinbase",
+          "symbols": [
+            "BTCUSD"
+          ]
+        },
+        {
+          "exchange": "coinsetter",
+          "symbols": [
+            "BTCUSD"
+          ]
+        },
+        {
+          "exchange": "cronista",
+          "symbols": [
+            "USDARS",
+            "USDARSB",
+            "USDARSCL"
+          ]
+        },
+        {
+          "exchange": "infobae",
+          "symbols": [
+            "USDARS",
+            "USDARSB",
+            "USDARSCL"
+          ]
+        },
+        {
+          "exchange": "lanacion",
+          "symbols": [
+            "USDARS",
+            "USDARSB"
+          ]
+        },
+        {
+          "exchange": "okcoin",
+          "symbols": [
+            "BTCUSD",
+            "LTCUSD"
+          ]
+        },
+        {
+          "exchange": "virwox",
+          "symbols": [
+            "BTCSLL",
+            "USDSLL"
+          ]
+        }
       ]
     }
 
@@ -93,56 +140,88 @@ Example:
     GET http://localhost:5000/api/v1/exchanges
     
     {
-      "XAUUSD": [
-        "amagi",
-        "bullionvault"
-      ],
-      "XAGUSD": [
-        "amagi",
-        "bullionvault"
-      ],
-      "USDARS": [
-        "ambito",
-        "clarin",
-        "cronista",
-        "infobae",
-        "lanacion"
-      ],
-      "USDARSB": [
-        "ambito",
-        "clarin",
-        "cronista",
-        "infobae",
-        "lanacion"
-      ],
-      "USDARSCL": [
-        "ambito",
-        "cronista",
-        "infobae"
-      ],
-      "USDARSBOL": [
-        "ambito"
-      ],
-      "BTCUSD": [
-        "btc-e",
-        "bitfinex",
-        "bitstamp",
-        "cexio",
-        "coinbase",
-        "coinsetter",
-        "okcoin"
-      ],
-      "LTCUSD": [
-        "btc-e",
-        "bitfinex",
-        "cexio",
-        "okcoin"
-      ],
-      "BTCSLL": [
-        "virwox"
-      ],
-      "USDSLL": [
-        "virwox"
+      "data": [
+        {
+          "symbol": "XAUUSD",
+          "exchanges": [
+            "amagi",
+            "bullionvault"
+          ]
+        },
+        {
+          "symbol": "XAGUSD",
+          "exchanges": [
+            "amagi",
+            "bullionvault"
+          ]
+        },
+        {
+          "symbol": "USDARS",
+          "exchanges": [
+            "ambito",
+            "clarin",
+            "cronista",
+            "infobae",
+            "lanacion"
+          ]
+        },
+        {
+          "symbol": "USDARSB",
+          "exchanges": [
+            "ambito",
+            "clarin",
+            "cronista",
+            "infobae",
+            "lanacion"
+          ]
+        },
+        {
+          "symbol": "USDARSCL",
+          "exchanges": [
+            "ambito",
+            "cronista",
+            "infobae"
+          ]
+        },
+        {
+          "symbol": "USDARSBOL",
+          "exchanges": [
+            "ambito"
+          ]
+        },
+        {
+          "symbol": "BTCUSD",
+          "exchanges": [
+            "btc-e",
+            "bitfinex",
+            "bitstamp",
+            "cexio",
+            "coinbase",
+            "coinsetter",
+            "okcoin"
+          ]
+        },
+        {
+          "symbol": "LTCUSD",
+          "exchanges": [
+            "btc-e",
+            "bitfinex",
+            "cexio",
+            "okcoin"
+          ]
+        },
+        {
+          "symbol": "BTCSLL",
+          "exchanges": [
+            "virwox"
+          ]
+        },
+        {
+          "symbol": "USDSLL",
+          "exchanges": [
+            "virwox"
+          ]
+        }
       ]
     }
 
@@ -167,15 +246,17 @@ Example 1:
     GET http://localhost:5000/api/v1/symbols/BTCUSD/bitstamp
     
     {
-      "exchange": "bitstamp",
-      "symbol": "BTCUSD",
-      "bid": 238.58,
-      "ask": 238.59,
-      "updated_on": "2015-05-24T03:02:03.068Z",
-      "custom": {
-        "volume24": 2592.47046949,
-        "high24": 240.67,
-        "low24": 237.4
+      "data": {
+        "exchange": "bitstamp",
+        "symbol": "BTCUSD",
+        "bid": 238.58,
+        "ask": 238.59,
+        "updated_on": "2015-05-24T03:02:03.068Z",
+        "custom": {
+          "volume24": 2592.47046949,
+          "high24": 240.67,
+          "low24": 237.4
+        }
       }
     }
 
@@ -184,13 +265,15 @@ Example 2:
     GET http://localhost:5000/api/v1/sybols/USDARSB/lanacion
     
     {
-      "exchange": "lanacion",
-      "symbol": "USDARSB",
-      "bid": 12.45,
-      "ask": 12.65,
-      "updated_on": "2015-05-24T03:02:31.709Z",
-      "custom": {
-        "published_on": "2015-05-21T03:00:00.000Z"
+      "data": {
+        "exchange": "lanacion",
+        "symbol": "USDARSB",
+        "bid": 12.45,
+        "ask": 12.65,
+        "updated_on": "2015-05-24T03:02:31.709Z",
+        "custom": {
+          "published_on": "2015-05-21T03:00:00.000Z"
+        }
       }
     }
 
@@ -221,6 +304,24 @@ Example 2:
         ws.send((new ExchangesRequest()).toString());
         ws.send((new SymbolRequest("LTCUSD", "btc-e")).toString());
     };
+    
+    ws.onmessage = function (event) {
+        var object = JSON.parse(event.data);
+    
+        if (object.type == "Exchanges") {
+            object.response.data.forEach(function(item) {
+                item.symbols.forEach(function(symbol) {
+                    console.log("exchange: " + item.exchange + " symbol: " + symbol);
+                });
+            });
+        } else if (object.type == "Symbol") {
+            console.log("symbol: " + object.response.data.symbol);
+            console.log("exchange: " + object.response.data.exchange);
+            console.log("bid: " + object.response.data.bid);
+            console.log("ask: " + object.response.data.ask);
+        }
+    };
+
 
 
 ## Live site

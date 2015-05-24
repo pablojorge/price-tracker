@@ -26,12 +26,12 @@ Client.prototype.constructor = Client;
 Client.prototype.requestPrices = function(exchanges) {
     var self = this;
 
-    for (var exchange in exchanges) {
-        exchanges[exchange].forEach(function(symbol) {
-            self.requestPrice(exchange, symbol);
-            self.subscribe(exchange, symbol);
+    exchanges.forEach(function(item) {
+        item.symbols.forEach(function(symbol) {
+            self.requestPrice(item.exchange, symbol);
+            self.subscribe(item.exchange, symbol);
         });
-    }
+    });
 };
 
 /**
@@ -71,9 +71,9 @@ WSClient.prototype.connect = function() {
         console.log("WSClient: onmessage: ", object);
 
         if (object.type == "Exchanges") {
-            self.emit("onExchangesListReceived", [object.response]);
+            self.emit("onExchangesListReceived", [object.response.data]);
         } else if (object.type == "Symbol") {
-            self.emit("onPriceUpdated", [object.response]);
+            self.emit("onPriceUpdated", [object.response.data]);
         } else if (object.type == "Error") {
             self.emit("onError", [object.response]);
         }
