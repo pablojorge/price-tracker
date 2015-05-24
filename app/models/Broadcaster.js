@@ -52,10 +52,7 @@ Broadcaster.prototype.addListener = function(exchange, symbol, callback) {
                             return;
                         }
                         self.stream[exchange][symbol].listeners.forEach(function (listener) {
-                            listener({
-                                exception: exception,
-                                info: info
-                            });
+                            listener(error);
                         });
                     }
                 },
