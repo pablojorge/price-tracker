@@ -39,10 +39,10 @@ InfobaePriceRequester.prototype.processResponse = function (response, body) {
         value = resp[0][selectors[this.symbol]].compra.precio,
         ask = parseFloat(value.replace(',', '.'));
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask);
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask);
 };
 /**/
 

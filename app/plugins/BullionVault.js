@@ -40,7 +40,7 @@ BullionVaultPriceRequester.prototype.processResponse = function (response, body)
         bid = get_price("buy"),
         ask = get_price("sell");
     
-    return new messages.Price(this.getExchange(), this.symbol, bid, ask);
+    return new messages.Symbol(this.getExchange(), this.symbol, bid, ask);
 };
 /**/
 

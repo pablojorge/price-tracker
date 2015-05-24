@@ -23,17 +23,17 @@ Request.fromString = function(string) {
 
 /**
  */
-function PriceRequest(exchange, symbol, options) {
-    this.exchange = exchange;
+function SymbolRequest(symbol, exchange, options) {
     this.symbol = symbol;
+    this.exchange = exchange;
     this.options = options;
 }
 
-PriceRequest.prototype = Object.create(Request.prototype);
-PriceRequest.prototype.constructor = PriceRequest;
+SymbolRequest.prototype = Object.create(Request.prototype);
+SymbolRequest.prototype.constructor = SymbolRequest;
 
-PriceRequest.prototype.hash = function() {
-    return this.exchange + this.symbol + JSON.stringify(this.options);
+SymbolRequest.prototype.hash = function() {
+    return this.symbol + "@" + this.exchange;
 };
 
 /**
@@ -55,6 +55,15 @@ function ExchangesRequest(options) {
 
 ExchangesRequest.prototype = Object.create(Request.prototype);
 ExchangesRequest.prototype.constructor = ExchangesRequest;
+
+/**
+ */
+function SymbolsRequest(options) {
+    this.options = options;
+}
+
+SymbolsRequest.prototype = Object.create(Request.prototype);
+SymbolsRequest.prototype.constructor = SymbolsRequest;
 
 /**
  */
@@ -90,7 +99,7 @@ function Error(message, info) {
 Error.prototype = Object.create(Response.prototype);
 Error.prototype.constructor = Error;
 
-function Price(exchange, symbol, bid, ask, updated_on, custom) {
+function Symbol(exchange, symbol, bid, ask, updated_on, custom) {
     this.exchange = exchange;
     this.symbol = symbol;
     this.bid = bid;
@@ -99,8 +108,8 @@ function Price(exchange, symbol, bid, ask, updated_on, custom) {
     this.custom = custom || {};
 }
 
-Price.prototype = Object.create(Response.prototype);
-Price.prototype.constructor = Price;
+Symbol.prototype = Object.create(Response.prototype);
+Symbol.prototype.constructor = Symbol;
 
 function Exchanges() {}
 
@@ -111,18 +120,29 @@ Exchanges.prototype.addExchange = function (exchange, symbols) {
     this[exchange] = symbols;
 };
 
+function Symbols() {}
+
+Symbols.prototype = Object.create(Response.prototype);
+Symbols.prototype.constructor = Symbols;
+
+Symbols.prototype.addSymbol = function (symbol, exchanges) {
+    this[symbol] = exchanges;
+};
+
 /**
  */
 try {
     module.exports.Request = Request;
-    module.exports.PriceRequest = PriceRequest;
+    module.exports.SymbolRequest = SymbolRequest;
     module.exports.ExchangesRequest = ExchangesRequest;
+    module.exports.SymbolsRequest = SymbolsRequest;
     module.exports.SubscribeRequest = SubscribeRequest;
 
     module.exports.Response = Response;
     module.exports.Error = Error;
-    module.exports.Price = Price;
+    module.exports.Symbol = Symbol;
     module.exports.Exchanges = Exchanges;
+    module.exports.Symbols = Symbols;
 } catch(e) {
     console.log("Running outside node: " + e);
 }

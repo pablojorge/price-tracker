@@ -45,10 +45,10 @@ CronistaPriceRequester.prototype.processResponse = function (response, body) {
     var bid = value_extractor(selectors[this.symbol].pos),
         ask = value_extractor(selectors[this.symbol].pos + 1);
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask);
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask);
 };
 /**/
 

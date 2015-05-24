@@ -47,10 +47,10 @@ CoinbasePriceRequester.prototype.doRequest = function (callback) {
             } else {
                 // Yes, we want to invert 'buy' and 'sell' here:
                 callback(null,
-                         new messages.Price(self.getExchange(), 
-                                            self.symbol, 
-                                            results[0], 
-                                            results[1]));
+                         new messages.Symbol(self.getExchange(), 
+                                             self.symbol, 
+                                             results[0], 
+                                             results[1]));
             }
         }
     );
