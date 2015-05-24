@@ -33,15 +33,15 @@ CexIOPriceRequester.prototype.processResponse = function (response, body) {
         ask = parseFloat(object.ask),
         updated_on = new Date();
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              updated_on, {
-                                  volume24: parseFloat(object.volume),
-                                  high24: parseFloat(object.high),
-                                  low24: parseFloat(object.low)
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               updated_on, {
+                                   volume24: parseFloat(object.volume),
+                                   high24: parseFloat(object.high),
+                                   low24: parseFloat(object.low)
+                               });
 };
 /**/
 
@@ -71,7 +71,7 @@ function CexIOStreamer(symbol, callback) {
         if ((payload.data.symbol1 === 'LTC' && symbol === 'LTCUSD') ||
             (payload.data.symbol1 === 'BTC' && symbol === 'BTCUSD')) {
             callback(null,
-                     new messages.Price("cexio",
+                     new messages.Symbol("cexio",
                                         symbol,
                                         parseFloat(payload.data.price),
                                         parseFloat(payload.data.price)));

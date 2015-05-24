@@ -42,13 +42,13 @@ AmbitoPriceRequester.prototype.processResponse = function (response, body) {
                                 parseInt(match[4]),
                                 parseInt(match[5]));
     
-    return new messages.Price(this.getExchange(), 
-                              this.symbol, 
-                              bid, 
-                              ask,
-                              updated_on, {
-                                  published_on: published_on
-                              });
+    return new messages.Symbol(this.getExchange(), 
+                               this.symbol, 
+                               bid, 
+                               ask,
+                               updated_on, {
+                                   published_on: published_on
+                               });
 };
 /**/
 

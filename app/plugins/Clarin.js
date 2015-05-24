@@ -42,10 +42,10 @@ ClarinPriceRequester.prototype.processResponse = function (response, body) {
         bid = parseFloat($(selector.bid).text().replace('$', '').replace(',','.')),
         ask = parseFloat($(selector.ask).text().replace('$', '').replace(',','.'));
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask);
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask);
 };
 /**/
 

@@ -30,15 +30,15 @@ BitstampPriceRequester.prototype.processResponse = function (response, body) {
     var object = JSON.parse(body),
         bid = parseFloat(object.bid),
         ask = parseFloat(object.ask);
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              new Date(), {
-                                  volume24: parseFloat(object.volume),
-                                  high24: parseFloat(object.high),
-                                  low24: parseFloat(object.low),
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               new Date(), {
+                                   volume24: parseFloat(object.volume),
+                                   high24: parseFloat(object.high),
+                                   low24: parseFloat(object.low),
+                               });
 };
 /**/
 
@@ -59,10 +59,10 @@ function BitstampStreamer(symbol, callback) {
     this.client.subscribe('order_book');
     this.client.bind('data', function (data) {
         callback(null,
-                 new messages.Price("bitstamp", 
-                                    symbol, 
-                                    parseFloat(data.bids[0][0]), 
-                                    parseFloat(data.asks[0][0])));
+                 new messages.Symbol("bitstamp", 
+                                     symbol, 
+                                     parseFloat(data.bids[0][0]), 
+                                     parseFloat(data.asks[0][0])));
     });
 }
 

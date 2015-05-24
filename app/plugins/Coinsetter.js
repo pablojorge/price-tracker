@@ -32,13 +32,13 @@ CoinsetterPriceRequester.prototype.processResponse = function (response, body) {
         ask = parseFloat(object.ask.price),
         updated_on = new Date();
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              updated_on, {
-                                  volume24: parseFloat(object.volume24)
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               updated_on, {
+                                   volume24: parseFloat(object.volume24)
+                               });
 };
 /**/
 
@@ -57,13 +57,13 @@ function CoinsetterStreamer(symbol, callback) {
 
     this.socket.on('ticker', function (data){
         callback(null,
-                 new messages.Price("coinsetter",
-                                    symbol,
-                                    parseFloat(data.bid.price),
-                                    parseFloat(data.ask.price)),
-                                    new Date(), {
-                                        volume24: parseFloat(data.volume24)
-                                    });
+                 new messages.Symbol("coinsetter",
+                                     symbol,
+                                     parseFloat(data.bid.price),
+                                     parseFloat(data.ask.price)),
+                                     new Date(), {
+                                         volume24: parseFloat(data.volume24)
+                                     });
     });
 }
 

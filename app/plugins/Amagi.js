@@ -43,10 +43,10 @@ AmagiPriceRequester.prototype.processResponse = function (response, body) {
         bid = parseFloat(bid_text.replace(',','')),
         ask = parseFloat(ask_text.replace(',',''));
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask);
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask);
 };
 /**/
 

@@ -26,12 +26,12 @@ Client.prototype.constructor = Client;
 Client.prototype.requestPrices = function(exchanges) {
     var self = this;
 
-    for (var exchange in exchanges) {
-        exchanges[exchange].forEach(function(symbol) {
-            self.requestPrice(exchange, symbol);
-            self.subscribe(exchange, symbol);
+    exchanges.forEach(function(item) {
+        item.symbols.forEach(function(symbol) {
+            self.requestPrice(item.exchange, symbol);
+            self.subscribe(item.exchange, symbol);
         });
-    }
+    });
 };
 
 /**
@@ -71,9 +71,9 @@ WSClient.prototype.connect = function() {
         console.log("WSClient: onmessage: ", object);
 
         if (object.type == "Exchanges") {
-            self.emit("onExchangesListReceived", [object.response]);
-        } else if (object.type == "Price") {
-            self.emit("onPriceUpdated", [object.response]);
+            self.emit("onExchangesListReceived", [object.response.data]);
+        } else if (object.type == "Symbol") {
+            self.emit("onPriceUpdated", [object.response.data]);
         } else if (object.type == "Error") {
             self.emit("onError", [object.response]);
         }
@@ -113,7 +113,7 @@ WSClient.prototype.requestExchanges = function() {
 
 WSClient.prototype.requestPrice = function(exchange, symbol) {
     console.log("WSClient: requesting price for", symbol, "in", exchange);
-    this.socket.send((new PriceRequest(exchange, symbol)).toString());
+    this.socket.send((new SymbolRequest(symbol, exchange)).toString());
 };
 
 WSClient.prototype.subscribe = function(exchange, symbol) {
@@ -143,7 +143,7 @@ RESTClient.prototype.requestExchanges = function() {
     console.log("RESTClient: requesting exchanges list...");
 
     $.ajax({
-        url: self.host + "/request/exchanges", 
+        url: self.host + "/api/v1/exchanges", 
         dataType: 'json', 
         success: function(data) {
             console.log("RESTClient.requestExchanges(): received: ", data);
@@ -158,8 +158,8 @@ RESTClient.prototype.requestPrice = function(exchange, symbol) {
     console.log("RESTClient: requesting price for", symbol, "in", exchange);
 
     $.ajax({
-        url: self.host + "/request/price/" + 
-             exchange + "/" + symbol, 
+        url: self.host + "/api/v1/symbols/" + 
+             symbol + "/" + exchange, 
         dataType: 'json',
         success: function(data) {
             console.log("RESTClient.requestPrice(): received: ", data);

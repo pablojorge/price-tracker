@@ -29,15 +29,15 @@ OKCoinPriceRequester.prototype.processResponse = function (response, body) {
         // Yes, we want to invert them here:
         bid = parseFloat(ticker.sell),
         ask = parseFloat(ticker.buy);
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              new Date(), {
-                                  volume24: parseFloat(ticker.vol),
-                                  high24: parseFloat(ticker.high),
-                                  low24: parseFloat(ticker.low),
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               new Date(), {
+                                   volume24: parseFloat(ticker.vol),
+                                   high24: parseFloat(ticker.high),
+                                   low24: parseFloat(ticker.low),
+                               });
 };
 /**/
 
