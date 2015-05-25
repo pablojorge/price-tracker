@@ -13,7 +13,7 @@ var app = express(),
     registry = Registry.getInstance();
 
 var modules_dirs = ['./app/plugins/',
-                   './app/handlers/'];
+                    './app/handlers/'];
 
 modules_dirs.forEach(function (modules_dir) {
     fs.readdir(modules_dir, function (err, files) {
@@ -36,6 +36,19 @@ app.get("/api/v1/symbols/:symbol/:exchange", function(req, res) {
     var symbol = req.params.symbol,
         exchange = req.params.exchange,
         request = new messages.SymbolRequest(symbol, exchange);
+    var handler = new HTTPRequestHandler(ws);
+    handler.handle(request, req, res);
+});
+
+app.get("/api/v1/symbols/:symbol/:exchange/series", function(req, res) {
+    var symbol = req.params.symbol,
+        exchange = req.params.exchange,
+        start = req.query.start,
+        end = req.query.end,
+        request = new messages.SeriesRequest(symbol, exchange, {
+            start: start,
+            end: end
+        });
     var handler = new HTTPRequestHandler(ws);
     handler.handle(request, req, res);
 });

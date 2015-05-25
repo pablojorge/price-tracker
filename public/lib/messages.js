@@ -38,6 +38,21 @@ SymbolRequest.prototype.hash = function() {
 
 /**
  */
+function SeriesRequest(symbol, exchange, options) {
+    this.symbol = symbol;
+    this.exchange = exchange;
+    this.options = options;
+}
+
+SeriesRequest.prototype = Object.create(Request.prototype);
+SeriesRequest.prototype.constructor = SeriesRequest;
+
+SeriesRequest.prototype.hash = function() {
+    return this.symbol + "@" + this.exchange;
+};
+
+/**
+ */
 function SubscribeRequest(exchange, symbol, options) {
     this.exchange = exchange;
     this.symbol = symbol;
@@ -91,6 +106,8 @@ Response.fromString = function (string) {
     return response;
 };
 
+/**
+ */
 function Error(message, info) {
     this.message = message;
     this.info = info;
@@ -99,6 +116,8 @@ function Error(message, info) {
 Error.prototype = Object.create(Response.prototype);
 Error.prototype.constructor = Error;
 
+/**
+ */
 function Symbol(exchange, symbol, bid, ask, updated_on, custom) {
     this.data = {
         exchange: exchange,
@@ -113,6 +132,29 @@ function Symbol(exchange, symbol, bid, ask, updated_on, custom) {
 Symbol.prototype = Object.create(Response.prototype);
 Symbol.prototype.constructor = Symbol;
 
+/**
+ */
+function Series(exchange, symbol) {
+    this.data = {
+        exchange: exchange,
+        symbol: symbol,
+        series: []
+    };
+}
+
+Series.prototype = Object.create(Response.prototype);
+Series.prototype.constructor = Series;
+
+Series.prototype.add = function (date, bid, ask) {
+    this.data.series.push({
+        date: date,
+        bid: bid,
+        ask: ask
+    });
+};
+
+/**
+ */
 function Exchanges() {
     this.data = [];
 }
@@ -127,6 +169,8 @@ Exchanges.prototype.addExchange = function (exchange, symbols) {
     });
 };
 
+/**
+ */
 function Symbols() {
     this.data = [];
 }
@@ -146,6 +190,7 @@ Symbols.prototype.addSymbol = function (symbol, exchanges) {
 try {
     module.exports.Request = Request;
     module.exports.SymbolRequest = SymbolRequest;
+    module.exports.SeriesRequest = SeriesRequest;
     module.exports.ExchangesRequest = ExchangesRequest;
     module.exports.SymbolsRequest = SymbolsRequest;
     module.exports.SubscribeRequest = SubscribeRequest;
@@ -153,6 +198,7 @@ try {
     module.exports.Response = Response;
     module.exports.Error = Error;
     module.exports.Symbol = Symbol;
+    module.exports.Series = Series;
     module.exports.Exchanges = Exchanges;
     module.exports.Symbols = Symbols;
 } catch(e) {
