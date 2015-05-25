@@ -168,18 +168,59 @@ QuotesView.prototype.render = function() {
     }
 };
 
+QuotesView.prototype.showChart = function(target) {
+    var match = /(.*)\-(.*)/.exec(target),
+        symbol = match[1],
+        exchange = match[2];
+
+    var series_url = (
+        location.origin + '/api/v1/symbols/' +
+        symbol + '/' + exchange + '/series'
+    );
+
+    $.getJSON(series_url, function (response) {
+        var series = function (name) {
+            return {
+                name : name.toUpperCase(),
+                data: response.data.series.map(function (item) {
+                    return [
+                        new Date(item.date)*1,
+                        item[name]
+                    ];
+                }),
+                tooltip: {
+                    valueDecimals: 2
+                }
+            };
+        };
+
+        $__('#', target, '-chart').highcharts('StockChart', {
+            rangeSelector : {
+                selected : 1
+            },
+            title : {
+                text : target
+            },
+            series : [
+                series('ask'),
+                series('bid')
+            ]
+        });
+    });
+};
+
 QuotesView.prototype.hookCollapseButtons = function (model) {
+    var self = this;
+
     $(".collapse-symbol").bind('click', function(event) {
         event.preventDefault();
 
         if (!model.isSymbolCollapsed($(this).attr("target"))) {
             model.setSymbolCollapsed($(this).attr("target"), true);
             $__("#prices-body-", $(this).attr("target")).slideUp();
-            // stop/hide
         } else {
             model.setSymbolCollapsed($(this).attr("target"), false);
             $__("#prices-body-", $(this).attr("target")).slideDown();
-            // start/show
         }
 
         return false;
@@ -191,11 +232,11 @@ QuotesView.prototype.hookCollapseButtons = function (model) {
         if (!model.isExchangeCollapsed($(this).attr("target"))) {
             model.setExchangeCollapsed($(this).attr("target"), true);
             $__('#', $(this).attr("target"), '-details').slideUp();
-            // stop/hide
+            self.hideChart($(this).attr("target"));
         } else {
             model.setExchangeCollapsed($(this).attr("target"), false);
             $__('#', $(this).attr("target"), '-details').slideDown();
-            // start/show
+            self.showChart($(this).attr("target"));
         }
 
         return false;
@@ -311,6 +352,9 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '        </span>',
         '      </div>',
         '    </div>',
+        '  </div>',
+        '  <div class="row">',
+        '    <div id="', base_id, '-chart"></div>',
         '  </div>',
         '</div>'
     );  
