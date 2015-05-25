@@ -158,6 +158,12 @@ function QuotesView() {
             column: '2'
         }, 
     };
+
+    Highcharts.setOptions({
+        global: {
+            useUTC: false
+        }
+    });
 }
 
 QuotesView.prototype.render = function() {
