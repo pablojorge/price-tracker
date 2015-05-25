@@ -31,18 +31,22 @@ SeriesRequestHandler.prototype.processRequest = function (callback) {
     try {
         var requester = this.getRequester();
         requester.doRequest(function (error, response) {
-            var series = new messages.Series(
-                response.data.exchange,
-                response.data.symbol
-            );
-            for(var i = 10; i >= 0; --i) {
-                series.add(
-                    new Date(new Date(response.data.updated_on) - 3600*1000*i),
-                    response.data.bid*(100-i)/100,
-                    response.data.ask*(100-i)/100
+            if (error !== null) {
+                callback(error);
+            } else {
+                var series = new messages.Series(
+                    response.data.exchange,
+                    response.data.symbol
                 );
+                for(var i = 10; i >= 0; --i) {
+                    series.add(
+                        new Date(new Date(response.data.updated_on) - 3600*1000*i),
+                        response.data.bid*(100-i)/100,
+                        response.data.ask*(100-i)/100
+                    );
+                }
+                callback(null, series);
             }
-            callback(null, series);
         });
     } catch(e) {
         callback({
