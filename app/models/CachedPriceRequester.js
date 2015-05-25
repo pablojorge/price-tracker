@@ -17,7 +17,7 @@ CachedPriceRequester.prototype.doRequest = function (callback) {
                         self.request.hash());
             self.requester.doRequest(function (error, response) {
                 if (error === null) {
-                    console.log("Cache: stoing '%s' in cache...", 
+                    console.log("Cache: storing '%s' in cache...", 
                                 self.request.hash());
                     self.cache.setEntry(self.request.hash(), response);
                     callback(null, response);
