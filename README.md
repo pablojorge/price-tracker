@@ -46,89 +46,7 @@ Example:
             "LTCUSD"
           ]
         },
-        {
-          "exchange": "bitfinex",
-          "symbols": [
-            "BTCUSD",
-            "LTCUSD"
-          ]
-        },
-        {
-          "exchange": "bitstamp",
-          "symbols": [
-            "BTCUSD"
-          ]
-        },
-        {
-          "exchange": "bullionvault",
-          "symbols": [
-            "XAUUSD",
-            "XAGUSD"
-          ]
-        },
-        {
-          "exchange": "cexio",
-          "symbols": [
-            "BTCUSD",
-            "LTCUSD"
-          ]
-        },
-        {
-          "exchange": "clarin",
-          "symbols": [
-            "USDARS",
-            "USDARSB"
-          ]
-        },
-        {
-          "exchange": "coinbase",
-          "symbols": [
-            "BTCUSD"
-          ]
-        },
-        {
-          "exchange": "coinsetter",
-          "symbols": [
-            "BTCUSD"
-          ]
-        },
-        {
-          "exchange": "cronista",
-          "symbols": [
-            "USDARS",
-            "USDARSB",
-            "USDARSCL"
-          ]
-        },
-        {
-          "exchange": "infobae",
-          "symbols": [
-            "USDARS",
-            "USDARSB",
-            "USDARSCL"
-          ]
-        },
-        {
-          "exchange": "lanacion",
-          "symbols": [
-            "USDARS",
-            "USDARSB"
-          ]
-        },
-        {
-          "exchange": "okcoin",
-          "symbols": [
-            "BTCUSD",
-            "LTCUSD"
-          ]
-        },
-        {
-          "exchange": "virwox",
-          "symbols": [
-            "BTCSLL",
-            "USDSLL"
-          ]
-        }
+        [...]
       ]
     }
 
@@ -155,23 +73,6 @@ Example:
           ]
         },
         {
-          "symbol": "XAGUSD",
-          "exchanges": [
-            "amagi",
-            "bullionvault"
-          ]
-        },
-        {
-          "symbol": "USDARS",
-          "exchanges": [
-            "ambito",
-            "clarin",
-            "cronista",
-            "infobae",
-            "lanacion"
-          ]
-        },
-        {
           "symbol": "USDARSB",
           "exchanges": [
             "ambito",
@@ -179,20 +80,6 @@ Example:
             "cronista",
             "infobae",
             "lanacion"
-          ]
-        },
-        {
-          "symbol": "USDARSCL",
-          "exchanges": [
-            "ambito",
-            "cronista",
-            "infobae"
-          ]
-        },
-        {
-          "symbol": "USDARSBOL",
-          "exchanges": [
-            "ambito"
           ]
         },
         {
@@ -207,27 +94,7 @@ Example:
             "okcoin"
           ]
         },
-        {
-          "symbol": "LTCUSD",
-          "exchanges": [
-            "btc-e",
-            "bitfinex",
-            "cexio",
-            "okcoin"
-          ]
-        },
-        {
-          "symbol": "BTCSLL",
-          "exchanges": [
-            "virwox"
-          ]
-        },
-        {
-          "symbol": "USDSLL",
-          "exchanges": [
-            "virwox"
-          ]
-        }
+        [...]
       ]
     }
 
@@ -314,51 +181,7 @@ Example:
             "bid": 11.205,
             "ask": 11.385
           },
-          {
-            "date": "2015-05-24T16:27:00.531Z",
-            "bid": 11.329500000000001,
-            "ask": 11.511500000000002
-          },
-          {
-            "date": "2015-05-24T17:27:00.531Z",
-            "bid": 11.453999999999999,
-            "ask": 11.638
-          },
-          {
-            "date": "2015-05-24T18:27:00.531Z",
-            "bid": 11.578499999999998,
-            "ask": 11.7645
-          },
-          {
-            "date": "2015-05-24T19:27:00.531Z",
-            "bid": 11.703,
-            "ask": 11.891000000000002
-          },
-          {
-            "date": "2015-05-24T20:27:00.531Z",
-            "bid": 11.8275,
-            "ask": 12.0175
-          },
-          {
-            "date": "2015-05-24T21:27:00.531Z",
-            "bid": 11.951999999999998,
-            "ask": 12.144
-          },
-          {
-            "date": "2015-05-24T22:27:00.531Z",
-            "bid": 12.0765,
-            "ask": 12.2705
-          },
-          {
-            "date": "2015-05-24T23:27:00.531Z",
-            "bid": 12.200999999999999,
-            "ask": 12.397
-          },
-          {
-            "date": "2015-05-25T00:27:00.531Z",
-            "bid": 12.3255,
-            "ask": 12.523500000000002
-          },
+          [...]
           {
             "date": "2015-05-25T01:27:00.531Z",
             "bid": 12.45,
