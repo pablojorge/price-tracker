@@ -10,14 +10,17 @@ Everything is accesible via both REST and WebSockets APIs.
 
 ### Exchanges Collection
 
-#### Get Exchanges [`GET /api/v1/exchanges`]
+#### Get Exchanges
 
 Returns the list of supported exchanges, and supported symbols in each exchange.
 
+**Request:**
+
+  * `GET /api/v1/exchanges`
+
 Example:
 
-    GET http://localhost:5000/api/v1/exchanges
-    
+    $ curl http://localhost:5000/api/v1/exchanges
     {
       "data": [
         {
@@ -131,14 +134,17 @@ Example:
 
 ### Symbols Collection
 
-#### Get Symbols [`GET /api/v1/symbols`]
+#### Get Symbols
 
 Returns the list of supported symbols, and the exchanges that provide them.
 
+**Request:**
+
+  * `GET /api/v1/symbols`
+
 Example:
 
-    GET http://localhost:5000/api/v1/exchanges
-    
+    $ curl http://localhost:5000/api/v1/exchanges
     {
       "data": [
         {
@@ -225,9 +231,13 @@ Example:
       ]
     }
 
-#### Get Symbol [`GET /api/v1/symbols/<symbol>/<exchange>`]
+#### Get Symbol
 
 Returns the information for this symbol in this particular exchange.
+
+**Request:**
+
+  * `GET /api/v1/symbols/<symbol>/<exchange>`
 
 Fields:
   * **exchange**: Name of the exchange/source
@@ -243,8 +253,7 @@ Fields:
 
 Example 1:
 
-    GET http://localhost:5000/api/v1/symbols/BTCUSD/bitstamp
-    
+    $ curl http://localhost:5000/api/v1/symbols/BTCUSD/bitstamp
     {
       "data": {
         "exchange": "bitstamp",
@@ -262,8 +271,7 @@ Example 1:
 
 Example 2:
 
-    GET http://localhost:5000/api/v1/sybols/USDARSB/lanacion
-    
+    $ curl http://localhost:5000/api/v1/sybols/USDARSB/lanacion
     {
       "data": {
         "exchange": "lanacion",
@@ -274,6 +282,89 @@ Example 2:
         "custom": {
           "published_on": "2015-05-21T03:00:00.000Z"
         }
+      }
+    }
+
+#### Get Price Series
+
+Returns all stored prices for this particular symbol in this exchange in the specified date range.
+
+**Request:**
+
+  * `GET /api/v1/symbols/<symbol>/<exchange>/series?start=<start>&end=<end>`
+
+Fields:
+  * **exchange**: Name of the exchange/source
+  * **symbol**: Symbol name
+  * **series**: List of elements with the following fields:
+    * **date**: Item date
+    * **bid**: Best *buy* offer
+    * **ask**: Best *sell* offer
+
+Example:
+
+    $ curl http://localhost:5000/api/v1/sybols/USDARSB/lanacion/series
+    {
+      "data": {
+        "exchange": "lanacion",
+        "symbol": "USDARSB",
+        "series": [
+          {
+            "date": "2015-05-24T15:27:00.531Z",
+            "bid": 11.205,
+            "ask": 11.385
+          },
+          {
+            "date": "2015-05-24T16:27:00.531Z",
+            "bid": 11.329500000000001,
+            "ask": 11.511500000000002
+          },
+          {
+            "date": "2015-05-24T17:27:00.531Z",
+            "bid": 11.453999999999999,
+            "ask": 11.638
+          },
+          {
+            "date": "2015-05-24T18:27:00.531Z",
+            "bid": 11.578499999999998,
+            "ask": 11.7645
+          },
+          {
+            "date": "2015-05-24T19:27:00.531Z",
+            "bid": 11.703,
+            "ask": 11.891000000000002
+          },
+          {
+            "date": "2015-05-24T20:27:00.531Z",
+            "bid": 11.8275,
+            "ask": 12.0175
+          },
+          {
+            "date": "2015-05-24T21:27:00.531Z",
+            "bid": 11.951999999999998,
+            "ask": 12.144
+          },
+          {
+            "date": "2015-05-24T22:27:00.531Z",
+            "bid": 12.0765,
+            "ask": 12.2705
+          },
+          {
+            "date": "2015-05-24T23:27:00.531Z",
+            "bid": 12.200999999999999,
+            "ask": 12.397
+          },
+          {
+            "date": "2015-05-25T00:27:00.531Z",
+            "bid": 12.3255,
+            "ask": 12.523500000000002
+          },
+          {
+            "date": "2015-05-25T01:27:00.531Z",
+            "bid": 12.45,
+            "ask": 12.65
+          }
+        ]
       }
     }
 
@@ -311,18 +402,16 @@ Example 2:
         if (object.type == "Exchanges") {
             object.response.data.forEach(function(item) {
                 item.symbols.forEach(function(symbol) {
-                    console.log("exchange: " + item.exchange + " symbol: " + symbol);
+                    console.log("exchange:", item.exchange, "symbol:", symbol);
                 });
             });
         } else if (object.type == "Symbol") {
-            console.log("symbol: " + object.response.data.symbol);
-            console.log("exchange: " + object.response.data.exchange);
-            console.log("bid: " + object.response.data.bid);
-            console.log("ask: " + object.response.data.ask);
+            console.log("symbol:", object.response.data.symbol);
+            console.log("exchange:", object.response.data.exchange);
+            console.log("bid:", object.response.data.bid);
+            console.log("ask:", object.response.data.ask);
         }
     };
-
-
 
 ## Live site
 
