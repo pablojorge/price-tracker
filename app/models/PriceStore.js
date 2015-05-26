@@ -37,17 +37,26 @@ PriceStore.prototype.listener = function(error, response) {
     var hash = this.symbolHash(response.data.exchange, response.data.symbol);
 
     if (this.store[hash] === undefined) {
+        console.log("PriceStore: Initializing store for", hash);
         this.store[hash] = new messages.Series(
             response.data.exchange,
             response.data.symbol
         );
     }
 
-    this.store[hash].add(
-        response.data.updated_on,
-        response.data.bid,
-        response.data.ask
-    );
+    var series = this.store[hash],
+        last = series.last();
+
+    // Only store the received data if it differs from the last we have:
+    if (last === undefined ||
+        last.bid !== response.data.bid ||
+        last.ask !== response.data.ask) {
+        series.add(
+            response.data.updated_on,
+            response.data.bid,
+            response.data.ask
+        );
+    }
 };
 
 PriceStore.prototype.getPrices = function(exchange, symbol, start, end) {

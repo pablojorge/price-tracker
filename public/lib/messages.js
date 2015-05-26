@@ -153,6 +153,10 @@ Series.prototype.add = function (date, bid, ask) {
     });
 };
 
+Series.prototype.last = function () {
+    return this.data.series[this.data.series.length-1];
+};
+
 /**
  */
 function Exchanges() {
