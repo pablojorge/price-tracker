@@ -205,7 +205,7 @@ QuotesView.prototype.showChart = function(target) {
                 selected : 1
             },
             title : {
-                text : target
+                text : symbol + '@' + exchange
             },
             series : [
                 series('ask'),
@@ -250,6 +250,8 @@ QuotesView.prototype.hookCollapseButtons = function (model) {
 };
 
 QuotesView.prototype.restoreCollapseStatus = function (model) {
+    var self = this;
+
     for (var symbol in this.symbols) {
         if (model.isSymbolCollapsed(symbol)) { // expanded by default
             $__("#prices-body-", symbol).slideUp();
@@ -258,6 +260,7 @@ QuotesView.prototype.restoreCollapseStatus = function (model) {
             var exchange_id = __(symbol, '-', exchange);
             if (!model.isExchangeCollapsed(exchange_id)) { // collapsed by default
                 $__('#', exchange_id, '-details').slideDown();
+                self.showChart(exchange_id);
             }
         });
     }
@@ -337,29 +340,32 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '  </div>',
         '</div>',
         '<div id="', base_id, '-details" style="display: none; margin: 10px; margin-left: 25px">',
-        '  <div class="row">',
-        '    <div class="col-xs-5">',
-        '      <span style="font-size: small;">',
-        '        <strong>Last updated:</strong>',
-        '      </span>',
-        '    </div>',
-        '    <div class="col-xs-7"',
-        '         id="', base_id, '-last-updated-progress">',
-        '      <div class="progress progress-striped active">',
-        '        <div class="progress-bar" style="width: 100%">',
+        '  <div id="', base_id, '-details-data">',
+        '    <div class="row">',
+        '      <div class="col-xs-5">',
+        '        <span style="font-size: small;">',
+        '          <strong>Last updated:</strong>',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-7"',
+        '           id="', base_id, '-last-updated-progress">',
+        '        <div class="progress progress-striped active">',
+        '          <div class="progress-bar" style="width: 100%">',
+        '          </div>',
         '        </div>',
         '      </div>',
-        '    </div>',
-        '    <div id="', base_id, '-last-updated" class="hide">',
-        '      <div class="col-xs-7">',
-        '        <span id="', base_id, '-last-updated-date" style="font-size: small;">',
-        '        </span>',
-        '        <span id="', base_id, '-last-updated-ago" style="font-size: small;">',
-        '        </span>',
+        '      <div id="', base_id, '-last-updated" class="hide">',
+        '        <div class="col-xs-7">',
+        '          <span id="', base_id, '-last-updated-date" style="font-size: small;">',
+        '          </span>',
+        '          <span id="', base_id, '-last-updated-ago" style="font-size: small;">',
+        '          </span>',
+        '        </div>',
         '      </div>',
         '    </div>',
         '  </div>',
         '  <div class="row">',
+        '    <hr></hr>',
         '    <div id="', base_id, '-chart"></div>',
         '  </div>',
         '</div>'
@@ -487,7 +493,7 @@ QuotesView.prototype.addCustomFields = function (price) {
     for (var field in price.custom) {
         var custom_selector = __(selector_base, "-", field);
         if (!$(custom_selector).length) {
-            $__(selector_base, '-details').append(
+            $__(selector_base, '-details-data').append(
                 this.addCustomField(price.symbol, price.exchange, field)
             );
         }
