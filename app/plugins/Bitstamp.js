@@ -1,8 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
-    Broadcaster = require('../models/Broadcaster.js'),
-    PriceStore = require('../models/PriceStore.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     PusherClient = require('../models/PusherClient.js');
 
@@ -78,20 +76,7 @@ BitstampStreamer.prototype.stop = function () {
 
 module.exports = {
     register: function () {
-        var registry = Registry.getInstance(),
-            broadcaster = Broadcaster.getInstance(),
-            store = PriceStore.getInstance();
-        registry.requesters.register(BitstampPriceRequester.config.exchange,
-                                     BitstampPriceRequester);
-        registry.streamers.register(BitstampStreamer.config.exchange,
-                                    BitstampStreamer);
-        broadcaster.addListener(
-            BitstampStreamer.config.exchange,
-            "BTCUSD",
-            function (error, response) {
-                store.listener(error, response);
-            }
-        );
+        Plugin_.register(BitstampPriceRequester, BitstampStreamer);
     }
 };
 /**/

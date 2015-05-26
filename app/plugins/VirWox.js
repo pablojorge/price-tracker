@@ -1,6 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -39,10 +39,6 @@ module.exports = {
     register: function (requesters, streamers, options) {
         var VirWoxStreamer = Streamer(VirWoxPriceRequester,
                                       config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(VirWoxPriceRequester.config.exchange,
-                                     VirWoxPriceRequester);
-        registry.streamers.register(VirWoxStreamer.config.exchange,
-                                    VirWoxStreamer);
+        Plugin_.register(VirWoxPriceRequester, VirWoxStreamer);
     }
 };

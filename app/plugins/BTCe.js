@@ -1,6 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -45,10 +45,6 @@ module.exports = {
     register: function () {
         var BTCeStreamer = Streamer(BTCePriceRequester,
                                     config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(BTCePriceRequester.config.exchange,
-                                     BTCePriceRequester);
-        registry.streamers.register(BTCeStreamer.config.exchange,
-                                    BTCeStreamer);
+        Plugin_.register(BTCePriceRequester, BTCeStreamer);
     }
 };

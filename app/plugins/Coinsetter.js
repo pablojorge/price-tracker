@@ -1,7 +1,7 @@
 var io = require('socket.io-client'),
     messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js');
 
 /**
@@ -77,11 +77,7 @@ CoinsetterStreamer.prototype.stop = function () {
 
 module.exports = {
     register: function () {
-        registry = Registry.getInstance();
-        registry.requesters.register(CoinsetterPriceRequester.config.exchange,
-                                     CoinsetterPriceRequester);
-        registry.streamers.register(CoinsetterStreamer.config.exchange,
-                                   CoinsetterStreamer);
+        Plugin_.register(CoinsetterPriceRequester, CoinsetterStreamer);
     }
 };
 /**/

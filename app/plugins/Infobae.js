@@ -1,6 +1,6 @@
 var config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -50,10 +50,6 @@ module.exports = {
     register: function () {
         var InfobaeStreamer = Streamer(InfobaePriceRequester,
                                        config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(InfobaePriceRequester.config.exchange,
-                                     InfobaePriceRequester);
-        registry.streamers.register(InfobaeStreamer.config.exchange,
-                                    InfobaeStreamer);
+        Plugin_.register(InfobaePriceRequester, InfobaeStreamer);
     }
 };

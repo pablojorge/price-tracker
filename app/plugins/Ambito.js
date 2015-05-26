@@ -1,7 +1,7 @@
 var cheerio = require('cheerio'),
     config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
     
@@ -56,10 +56,6 @@ module.exports = {
     register: function () {
         var AmbitoStreamer = Streamer(AmbitoPriceRequester,
                                       config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(AmbitoPriceRequester.config.exchange,
-                                     AmbitoPriceRequester);
-        registry.streamers.register(AmbitoStreamer.config.exchange,
-                                    AmbitoStreamer);
+        Plugin_.register(AmbitoPriceRequester, AmbitoStreamer);
     }
 };
