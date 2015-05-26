@@ -175,7 +175,7 @@ QuotesView.prototype.render = function() {
 };
 
 QuotesView.prototype.showChart = function(target) {
-    var match = /(.*)\-(.*)/.exec(target),
+    var match = /([^\-]+)\-(.*)/.exec(target),
         symbol = match[1],
         exchange = match[2];
 
