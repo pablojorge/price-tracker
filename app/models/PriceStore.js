@@ -1,9 +1,19 @@
-var messages = require('../../public/lib/messages.js');
+var redis = require('redis'),
+    url = require('url'),
+    config = require('../../config/config');
 
 /**
  */
 function PriceStore() {
-    this.store = {};
+    var redisURL = url.parse(config.redis.url),
+        client = redis.createClient(redisURL.port,
+                                    redisURL.hostname,
+                                    {no_ready_check: true});
+
+    client.auth(redisURL.auth.split(':')[1]);
+    console.log("PriceStore: connected to " + redisURL.hostname);
+
+    this.client = client;
 }
 
 PriceStore.instance = null;
@@ -22,8 +32,8 @@ PriceStore.deleteInstance = function () {
     }
 };
 
-PriceStore.prototype.symbolHash = function(exchange, symbol) {
-    return symbol + "@" + exchange;
+PriceStore.prototype.seriesKey = function(exchange, symbol) {
+    return "series:".concat("symbol:", symbol, ":exchange:", exchange);
 };
 
 PriceStore.prototype.listener = function(error, response) {
@@ -34,33 +44,43 @@ PriceStore.prototype.listener = function(error, response) {
         return;
     }
 
-    var hash = this.symbolHash(response.data.exchange, response.data.symbol);
+    var key = this.seriesKey(response.data.exchange, response.data.symbol),
+        value = JSON.stringify({
+            date: response.data.updated_on * 1,
+            bid: response.data.bid,
+            ask: response.data.ask
+        });
 
-    if (this.store[hash] === undefined) {
-        console.log("PriceStore: Initializing store for", hash);
-        this.store[hash] = new messages.Series(
-            response.data.exchange,
-            response.data.symbol
-        );
-    }
+    // Fetch the last element from this series:
+    this.client.lindex(key, -1, function (error, last) {
+        last = (last === null ? last : JSON.parse(last));
 
-    var series = this.store[hash],
-        last = series.last();
-
-    // Only store the received data if it differs from the last we have:
-    if (last === undefined ||
-        last.bid !== response.data.bid ||
-        last.ask !== response.data.ask) {
-        series.add(
-            response.data.updated_on,
-            response.data.bid,
-            response.data.ask
-        );
-    }
+        // Store the received data only if it differs from the previous one:
+        if (last === null ||
+            ((last.bid && response.data.bid) && last.bid !== response.data.bid) ||
+            ((last.ask && response.data.ask) && last.ask !== response.data.ask)) {
+            console.log("PriceStore: saving", key, value);
+            self.client.rpush(key, value, function (error, index) {
+                if (error) {
+                    console.log("ERROR saving in PriceStore:", error);
+                }
+            });
+        }
+    });
 };
 
-PriceStore.prototype.getPrices = function(exchange, symbol, start, end) {
-    return this.store[this.symbolHash(exchange, symbol)];
+PriceStore.prototype.getPrices = function(exchange, symbol, start, end, callback) {
+    this.client.lrange(this.seriesKey(exchange, symbol), 0, -1, function (error, values) {
+        if (error) {
+            callback(error);
+            return;
+        }
+        callback(null, values.map(function (value) {
+            value = JSON.parse(value);
+            value.date = new Date(value.date);
+            return value;
+        }));
+    });
 };
 
 module.exports = PriceStore;

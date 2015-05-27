@@ -32,10 +32,6 @@ function SymbolRequest(symbol, exchange, options) {
 SymbolRequest.prototype = Object.create(Request.prototype);
 SymbolRequest.prototype.constructor = SymbolRequest;
 
-SymbolRequest.prototype.hash = function() {
-    return this.symbol + "@" + this.exchange;
-};
-
 /**
  */
 function SeriesRequest(symbol, exchange, options) {
@@ -46,10 +42,6 @@ function SeriesRequest(symbol, exchange, options) {
 
 SeriesRequest.prototype = Object.create(Request.prototype);
 SeriesRequest.prototype.constructor = SeriesRequest;
-
-SeriesRequest.prototype.hash = function() {
-    return this.symbol + "@" + this.exchange;
-};
 
 /**
  */
@@ -151,10 +143,6 @@ Series.prototype.add = function (date, bid, ask) {
         bid: bid,
         ask: ask
     });
-};
-
-Series.prototype.last = function () {
-    return this.data.series[this.data.series.length-1];
 };
 
 /**
