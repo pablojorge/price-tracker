@@ -1,6 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     PusherClient = require('../models/PusherClient.js');
 
@@ -76,11 +76,7 @@ BitstampStreamer.prototype.stop = function () {
 
 module.exports = {
     register: function () {
-        registry = Registry.getInstance();
-        registry.requesters.register(BitstampPriceRequester.config.exchange,
-                                     BitstampPriceRequester);
-        registry.streamers.register(BitstampStreamer.config.exchange,
-                                    BitstampStreamer);
+        Plugin_.register(BitstampPriceRequester, BitstampStreamer);
     }
 };
 /**/

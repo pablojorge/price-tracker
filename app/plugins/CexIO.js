@@ -1,7 +1,7 @@
 var ws = require('ws'),
     messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js');
 
 /**
@@ -89,11 +89,7 @@ CexIOStreamer.prototype.stop = function () {
 
 module.exports = {
     register: function () {
-        registry = Registry.getInstance();
-        registry.requesters.register(CexIOPriceRequester.config.exchange,
-                                     CexIOPriceRequester);
-        registry.streamers.register(CexIOStreamer.config.exchange,
-                                   CexIOStreamer);
+        Plugin_.register(CexIOPriceRequester, CexIOStreamer);
     }
 };
 /**/

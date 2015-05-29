@@ -10,14 +10,17 @@ Everything is accesible via both REST and WebSockets APIs.
 
 ### Exchanges Collection
 
-#### Get Exchanges [`GET /api/v1/exchanges`]
+#### Get Exchanges
 
 Returns the list of supported exchanges, and supported symbols in each exchange.
 
+**Request:**
+
+  * `GET /api/v1/exchanges`
+
 Example:
 
-    GET http://localhost:5000/api/v1/exchanges
-    
+    $ curl http://localhost:5000/api/v1/exchanges
     {
       "data": [
         {
@@ -43,102 +46,23 @@ Example:
             "LTCUSD"
           ]
         },
-        {
-          "exchange": "bitfinex",
-          "symbols": [
-            "BTCUSD",
-            "LTCUSD"
-          ]
-        },
-        {
-          "exchange": "bitstamp",
-          "symbols": [
-            "BTCUSD"
-          ]
-        },
-        {
-          "exchange": "bullionvault",
-          "symbols": [
-            "XAUUSD",
-            "XAGUSD"
-          ]
-        },
-        {
-          "exchange": "cexio",
-          "symbols": [
-            "BTCUSD",
-            "LTCUSD"
-          ]
-        },
-        {
-          "exchange": "clarin",
-          "symbols": [
-            "USDARS",
-            "USDARSB"
-          ]
-        },
-        {
-          "exchange": "coinbase",
-          "symbols": [
-            "BTCUSD"
-          ]
-        },
-        {
-          "exchange": "coinsetter",
-          "symbols": [
-            "BTCUSD"
-          ]
-        },
-        {
-          "exchange": "cronista",
-          "symbols": [
-            "USDARS",
-            "USDARSB",
-            "USDARSCL"
-          ]
-        },
-        {
-          "exchange": "infobae",
-          "symbols": [
-            "USDARS",
-            "USDARSB",
-            "USDARSCL"
-          ]
-        },
-        {
-          "exchange": "lanacion",
-          "symbols": [
-            "USDARS",
-            "USDARSB"
-          ]
-        },
-        {
-          "exchange": "okcoin",
-          "symbols": [
-            "BTCUSD",
-            "LTCUSD"
-          ]
-        },
-        {
-          "exchange": "virwox",
-          "symbols": [
-            "BTCSLL",
-            "USDSLL"
-          ]
-        }
+        [...]
       ]
     }
 
 ### Symbols Collection
 
-#### Get Symbols [`GET /api/v1/symbols`]
+#### Get Symbols
 
 Returns the list of supported symbols, and the exchanges that provide them.
 
+**Request:**
+
+  * `GET /api/v1/symbols`
+
 Example:
 
-    GET http://localhost:5000/api/v1/exchanges
-    
+    $ curl http://localhost:5000/api/v1/exchanges
     {
       "data": [
         {
@@ -149,23 +73,6 @@ Example:
           ]
         },
         {
-          "symbol": "XAGUSD",
-          "exchanges": [
-            "amagi",
-            "bullionvault"
-          ]
-        },
-        {
-          "symbol": "USDARS",
-          "exchanges": [
-            "ambito",
-            "clarin",
-            "cronista",
-            "infobae",
-            "lanacion"
-          ]
-        },
-        {
           "symbol": "USDARSB",
           "exchanges": [
             "ambito",
@@ -173,20 +80,6 @@ Example:
             "cronista",
             "infobae",
             "lanacion"
-          ]
-        },
-        {
-          "symbol": "USDARSCL",
-          "exchanges": [
-            "ambito",
-            "cronista",
-            "infobae"
-          ]
-        },
-        {
-          "symbol": "USDARSBOL",
-          "exchanges": [
-            "ambito"
           ]
         },
         {
@@ -201,33 +94,17 @@ Example:
             "okcoin"
           ]
         },
-        {
-          "symbol": "LTCUSD",
-          "exchanges": [
-            "btc-e",
-            "bitfinex",
-            "cexio",
-            "okcoin"
-          ]
-        },
-        {
-          "symbol": "BTCSLL",
-          "exchanges": [
-            "virwox"
-          ]
-        },
-        {
-          "symbol": "USDSLL",
-          "exchanges": [
-            "virwox"
-          ]
-        }
+        [...]
       ]
     }
 
-#### Get Symbol [`GET /api/v1/symbols/<symbol>/<exchange>`]
+#### Get Symbol
 
 Returns the information for this symbol in this particular exchange.
+
+**Request:**
+
+  * `GET /api/v1/symbols/<symbol>/<exchange>`
 
 Fields:
   * **exchange**: Name of the exchange/source
@@ -243,8 +120,7 @@ Fields:
 
 Example 1:
 
-    GET http://localhost:5000/api/v1/symbols/BTCUSD/bitstamp
-    
+    $ curl http://localhost:5000/api/v1/symbols/BTCUSD/bitstamp
     {
       "data": {
         "exchange": "bitstamp",
@@ -262,8 +138,7 @@ Example 1:
 
 Example 2:
 
-    GET http://localhost:5000/api/v1/sybols/USDARSB/lanacion
-    
+    $ curl http://localhost:5000/api/v1/sybols/USDARSB/lanacion
     {
       "data": {
         "exchange": "lanacion",
@@ -274,6 +149,45 @@ Example 2:
         "custom": {
           "published_on": "2015-05-21T03:00:00.000Z"
         }
+      }
+    }
+
+#### Get Price Series
+
+Returns all stored prices for this particular symbol in this exchange in the specified date range.
+
+**Request:**
+
+  * `GET /api/v1/symbols/<symbol>/<exchange>/series?start=<start>&end=<end>`
+
+Fields:
+  * **exchange**: Name of the exchange/source
+  * **symbol**: Symbol name
+  * **series**: List of elements with the following fields:
+    * **date**: Item date
+    * **bid**: Best *buy* offer
+    * **ask**: Best *sell* offer
+
+Example:
+
+    $ curl http://localhost:5000/api/v1/sybols/USDARSB/lanacion/series
+    {
+      "data": {
+        "exchange": "lanacion",
+        "symbol": "USDARSB",
+        "series": [
+          {
+            "date": "2015-05-24T15:27:00.531Z",
+            "bid": 11.205,
+            "ask": 11.385
+          },
+          [...]
+          {
+            "date": "2015-05-25T01:27:00.531Z",
+            "bid": 12.45,
+            "ask": 12.65
+          }
+        ]
       }
     }
 
@@ -311,18 +225,16 @@ Example 2:
         if (object.type == "Exchanges") {
             object.response.data.forEach(function(item) {
                 item.symbols.forEach(function(symbol) {
-                    console.log("exchange: " + item.exchange + " symbol: " + symbol);
+                    console.log("exchange:", item.exchange, "symbol:", symbol);
                 });
             });
         } else if (object.type == "Symbol") {
-            console.log("symbol: " + object.response.data.symbol);
-            console.log("exchange: " + object.response.data.exchange);
-            console.log("bid: " + object.response.data.bid);
-            console.log("ask: " + object.response.data.ask);
+            console.log("symbol:", object.response.data.symbol);
+            console.log("exchange:", object.response.data.exchange);
+            console.log("bid:", object.response.data.bid);
+            console.log("ask:", object.response.data.ask);
         }
     };
-
-
 
 ## Live site
 

@@ -1,6 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -45,10 +45,6 @@ module.exports = {
     register: function () {
         var OKCoinStreamer = Streamer(OKCoinPriceRequester,
                                       config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(OKCoinPriceRequester.config.exchange,
-                                     OKCoinPriceRequester);
-        registry.streamers.register(OKCoinStreamer.config.exchange,
-                                    OKCoinStreamer);
+        Plugin_.register(OKCoinPriceRequester, OKCoinStreamer);
     }
 };

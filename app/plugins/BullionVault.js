@@ -1,7 +1,7 @@
 var cheerio = require('cheerio'),
     config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -48,10 +48,6 @@ module.exports = {
     register: function () {
         var BullionVaultStreamer = Streamer(BullionVaultPriceRequester,
                                             config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(BullionVaultPriceRequester.config.exchange,
-                                     BullionVaultPriceRequester);
-        registry.streamers.register(BullionVaultStreamer.config.exchange,
-                                    BullionVaultStreamer);
+        Plugin_.register(BullionVaultPriceRequester, BullionVaultStreamer);
     }
 };
