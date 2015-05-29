@@ -14,6 +14,7 @@ function PriceStore() {
     console.log("PriceStore: connected to " + redisURL.hostname);
 
     this.client = client;
+    this.interval = config.streaming.interval;
 }
 
 PriceStore.instance = null;
@@ -45,28 +46,44 @@ PriceStore.prototype.listener = function(error, response) {
     }
 
     var key = this.seriesKey(response.data.exchange, response.data.symbol),
-        value = JSON.stringify({
+        value = {
             date: response.data.updated_on * 1,
             bid: response.data.bid,
             ask: response.data.ask
-        });
+        };
 
     // Fetch the last element from this series:
     this.client.lindex(key, -1, function (error, last) {
         last = (last === null ? last : JSON.parse(last));
 
-        // Store the received data only if it differs from the previous one:
-        if (last === null ||
-            ((last.bid && response.data.bid) && last.bid !== response.data.bid) ||
-            ((last.ask && response.data.ask) && last.ask !== response.data.ask)) {
-            console.log("PriceStore: saving", key, value);
+        if (self.keepPrice(last, value)) {
+            value = JSON.stringify(value);
             self.client.rpush(key, value, function (error, index) {
                 if (error) {
-                    console.log("ERROR saving in PriceStore:", error);
+                    console.log("PriceStore: ERROR saving", key, value, error);
+                } else {
+                    console.log("PriceStore: saved", key, value, "at pos", index);
                 }
             });
         }
     });
+};
+
+PriceStore.prototype.keepPrice = function(last, value) {
+    // If there are no previous values, keep it:
+    if (last === null)
+        return true;
+
+    // If it's too recent, discard it:
+    if ((value.date - last.date) < this.interval * 1000)
+        return false;
+
+    // If either the bid price or the ask price changed, keep it:
+    if ((last.bid && value.bid) && last.bid !== value.bid ||
+        (last.ask && value.ask) && last.ask !== value.ask)
+        return true;
+
+    return false;
 };
 
 PriceStore.prototype.getPrices = function(exchange, symbol, start, end, callback) {
