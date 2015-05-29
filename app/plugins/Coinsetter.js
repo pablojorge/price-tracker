@@ -1,7 +1,7 @@
 var io = require('socket.io-client'),
     messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js');
 
 /**
@@ -32,13 +32,13 @@ CoinsetterPriceRequester.prototype.processResponse = function (response, body) {
         ask = parseFloat(object.ask.price),
         updated_on = new Date();
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              updated_on, {
-                                  volume24: parseFloat(object.volume24)
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               updated_on, {
+                                   volume24: parseFloat(object.volume24)
+                               });
 };
 /**/
 
@@ -46,7 +46,7 @@ CoinsetterPriceRequester.prototype.processResponse = function (response, body) {
  * Coinsetter streamer
  */
 
-function CoinsetterStreamer(symbol, callback, errback) {
+function CoinsetterStreamer(symbol, callback) {
     var self = this;
 
     this.socket = io.connect('https://plug.coinsetter.com:3000');
@@ -56,13 +56,14 @@ function CoinsetterStreamer(symbol, callback, errback) {
     });
 
     this.socket.on('ticker', function (data){
-        callback(new messages.Price("coinsetter",
-                                    symbol,
-                                    parseFloat(data.bid.price),
-                                    parseFloat(data.ask.price)),
-                                    new Date(), {
-                                        volume24: parseFloat(data.volume24)
-                                    });
+        callback(null,
+                 new messages.Symbol("coinsetter",
+                                     symbol,
+                                     parseFloat(data.bid.price),
+                                     parseFloat(data.ask.price)),
+                                     new Date(), {
+                                         volume24: parseFloat(data.volume24)
+                                     });
     });
 }
 
@@ -76,11 +77,7 @@ CoinsetterStreamer.prototype.stop = function () {
 
 module.exports = {
     register: function () {
-        registry = Registry.getInstance();
-        registry.requesters.register(CoinsetterPriceRequester.config.exchange,
-                                     CoinsetterPriceRequester);
-        registry.streamers.register(CoinsetterStreamer.config.exchange,
-                                   CoinsetterStreamer);
+        Plugin_.register(CoinsetterPriceRequester, CoinsetterStreamer);
     }
 };
 /**/

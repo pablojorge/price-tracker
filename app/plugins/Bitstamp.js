@@ -1,6 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     PusherClient = require('../models/PusherClient.js');
 
@@ -30,15 +30,15 @@ BitstampPriceRequester.prototype.processResponse = function (response, body) {
     var object = JSON.parse(body),
         bid = parseFloat(object.bid),
         ask = parseFloat(object.ask);
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              new Date(), {
-                                  volume24: parseFloat(object.volume),
-                                  high24: parseFloat(object.high),
-                                  low24: parseFloat(object.low),
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               new Date(), {
+                                   volume24: parseFloat(object.volume),
+                                   high24: parseFloat(object.high),
+                                   low24: parseFloat(object.low),
+                               });
 };
 /**/
 
@@ -46,19 +46,23 @@ BitstampPriceRequester.prototype.processResponse = function (response, body) {
  * Bitstamp streamer
  */
 
-function BitstampStreamer(symbol, callback, errback) {
-    this.client = new PusherClient('de504dc5763aeef9ff52', function (err) {
-        errback(err, {
-            exchange: BitstampStreamer.config.exchange,
-            symbol: symbol,
+function BitstampStreamer(symbol, callback) {
+    this.client = new PusherClient('de504dc5763aeef9ff52', function (exception) {
+        callback({
+            exception: exception,
+            info: {
+                exchange: BitstampStreamer.config.exchange,
+                symbol: symbol,
+            }
         });
     });
     this.client.subscribe('order_book');
     this.client.bind('data', function (data) {
-        callback(new messages.Price("bitstamp", 
-                                    symbol, 
-                                    parseFloat(data.bids[0][0]), 
-                                    parseFloat(data.asks[0][0])));
+        callback(null,
+                 new messages.Symbol("bitstamp", 
+                                     symbol, 
+                                     parseFloat(data.bids[0][0]), 
+                                     parseFloat(data.asks[0][0])));
     });
 }
 
@@ -72,11 +76,7 @@ BitstampStreamer.prototype.stop = function () {
 
 module.exports = {
     register: function () {
-        registry = Registry.getInstance();
-        registry.requesters.register(BitstampPriceRequester.config.exchange,
-                                     BitstampPriceRequester);
-        registry.streamers.register(BitstampStreamer.config.exchange,
-                                    BitstampStreamer);
+        Plugin_.register(BitstampPriceRequester, BitstampStreamer);
     }
 };
 /**/

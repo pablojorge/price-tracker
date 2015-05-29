@@ -158,28 +158,84 @@ function QuotesView() {
             column: '2'
         }, 
     };
+
+    Highcharts.setOptions({
+        global: {
+            useUTC: false
+        }
+    });
 }
 
 QuotesView.prototype.render = function() {
-    var _this = this;
+    var self = this;
 
     for (var symbol in this.symbols) {
-        _this.addSymbol(symbol, this.symbols[symbol]);
+        self.addSymbol(symbol, this.symbols[symbol]);
     }
+
+    $('.collapse-symbol, .collapse-exchange').hover(
+        function() {
+            $(this).css('color','#428bca');
+        },
+        function() {
+            $(this).css('color','black');
+        }
+    );
+};
+
+QuotesView.prototype.showChart = function(target) {
+    var match = /([^\-]+)\-(.*)/.exec(target),
+        symbol = match[1],
+        exchange = match[2];
+
+    var series_url = (
+        location.origin + '/api/v1/symbols/' +
+        symbol + '/' + exchange + '/series'
+    );
+
+    $.getJSON(series_url, function (response) {
+        var series = function (name) {
+            return {
+                name : name.toUpperCase(),
+                data: response.data.series.map(function (item) {
+                    return [
+                        new Date(item.date)*1,
+                        item[name]
+                    ];
+                }),
+                tooltip: {
+                    valueDecimals: 2
+                }
+            };
+        };
+
+        $__('#', target, '-chart').highcharts('StockChart', {
+            rangeSelector : {
+                selected : 1
+            },
+            title : {
+                text : symbol + '@' + exchange
+            },
+            series : [
+                series('ask'),
+                series('bid')
+            ]
+        });
+    });
 };
 
 QuotesView.prototype.hookCollapseButtons = function (model) {
+    var self = this;
+
     $(".collapse-symbol").bind('click', function(event) {
         event.preventDefault();
 
         if (!model.isSymbolCollapsed($(this).attr("target"))) {
             model.setSymbolCollapsed($(this).attr("target"), true);
             $__("#prices-body-", $(this).attr("target")).slideUp();
-            // stop/hide
         } else {
             model.setSymbolCollapsed($(this).attr("target"), false);
             $__("#prices-body-", $(this).attr("target")).slideDown();
-            // start/show
         }
 
         return false;
@@ -191,11 +247,11 @@ QuotesView.prototype.hookCollapseButtons = function (model) {
         if (!model.isExchangeCollapsed($(this).attr("target"))) {
             model.setExchangeCollapsed($(this).attr("target"), true);
             $__('#', $(this).attr("target"), '-details').slideUp();
-            // stop/hide
+            self.hideChart($(this).attr("target"));
         } else {
             model.setExchangeCollapsed($(this).attr("target"), false);
             $__('#', $(this).attr("target"), '-details').slideDown();
-            // start/show
+            self.showChart($(this).attr("target"));
         }
 
         return false;
@@ -203,6 +259,8 @@ QuotesView.prototype.hookCollapseButtons = function (model) {
 };
 
 QuotesView.prototype.restoreCollapseStatus = function (model) {
+    var self = this;
+
     for (var symbol in this.symbols) {
         if (model.isSymbolCollapsed(symbol)) { // expanded by default
             $__("#prices-body-", symbol).slideUp();
@@ -211,6 +269,7 @@ QuotesView.prototype.restoreCollapseStatus = function (model) {
             var exchange_id = __(symbol, '-', exchange);
             if (!model.isExchangeCollapsed(exchange_id)) { // collapsed by default
                 $__('#', exchange_id, '-details').slideDown();
+                self.showChart(exchange_id);
             }
         });
     }
@@ -237,9 +296,9 @@ QuotesView.prototype.renderSymbol = function (symbol, info) {
 QuotesView.prototype.addSymbol = function (symbol, info) {
     $__("#main-quotes-", info.column).append(this.renderSymbol(symbol, info));
 
-    var _this = this;
+    var self = this;
     info.exchanges.forEach(function(exchange) {
-        _this.addExchangeForSymbol(symbol, exchange);
+        self.addExchangeForSymbol(symbol, exchange);
     });
 };
 
@@ -290,27 +349,33 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '  </div>',
         '</div>',
         '<div id="', base_id, '-details" style="display: none; margin: 10px; margin-left: 25px">',
-        '  <div class="row">',
-        '    <div class="col-xs-5">',
-        '      <span style="font-size: small;">',
-        '        <strong>Last updated:</strong>',
-        '      </span>',
-        '    </div>',
-        '    <div class="col-xs-7"',
-        '         id="', base_id, '-last-updated-progress">',
-        '      <div class="progress progress-striped active">',
-        '        <div class="progress-bar" style="width: 100%">',
+        '  <div id="', base_id, '-details-data">',
+        '    <div class="row">',
+        '      <div class="col-xs-5">',
+        '        <span style="font-size: small;">',
+        '          <strong>Last updated:</strong>',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-7"',
+        '           id="', base_id, '-last-updated-progress">',
+        '        <div class="progress progress-striped active">',
+        '          <div class="progress-bar" style="width: 100%">',
+        '          </div>',
+        '        </div>',
+        '      </div>',
+        '      <div id="', base_id, '-last-updated" class="hide">',
+        '        <div class="col-xs-7">',
+        '          <span id="', base_id, '-last-updated-date" style="font-size: small;">',
+        '          </span>',
+        '          <span id="', base_id, '-last-updated-ago" style="font-size: small;">',
+        '          </span>',
         '        </div>',
         '      </div>',
         '    </div>',
-        '    <div id="', base_id, '-last-updated" class="hide">',
-        '      <div class="col-xs-7">',
-        '        <span id="', base_id, '-last-updated-date" style="font-size: small;">',
-        '        </span>',
-        '        <span id="', base_id, '-last-updated-ago" style="font-size: small;">',
-        '        </span>',
-        '      </div>',
-        '    </div>',
+        '  </div>',
+        '  <div class="row">',
+        '    <hr></hr>',
+        '    <div id="', base_id, '-chart"></div>',
         '  </div>',
         '</div>'
     );  
@@ -437,7 +502,7 @@ QuotesView.prototype.addCustomFields = function (price) {
     for (var field in price.custom) {
         var custom_selector = __(selector_base, "-", field);
         if (!$(custom_selector).length) {
-            $__(selector_base, '-details').append(
+            $__(selector_base, '-details-data').append(
                 this.addCustomField(price.symbol, price.exchange, field)
             );
         }
@@ -709,11 +774,11 @@ PortfolioModel.prototype.savePortfolio = function (portfolio) {
 };
 
 PortfolioModel.prototype.deletePortfolio = function (guid) {
-    var _this = this;
+    var self = this;
 
     this.portfolios.forEach(function(portfolio, index) {
         if (portfolio.guid == guid) {
-            _this.portfolios.splice(index, 1);
+            self.portfolios.splice(index, 1);
         }
     });
 
@@ -721,7 +786,7 @@ PortfolioModel.prototype.deletePortfolio = function (guid) {
 };
 
 PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
-    var _this = this;
+    var self = this;
 
     this.portfolios.forEach(function(portfolio_) {
         if (portfolio_.guid == portfolio.guid) {
@@ -733,7 +798,7 @@ PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
 };
 
 PortfolioModel.prototype.deleteTrade = function (guid) {
-    var _this = this;
+    var self = this;
 
     this.portfolios.forEach(function(portfolio) {
         portfolio.trades.forEach(function(trade, index) {
@@ -755,12 +820,12 @@ PortfolioView.prototype.setController = function (controller) {
 };
 
 PortfolioView.prototype.render = function (portfolios) {
-    var _this = this;
+    var self = this;
 
     portfolios.forEach(function(portfolio) {
-        _this.addPortfolio(portfolio);
+        self.addPortfolio(portfolio);
         portfolio.trades.forEach(function(trade) {
-            _this.addTrade(portfolio, trade);
+            self.addTrade(portfolio, trade);
         });
     });
 };
@@ -814,7 +879,7 @@ PortfolioView.prototype.renderTrade = function(portfolio, trade) {
 };
 
 PortfolioView.prototype.addTrade = function(portfolio, trade) {
-    var _this = this;
+    var self = this;
 
     $__("#portfolio-", portfolio.guid, "-trades").append(
         this.renderTrade(portfolio, trade)
@@ -822,7 +887,7 @@ PortfolioView.prototype.addTrade = function(portfolio, trade) {
 
     $__("#btn-", trade.guid, "-remove").click(function (event) {
         event.preventDefault();
-        _this.controller.deleteTrade(trade.guid);
+        self.controller.deleteTrade(trade.guid);
     });
 };
 
@@ -943,7 +1008,7 @@ PortfolioView.prototype.renderPortfolio = function(portfolio) {
 };
 
 PortfolioView.prototype.addPortfolio = function(portfolio) {
-    var _this = this;
+    var self = this;
 
     $("#portfolios").append(this.renderPortfolio(portfolio));
 
@@ -973,13 +1038,13 @@ PortfolioView.prototype.addPortfolio = function(portfolio) {
         if (valid) {
             $__(amount_selector, " > div > :input").val("");
             $__(price_selector, " > div > :input").val("");
-            _this.controller.createTrade(portfolio, amount, price);
+            self.controller.createTrade(portfolio, amount, price);
         }
     });
 
     $__("#btn-", portfolio.guid, "-remove").click(function (event) {
         event.preventDefault();
-        _this.controller.deletePortfolio(portfolio.guid);
+        self.controller.deletePortfolio(portfolio.guid);
     });
 };
 
@@ -1134,7 +1199,7 @@ PortfolioController.prototype.onPriceUpdated = function (price) {
 };
 
 PortfolioController.prototype.updateInvestments = function() {
-    var _this = this;
+    var self = this;
 
     var global_total = {
         amount: 0,
@@ -1151,22 +1216,22 @@ PortfolioController.prototype.updateInvestments = function() {
             portfolio_total.amount += trade.amount;
             portfolio_total.price += trade.price;
 
-            _this.view.updateTradeReturn(
+            self.view.updateTradeReturn(
                 trade, 
-                _this.getInvestmentInfo(trade)
+                self.getInvestmentInfo(trade)
             );
         });
 
         global_total.amount += portfolio_total.amount;
         global_total.price += portfolio_total.price;
 
-        _this.view.updatePortfolioReturn(
+        self.view.updatePortfolioReturn(
             portfolio,
-            _this.getInvestmentInfo(portfolio_total)
+            self.getInvestmentInfo(portfolio_total)
         );
     });
 
-    _this.view.updateGlobalReturn(_this.getInvestmentInfo(global_total));
+    self.view.updateGlobalReturn(self.getInvestmentInfo(global_total));
 };
 
 PortfolioController.prototype.updateExchangePrice = function(price) {    

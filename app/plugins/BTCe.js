@@ -1,6 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -29,15 +29,15 @@ BTCePriceRequester.prototype.processResponse = function (response, body) {
         // Yes, we want to invert them here:
         bid = ticker.sell,
         ask = ticker.buy;
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              new Date(), {
-                                  volume24: ticker.vol_cur,
-                                  high24: ticker.high,
-                                  low24: ticker.low,
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               new Date(), {
+                                   volume24: ticker.vol_cur,
+                                   high24: ticker.high,
+                                   low24: ticker.low,
+                               });
 };
 /**/
 
@@ -45,10 +45,6 @@ module.exports = {
     register: function () {
         var BTCeStreamer = Streamer(BTCePriceRequester,
                                     config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(BTCePriceRequester.config.exchange,
-                                     BTCePriceRequester);
-        registry.streamers.register(BTCeStreamer.config.exchange,
-                                    BTCeStreamer);
+        Plugin_.register(BTCePriceRequester, BTCeStreamer);
     }
 };

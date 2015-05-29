@@ -15,17 +15,18 @@ WSClientHandler.prototype.handle_message = function(message) {
         var handler = registry.handlers.create(request.constructor.name, [request]);
 
         var ret = handler.processRequest(
-            function(response) {
-                self.ws.send(response.toString(), function() {
-                    console.log("WSServer: response sent: " + response);
-                });
-            },
-            function(exception, info) {
-                error = new messages.Error(exception.toString(), info);
-                console.log("WSServer: errback: exception: " + exception);
-                self.ws.send(error.toString(), function() {
-                    console.log("WSServer: error sent: " + error);
-                });
+            function(error, response) {
+                if (error === null) {
+                    self.ws.send(response.toString(), function() {
+                        console.log("WSServer: response sent: " + response);
+                    });
+                } else {
+                    var error_msg = new messages.Error(error.exception.toString(), error.info);
+                    console.log("WSServer: exception: " + error.exception);
+                    self.ws.send(error_msg.toString(), function() {
+                        console.log("WSServer: error sent: " + error_msg);
+                    });
+                }
             }
         );
 
@@ -33,9 +34,9 @@ WSClientHandler.prototype.handle_message = function(message) {
             self.ws.on('close', ret);
         }
     } catch(exception) {
-        error = new messages.Error(exception.toString());
+        var error_msg = new messages.Error(exception.toString());
         console.log("WSServer: catch exception: " + exception);
-        self.ws.send(error.toString(), function() {
+        self.ws.send(error_msg.toString(), function() {
             console.log("error sent");
         });
     }

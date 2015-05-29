@@ -1,7 +1,7 @@
 var ws = require('ws'),
     messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js');
 
 /**
@@ -33,15 +33,15 @@ CexIOPriceRequester.prototype.processResponse = function (response, body) {
         ask = parseFloat(object.ask),
         updated_on = new Date();
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              updated_on, {
-                                  volume24: parseFloat(object.volume),
-                                  high24: parseFloat(object.high),
-                                  low24: parseFloat(object.low)
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               updated_on, {
+                                   volume24: parseFloat(object.volume),
+                                   high24: parseFloat(object.high),
+                                   low24: parseFloat(object.low)
+                               });
 };
 /**/
 
@@ -49,7 +49,7 @@ CexIOPriceRequester.prototype.processResponse = function (response, body) {
  * CexIO streamer
  */
 
-function CexIOStreamer(symbol, callback, errback) {
+function CexIOStreamer(symbol, callback) {
     var self = this;
 
     this.socket = ws.connect('wss://ws.cex.io/ws');
@@ -70,7 +70,8 @@ function CexIOStreamer(symbol, callback, errback) {
 
         if ((payload.data.symbol1 === 'LTC' && symbol === 'LTCUSD') ||
             (payload.data.symbol1 === 'BTC' && symbol === 'BTCUSD')) {
-            callback(new messages.Price("cexio",
+            callback(null,
+                     new messages.Symbol("cexio",
                                         symbol,
                                         parseFloat(payload.data.price),
                                         parseFloat(payload.data.price)));
@@ -88,11 +89,7 @@ CexIOStreamer.prototype.stop = function () {
 
 module.exports = {
     register: function () {
-        registry = Registry.getInstance();
-        registry.requesters.register(CexIOPriceRequester.config.exchange,
-                                     CexIOPriceRequester);
-        registry.streamers.register(CexIOStreamer.config.exchange,
-                                   CexIOStreamer);
+        Plugin_.register(CexIOPriceRequester, CexIOStreamer);
     }
 };
 /**/

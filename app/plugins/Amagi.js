@@ -1,7 +1,7 @@
 var cheerio = require('cheerio'),
     config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -43,10 +43,10 @@ AmagiPriceRequester.prototype.processResponse = function (response, body) {
         bid = parseFloat(bid_text.replace(',','')),
         ask = parseFloat(ask_text.replace(',',''));
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask);
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask);
 };
 /**/
 
@@ -54,10 +54,6 @@ module.exports = {
     register: function () {
         var AmagiStreamer = Streamer(AmagiPriceRequester,
                                      config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(AmagiPriceRequester.config.exchange,
-                                     AmagiPriceRequester);
-        registry.streamers.register(AmagiStreamer.config.exchange,
-                                    AmagiStreamer);
+        Plugin_.register(AmagiPriceRequester, AmagiStreamer);
     }
 };

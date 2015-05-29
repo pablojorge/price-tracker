@@ -1,7 +1,7 @@
 var cheerio = require('cheerio'),
     config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
     
@@ -42,13 +42,13 @@ AmbitoPriceRequester.prototype.processResponse = function (response, body) {
                                 parseInt(match[4]),
                                 parseInt(match[5]));
     
-    return new messages.Price(this.getExchange(), 
-                              this.symbol, 
-                              bid, 
-                              ask,
-                              updated_on, {
-                                  published_on: published_on
-                              });
+    return new messages.Symbol(this.getExchange(), 
+                               this.symbol, 
+                               bid, 
+                               ask,
+                               updated_on, {
+                                   published_on: published_on
+                               });
 };
 /**/
 
@@ -56,10 +56,6 @@ module.exports = {
     register: function () {
         var AmbitoStreamer = Streamer(AmbitoPriceRequester,
                                       config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(AmbitoPriceRequester.config.exchange,
-                                     AmbitoPriceRequester);
-        registry.streamers.register(AmbitoStreamer.config.exchange,
-                                    AmbitoStreamer);
+        Plugin_.register(AmbitoPriceRequester, AmbitoStreamer);
     }
 };

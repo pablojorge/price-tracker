@@ -1,7 +1,7 @@
 var cheerio = require('cheerio'),
     config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -45,10 +45,10 @@ CronistaPriceRequester.prototype.processResponse = function (response, body) {
     var bid = value_extractor(selectors[this.symbol].pos),
         ask = value_extractor(selectors[this.symbol].pos + 1);
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask);
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask);
 };
 /**/
 
@@ -56,10 +56,6 @@ module.exports = {
     register: function () {
         var CronistaStreamer = Streamer(CronistaPriceRequester,
                                         config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(CronistaPriceRequester.config.exchange,
-                                     CronistaPriceRequester);
-        registry.streamers.register(CronistaStreamer.config.exchange,
-                                    CronistaStreamer);
+        Plugin_.register(CronistaPriceRequester, CronistaStreamer);
     }
 };

@@ -7,15 +7,15 @@ var registry = Registry.getInstance(),
 
 /**
  */
-function PriceRequestHandler(request) {
+function SymbolRequestHandler(request) {
     this.request = request;
 }
 
-PriceRequestHandler.config = {
-    handles: 'PriceRequest',
+SymbolRequestHandler.config = {
+    handles: 'SymbolRequest',
 };
 
-PriceRequestHandler.prototype.getRequester = function() {
+SymbolRequestHandler.prototype.getRequester = function() {
     try {
         var requester = registry.requesters.create(this.request.exchange,
                                                   [this.request.symbol,
@@ -26,20 +26,23 @@ PriceRequestHandler.prototype.getRequester = function() {
     }
 };
 
-PriceRequestHandler.prototype.processRequest = function (callback, errback) {
+SymbolRequestHandler.prototype.processRequest = function (callback) {
     try {
         var requester = this.getRequester();
-        requester.doRequest(callback, errback);
+        requester.doRequest(callback);
     } catch(e) {
-        errback(e, {
-            exchange: this.request.exchange,
-            symbol: this.request.symbol
+        callback({
+            exception: e,
+            info: {
+                exchange: this.request.exchange,
+                symbol: this.request.symbol
+            }
         });
     }
 };
 
 module.exports = {
     register: function () {
-        registry.handlers.register('PriceRequest', PriceRequestHandler);
+        registry.handlers.register('SymbolRequest', SymbolRequestHandler);
     }
 };

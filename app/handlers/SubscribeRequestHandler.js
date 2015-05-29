@@ -14,15 +14,18 @@ SubscribeRequestHandler.config = {
     handles: 'SubscribeRequest',
 };
 
-SubscribeRequestHandler.prototype.processRequest = function (callback, errback) {
+SubscribeRequestHandler.prototype.processRequest = function (callback) {
     try {
         var exchange = this.request.exchange,
             symbol = this.request.symbol;
-        return broadcaster.addListener(exchange, symbol, callback, errback);
+        return broadcaster.addListener(exchange, symbol, callback);
     } catch(e) {
-        errback(e, {
-            exchange: this.request.exchange,
-            symbol: this.request.symbol
+        callback({
+            exception: e,
+            info: {
+                exchange: this.request.exchange,
+                symbol: this.request.symbol
+            }
         });
     }
 };

@@ -1,6 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -29,15 +29,15 @@ OKCoinPriceRequester.prototype.processResponse = function (response, body) {
         // Yes, we want to invert them here:
         bid = parseFloat(ticker.sell),
         ask = parseFloat(ticker.buy);
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask,
-                              new Date(), {
-                                  volume24: parseFloat(ticker.vol),
-                                  high24: parseFloat(ticker.high),
-                                  low24: parseFloat(ticker.low),
-                              });
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask,
+                               new Date(), {
+                                   volume24: parseFloat(ticker.vol),
+                                   high24: parseFloat(ticker.high),
+                                   low24: parseFloat(ticker.low),
+                               });
 };
 /**/
 
@@ -45,10 +45,6 @@ module.exports = {
     register: function () {
         var OKCoinStreamer = Streamer(OKCoinPriceRequester,
                                       config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(OKCoinPriceRequester.config.exchange,
-                                     OKCoinPriceRequester);
-        registry.streamers.register(OKCoinStreamer.config.exchange,
-                                    OKCoinStreamer);
+        Plugin_.register(OKCoinPriceRequester, OKCoinStreamer);
     }
 };

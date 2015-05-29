@@ -11,14 +11,15 @@ HTTPRequestHandler.prototype.handle = function(request, req, res) {
     var handler = registry.handlers.create(request.constructor.name, [request]);
 
     handler.processRequest(
-        function(response) {
-            console.log("serveRequest: response sent:", response);
-            res.json(response);
-        },
-        function(exception, info) {
-            res.status(500);
-            console.log("serverRequest: error sent: ", exception);
-            res.json(new messages.Error(exception.toString(), info));
+        function(error, response) {
+            if (error === null) {
+                console.log("serveRequest: response sent:", response);
+                res.json(response);
+            } else {
+                res.status(500);
+                console.log("serverRequest: error sent: ", error.exception);
+                res.json(new messages.Error(error.exception.toString(), error.info));
+            }
         }
     );
 };

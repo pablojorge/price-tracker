@@ -23,18 +23,25 @@ Request.fromString = function(string) {
 
 /**
  */
-function PriceRequest(exchange, symbol, options) {
-    this.exchange = exchange;
+function SymbolRequest(symbol, exchange, options) {
     this.symbol = symbol;
+    this.exchange = exchange;
     this.options = options;
 }
 
-PriceRequest.prototype = Object.create(Request.prototype);
-PriceRequest.prototype.constructor = PriceRequest;
+SymbolRequest.prototype = Object.create(Request.prototype);
+SymbolRequest.prototype.constructor = SymbolRequest;
 
-PriceRequest.prototype.hash = function() {
-    return this.exchange + this.symbol + JSON.stringify(this.options);
-};
+/**
+ */
+function SeriesRequest(symbol, exchange, options) {
+    this.symbol = symbol;
+    this.exchange = exchange;
+    this.options = options;
+}
+
+SeriesRequest.prototype = Object.create(Request.prototype);
+SeriesRequest.prototype.constructor = SeriesRequest;
 
 /**
  */
@@ -55,6 +62,15 @@ function ExchangesRequest(options) {
 
 ExchangesRequest.prototype = Object.create(Request.prototype);
 ExchangesRequest.prototype.constructor = ExchangesRequest;
+
+/**
+ */
+function SymbolsRequest(options) {
+    this.options = options;
+}
+
+SymbolsRequest.prototype = Object.create(Request.prototype);
+SymbolsRequest.prototype.constructor = SymbolsRequest;
 
 /**
  */
@@ -82,6 +98,8 @@ Response.fromString = function (string) {
     return response;
 };
 
+/**
+ */
 function Error(message, info) {
     this.message = message;
     this.info = info;
@@ -90,39 +108,91 @@ function Error(message, info) {
 Error.prototype = Object.create(Response.prototype);
 Error.prototype.constructor = Error;
 
-function Price(exchange, symbol, bid, ask, updated_on, custom) {
-    this.exchange = exchange;
-    this.symbol = symbol;
-    this.bid = bid;
-    this.ask = ask;
-    this.updated_on = updated_on || new Date();
-    this.custom = custom || {};
+/**
+ */
+function Symbol(exchange, symbol, bid, ask, updated_on, custom) {
+    this.data = {
+        exchange: exchange,
+        symbol: symbol,
+        bid: bid,
+        ask: ask,
+        updated_on: updated_on || new Date(),
+        custom: custom || {}
+    };
 }
 
-Price.prototype = Object.create(Response.prototype);
-Price.prototype.constructor = Price;
+Symbol.prototype = Object.create(Response.prototype);
+Symbol.prototype.constructor = Symbol;
 
-function Exchanges() {}
+/**
+ */
+function Series(exchange, symbol) {
+    this.data = {
+        exchange: exchange,
+        symbol: symbol,
+        series: []
+    };
+}
+
+Series.prototype = Object.create(Response.prototype);
+Series.prototype.constructor = Series;
+
+Series.prototype.add = function (date, bid, ask) {
+    this.data.series.push({
+        date: date,
+        bid: bid,
+        ask: ask
+    });
+};
+
+/**
+ */
+function Exchanges() {
+    this.data = [];
+}
 
 Exchanges.prototype = Object.create(Response.prototype);
 Exchanges.prototype.constructor = Exchanges;
 
 Exchanges.prototype.addExchange = function (exchange, symbols) {
-    this[exchange] = symbols;
+    this.data.push({
+        exchange: exchange,
+        symbols: symbols
+    });
+};
+
+/**
+ */
+function Symbols() {
+    this.data = [];
+}
+
+Symbols.prototype = Object.create(Response.prototype);
+Symbols.prototype.constructor = Symbols;
+
+Symbols.prototype.addSymbol = function (symbol, exchanges) {
+    this.data.push({
+        symbol: symbol,
+        exchanges: exchanges
+    });
 };
 
 /**
  */
 try {
     module.exports.Request = Request;
-    module.exports.PriceRequest = PriceRequest;
+    module.exports.SymbolRequest = SymbolRequest;
+    module.exports.SeriesRequest = SeriesRequest;
     module.exports.ExchangesRequest = ExchangesRequest;
+    module.exports.SymbolsRequest = SymbolsRequest;
     module.exports.SubscribeRequest = SubscribeRequest;
 
     module.exports.Response = Response;
     module.exports.Error = Error;
-    module.exports.Price = Price;
+    module.exports.Symbol = Symbol;
+    module.exports.Series = Series;
     module.exports.Exchanges = Exchanges;
+    module.exports.Symbols = Symbols;
 } catch(e) {
     console.log("Running outside node: " + e);
 }

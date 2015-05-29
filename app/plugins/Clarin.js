@@ -1,7 +1,7 @@
 var cheerio = require('cheerio'),
     config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -42,10 +42,10 @@ ClarinPriceRequester.prototype.processResponse = function (response, body) {
         bid = parseFloat($(selector.bid).text().replace('$', '').replace(',','.')),
         ask = parseFloat($(selector.ask).text().replace('$', '').replace(',','.'));
 
-    return new messages.Price(this.getExchange(),
-                              this.symbol,
-                              bid,
-                              ask);
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask);
 };
 /**/
 
@@ -53,10 +53,6 @@ module.exports = {
     register: function () {
         var ClarinStreamer = Streamer(ClarinPriceRequester,
                                       config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(ClarinPriceRequester.config.exchange,
-                                     ClarinPriceRequester);
-        registry.streamers.register(ClarinStreamer.config.exchange,
-                                    ClarinStreamer);
+        Plugin_.register(ClarinPriceRequester, ClarinStreamer);
     }
 };

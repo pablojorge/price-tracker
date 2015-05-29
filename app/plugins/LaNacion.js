@@ -1,6 +1,6 @@
 var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
-    Registry = require('../models/Registry.js'),
+    Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
     Streamer = require('../models/Streamer.js');
 
@@ -52,13 +52,13 @@ LaNacionPriceRequester.prototype.processResponse = function (response, body) {
                                 parseInt(match[5]),
                                 parseInt(match[6]));
 
-    return new messages.Price(this.getExchange(), 
-                              this.symbol, 
-                              bid, 
-                              ask,
-                              updated_on, {
-                                  published_on: published_on
-                              });
+    return new messages.Symbol(this.getExchange(), 
+                               this.symbol, 
+                               bid, 
+                               ask,
+                               updated_on, {
+                                   published_on: published_on
+                               });
 };
 /**/
 
@@ -66,10 +66,6 @@ module.exports = {
     register: function (requesters, streamers, options) {
         var LaNacionStreamer = Streamer(LaNacionPriceRequester,
                                         config.streaming.interval);
-        registry = Registry.getInstance();
-        registry.requesters.register(LaNacionPriceRequester.config.exchange,
-                                     LaNacionPriceRequester);
-        registry.streamers.register(LaNacionStreamer.config.exchange,
-                                    LaNacionStreamer);
+        Plugin_.register(LaNacionPriceRequester, LaNacionStreamer);
     }
 };
