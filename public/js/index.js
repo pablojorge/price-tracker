@@ -172,6 +172,15 @@ QuotesView.prototype.render = function() {
     for (var symbol in this.symbols) {
         self.addSymbol(symbol, this.symbols[symbol]);
     }
+
+    $('.collapse-symbol, .collapse-exchange').hover(
+        function() {
+            $(this).css('color','#428bca');
+        },
+        function() {
+            $(this).css('color','black');
+        }
+    );
 };
 
 QuotesView.prototype.showChart = function(target) {
