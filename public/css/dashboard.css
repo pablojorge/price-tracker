@@ -57,6 +57,27 @@ body {
   background-color: #428bca;
 }
 
+.separator {
+  border-width: 0px;
+  border-color: #eee;
+  border-style: solid;
+}
+
+.bottom-separator {
+  border-bottom-width: 1px;
+}
+
+.left-separator {
+  border-left-width: 1px;
+}
+
+.right-separator {
+  border-right-width: 1px;
+}
+
+.padded-15 {
+  padding: 15px;
+}
 
 /*
  * Main content
