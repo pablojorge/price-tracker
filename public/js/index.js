@@ -185,14 +185,13 @@ QuotesView.prototype.render = function() {
 };
 
 QuotesView.prototype.showChart = function(symbol, exchange) {
-    // var match = /([^\-]+)\-(.*)/.exec(target),
-    //     symbol = match[1],
-    //     exchange = match[2];
-
     var series_url = (
         location.origin + '/api/v1/symbols/' +
         symbol + '/' + exchange + '/series'
     );
+
+    $__('#', symbol, '-', exchange, '-chart').addClass('hide');
+    $__('#', symbol, '-', exchange, '-chart-progress').removeClass('hide');
 
     $.getJSON(series_url, function (response) {
         var series = function (name) {
@@ -209,6 +208,9 @@ QuotesView.prototype.showChart = function(symbol, exchange) {
                 }
             };
         };
+
+        $__('#', symbol, '-', exchange, '-chart').removeClass('hide');
+        $__('#', symbol, '-', exchange, '-chart-progress').addClass('hide');
 
         $__('#', symbol, '-', exchange, '-chart').highcharts('StockChart', {
             rangeSelector : {
@@ -234,8 +236,8 @@ QuotesView.prototype.onSymbolSelected = function(model, symbol) {
     $(".select-symbol").removeClass("active");
     $__("#select-symbol-", symbol).addClass("active");
 
-    $(".prices-body").css("display", "none");
-    $__("#prices-body-", symbol).css("display", "block");
+    $(".prices-body").addClass("hide");
+    $__("#prices-body-", symbol).removeClass("hide");
 
     this.onExchangeSelected(model, symbol, exchange);
 };
@@ -248,8 +250,8 @@ QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     $__("#select-exchange-", symbol, '-', exchange).removeClass('custom-nav-hover');
     $__("#select-exchange-", symbol, '-', exchange).addClass('custom-nav-selected');
 
-    $(".exchange-details").css("display", "none");
-    $__("#", symbol, '-', exchange, '-details').css("display", "block");
+    $(".exchange-details").addClass("hide");
+    $__("#", symbol, '-', exchange, '-details').removeClass("hide");
 
     this.showChart(symbol, exchange);
 };
@@ -303,8 +305,8 @@ QuotesView.prototype.restoreSelectionStatus = function (model) {
 QuotesView.prototype.renderSymbolPricesBody = function (symbol, info) {
     return $__(
         '<div class="row">',
-        '  <div style="display: none; margin-top: 10px" ',
-        '       class="prices-body" ',
+        '  <div style="margin-top: 10px" ',
+        '       class="hide prices-body" ',
         '       id="prices-body-', symbol, '">',
         '  </div>',
         '</div>'
@@ -392,7 +394,7 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
         '      <span id="', base_id, '-error-msg"></span>',
         '    </div>',
         '  </div>',
-        '  <div id="', base_id, '-prices" class="hide">',
+        '  <div id="', base_id, '-prices" style="margin-top: 5px" class="hide">',
         '    <div class="col-xs-3">',
         '      <span class="label label-info" style="font-size: small"',
         '          id="', base_id, '-bid">',
@@ -413,10 +415,15 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
 
     return $__(
         '<div id="', base_id, '-details" ',
-        '     class="separator left-separator exchange-details"',
-        '     style="display: none; margin: 10px; margin-left: 25px">',
+        '     class="hide separator left-separator exchange-details"',
+        '     style="margin: 10px; margin-left: 25px">',
         '  <div class="row" style="margin: 25px">',
-        '    <div id="', base_id, '-chart"></div>',
+        '    <div class="progress progress-striped active" id="', base_id, '-chart-progress">',
+        '      <div class="progress-bar" style="width: 100%">',
+        '        Loading chart...',
+        '      </div>',
+        '    </div>',
+        '    <div class="hide price-chart" id="', base_id, '-chart"></div>',
         '    <hr></hr>',
         '  </div>',
         '  <div id="', base_id, '-details-data" style="margin: 25px">',
