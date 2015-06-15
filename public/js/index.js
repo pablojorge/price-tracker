@@ -159,6 +159,16 @@ function QuotesView() {
         }, 
     };
 
+    this.symbol_list = [
+        'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
+        null,
+        'BTCUSD', 'LTCUSD',
+        null,
+        'XAUUSD', 'XAGUSD',
+        null,
+        'USDSLL', 'BTCSLL'
+    ];
+
     Highcharts.setOptions({
         global: {
             useUTC: false
@@ -169,25 +179,15 @@ function QuotesView() {
 QuotesView.prototype.render = function() {
     var self = this;
 
-    var symbol_list = [
-        'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
-        null,
-        'BTCUSD', 'LTCUSD',
-        null,
-        'XAUUSD', 'XAGUSD',
-        null,
-        'USDSLL', 'BTCSLL'
-    ];
-
-    symbol_list.forEach(function(symbol) {
+    this.symbol_list.forEach(function(symbol) {
         self.addSymbol(symbol, self.symbols[symbol]);
     });
 };
 
-QuotesView.prototype.showChart = function(target) {
-    var match = /([^\-]+)\-(.*)/.exec(target),
-        symbol = match[1],
-        exchange = match[2];
+QuotesView.prototype.showChart = function(symbol, exchange) {
+    // var match = /([^\-]+)\-(.*)/.exec(target),
+    //     symbol = match[1],
+    //     exchange = match[2];
 
     var series_url = (
         location.origin + '/api/v1/symbols/' +
@@ -210,7 +210,7 @@ QuotesView.prototype.showChart = function(target) {
             };
         };
 
-        $__('#', target, '-chart').highcharts('StockChart', {
+        $__('#', symbol, '-', exchange, '-chart').highcharts('StockChart', {
             rangeSelector : {
                 selected : 1
             },
@@ -225,19 +225,33 @@ QuotesView.prototype.showChart = function(target) {
     });
 };
 
+QuotesView.prototype.onSymbolSelected = function(model, symbol) {
+    var exchange = (
+        model.getSelectedExchange(symbol) ||
+        this.symbols[symbol].exchanges[0]
+    );
+
+    $(".select-symbol").removeClass("active");
+    $__("#select-symbol-", symbol).addClass("active");
+
+    $(".prices-body").css("display", "none");
+    $__("#prices-body-", symbol).css("display", "block");
+
+    $(".exchange-details").css("display", "none");
+    $__("#", symbol, '-', exchange, '-details').css("display", "block");
+
+    this.showChart(symbol, exchange);
+};
+
 QuotesView.prototype.hookSelectionButtons = function (model) {
     var self = this;
 
     $(".select-symbol").bind('click', function(event) {
         event.preventDefault();
 
-        model.setSelectedSymbol($(this).attr("target"));
-
-        $(".select-symbol").removeClass("active");
-        $(this).addClass("active");
-
-        $__(".prices-body").css("display", "none");
-        $__("#prices-body-", $(this).attr("target")).css("display", "block");
+        var symbol = $(this).attr("target");
+        model.setSelectedSymbol(symbol);
+        self.onSymbolSelected(model, symbol);
 
         return false;
     });
@@ -252,7 +266,7 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
         } else {
             model.setExchangeCollapsed($(this).attr("target"), false);
             $__('#', $(this).attr("target"), '-details').slideDown();
-            // self.showChart($(this).attr("target"));
+            // 
         }
 
         return false;
@@ -260,22 +274,8 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
 };
 
 QuotesView.prototype.restoreSelectionStatus = function (model) {
-    var self = this;
-
-    var symbol = model.getSelectedSymbol();
-
-    $(".select-symbol").removeClass("active");
-    $(this).addClass("active");
-
-    $__("#prices-body-", $(this).attr("target")).css("display", "block");
-
-    // this.symbols[symbol].exchanges.forEach(function (exchange) {
-    //     var exchange_id = __(symbol, '-', exchange);
-    //     //if (!model.isExchangeCollapsed(exchange_id)) { // collapsed by default
-    //         $__('#', exchange_id, '-details').slideDown();
-    //         self.showChart(exchange_id);
-    //    // }
-    // });
+    var symbol = model.getSelectedSymbol() || this.symbol_list[0];
+    this.onSymbolSelected(model, symbol);
 };
 
 QuotesView.prototype.renderSymbolPricesBody = function (symbol, info) {
@@ -292,8 +292,7 @@ QuotesView.prototype.renderSymbolPricesBody = function (symbol, info) {
 QuotesView.prototype.renderSymbolDetailsBody = function (symbol, info) {
     return $__(
         '<div class="row">',
-        '  <div style="display: none; margin-top: 10px" ',
-        '       id="details-body-', symbol, '">',
+        '  <div id="details-body-', symbol, '">',
         '  </div>',
         '</div>'
     );
@@ -301,7 +300,10 @@ QuotesView.prototype.renderSymbolDetailsBody = function (symbol, info) {
 
 QuotesView.prototype.renderSymbolNav = function (symbol, info) {
     return $__(
-        '<li role="presentation" target="', symbol, '" class="select-symbol">',
+        '<li role="presentation" ',
+        '    target="', symbol, '" ',
+        '    class="select-symbol" ',
+        '    id="select-symbol-', symbol,'">',
         '  <a>',
         '    <img src="img/symbol/', symbol, '.png" width=32 height=32></img>',
         '    <large>', symbol, '</large> <small>', info.description, '</small>',
@@ -339,7 +341,7 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
 
     return $__(
-        '<div class="row" style="margin-bottom: 10px; margin-left: 0px;">',
+        '<div class="row" style="margin-bottom: 10px; margin-left: 25px;">',
         '  <div class="col-xs-5">', 
         '    <span target="', base_id, '"',
         '          class="select-exchange"',
@@ -388,7 +390,9 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
 
     return $__(
-        '<div id="', base_id, '-details" class="separator left-separator" style="margin: 10px; margin-left: 25px">', // display: none;
+        '<div id="', base_id, '-details" ',
+        '     class="separator left-separator exchange-details"',
+        '     style="display: none; margin: 10px; margin-left: 25px">',
         '  <div class="row" style="margin: 25px">',
         '    <div id="', base_id, '-chart"></div>',
         '    <hr></hr>',
@@ -679,8 +683,8 @@ QuotesModel.prototype.save = function () {
 
 QuotesModel.prototype.load = function () {
     this.selected = JSON.parse(localStorage["quotes.selected"] || null) || {
-        symbol: 'USDARSB',
-        exchange: 'USDARSB-ambito'
+        symbol: null,
+        exchange: {}
     };
 };
 
@@ -688,8 +692,8 @@ QuotesModel.prototype.getSelectedSymbol = function () {
     return this.selected.symbol;
 };
 
-QuotesModel.prototype.getSelectedExchange = function () {
-    return this.selected.exchange;
+QuotesModel.prototype.getSelectedExchange = function (symbol) {
+    return this.selected.exchange[symbol];
 };
 
 QuotesModel.prototype.setSelectedSymbol = function (symbol) {
@@ -697,8 +701,8 @@ QuotesModel.prototype.setSelectedSymbol = function (symbol) {
     this.save();
 };
 
-QuotesModel.prototype.setExchangeCollapsed = function (exchange) {
-    this.selected.exchange = exchange;
+QuotesModel.prototype.setExchangeCollapsed = function (symbol, exchange) {
+    this.selected.exchange[symbol] = exchange;
     this.save();
 };
 
