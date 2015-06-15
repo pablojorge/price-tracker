@@ -79,6 +79,32 @@ body {
   padding: 15px;
 }
 
+.custom-nav {
+  display: inline;
+  padding: 10px;
+  font-size: 75%;
+  line-height: 1;
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .5em;
+}
+
+.custom-nav-selected {
+  color: #fff;
+  background-color: #428bca;
+}
+
+.custom-nav-hover {
+  color: #428bca;
+  background-color: #eee;
+}
+
+.custom-nav-not-selected {
+  color: #428bca;
+  background-color: #fff;
+}
+
 /*
  * Main content
  */

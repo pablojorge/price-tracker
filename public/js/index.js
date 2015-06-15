@@ -237,6 +237,17 @@ QuotesView.prototype.onSymbolSelected = function(model, symbol) {
     $(".prices-body").css("display", "none");
     $__("#prices-body-", symbol).css("display", "block");
 
+    this.onExchangeSelected(model, symbol, exchange);
+};
+
+QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
+    $(".select-exchange").removeClass('custom-nav-selected');
+    $(".select-exchange").addClass('custom-nav-not-selected');
+
+    $__("#select-exchange-", symbol, '-', exchange).removeClass('custom-nav-not-selected');
+    $__("#select-exchange-", symbol, '-', exchange).removeClass('custom-nav-hover');
+    $__("#select-exchange-", symbol, '-', exchange).addClass('custom-nav-selected');
+
     $(".exchange-details").css("display", "none");
     $__("#", symbol, '-', exchange, '-details').css("display", "block");
 
@@ -256,21 +267,32 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
         return false;
     });
 
-    $(".collapse-exchange").bind('click', function(event) {
+    $(".select-exchange").bind('click', function(event) {
         event.preventDefault();
 
-        if (!model.isExchangeCollapsed($(this).attr("target"))) {
-            model.setExchangeCollapsed($(this).attr("target"), true);
-            $__('#', $(this).attr("target"), '-details').slideUp();
-            // self.hideChart($(this).attr("target"));
-        } else {
-            model.setExchangeCollapsed($(this).attr("target"), false);
-            $__('#', $(this).attr("target"), '-details').slideDown();
-            // 
-        }
+        var symbol = model.getSelectedSymbol(),
+            exchange = $(this).attr("target");
+        model.setSelectedExchange(symbol, exchange);
+        self.onExchangeSelected(model, symbol, exchange);
 
         return false;
     });
+
+    $('.select-exchange').hover(
+        function() {
+            if (!$(this).hasClass('custom-nav-selected')) {
+                $(this).removeClass('custom-nav-not-selected');
+                $(this).addClass('custom-nav-hover');
+            }
+        },
+        function() {
+            $(this).removeClass('custom-nav-hover');
+
+            if (!$(this).hasClass('custom-nav-selected')) {
+                $(this).addClass('custom-nav-not-selected');
+            }
+        }
+    );
 };
 
 QuotesView.prototype.restoreSelectionStatus = function (model) {
@@ -342,10 +364,10 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
 
     return $__(
         '<div class="row" style="margin-bottom: 10px; margin-left: 25px;">',
-        '  <div class="col-xs-5">', 
-        '    <span target="', base_id, '"',
-        '          class="select-exchange"',
-        '          style="font-size: xx-small;"> ',
+        '  <div target="', exchange, '"',
+        '       class="col-xs-5 select-exchange custom-nav custom-nav-not-selected"',
+        '       id="select-exchange-', symbol, '-', exchange, '">', 
+        '    <span style="font-size: xx-small;"> ',
         '       <img src="img/exchange/', exchange, '.ico" ',
         '            width=16 height=16> ', 
         '      <span style="font-size: small">', this.exchanges[exchange].description, '</span>',
@@ -701,7 +723,7 @@ QuotesModel.prototype.setSelectedSymbol = function (symbol) {
     this.save();
 };
 
-QuotesModel.prototype.setExchangeCollapsed = function (symbol, exchange) {
+QuotesModel.prototype.setSelectedExchange = function (symbol, exchange) {
     this.selected.exchange[symbol] = exchange;
     this.save();
 };
