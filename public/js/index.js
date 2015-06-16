@@ -305,8 +305,7 @@ QuotesView.prototype.restoreSelectionStatus = function (model) {
 QuotesView.prototype.renderSymbolPricesBody = function (symbol, info) {
     return $__(
         '<div class="row">',
-        '  <div style="margin-top: 10px" ',
-        '       class="hide prices-body" ',
+        '  <div class="hide prices-body" ',
         '       id="prices-body-', symbol, '">',
         '  </div>',
         '</div>'
@@ -365,7 +364,7 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
 
     return $__(
-        '<div class="row" style="margin-bottom: 10px; margin-left: 25px;">',
+        '<div class="row" style="margin-left: 15px; margin-right: 10px">',
         '  <div target="', exchange, '"',
         '       class="col-xs-5 select-exchange custom-nav custom-nav-not-selected"',
         '       id="select-exchange-', symbol, '-', exchange, '">', 
@@ -380,30 +379,32 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
         '      </span>',
         '    </a>',
         '  </div>',
-        '  <div class="col-xs-7"',
-        '       id="', base_id, '-progress">',
-        '    <div class="progress progress-striped active">',
-        '      <div class="progress-bar" style="width: 100%">',
+        '  <div style="margin-top: 8px">',
+        '    <div class="col-xs-7"',
+        '         id="', base_id, '-progress">',
+        '      <div class="progress progress-striped active">',
+        '        <div class="progress-bar" style="width: 100%">',
+        '        </div>',
         '      </div>',
         '    </div>',
-        '  </div>',
-        '  <div class="col-xs-7 hide"',
-        '       id="', base_id, '-error">',
-        '    <div class="alert alert-danger">',
-        '      <strong>Error</strong>',
-        '      <span id="', base_id, '-error-msg"></span>',
+        '    <div class="col-xs-7 hide"',
+        '         id="', base_id, '-error">',
+        '      <div class="alert alert-danger">',
+        '        <strong>Error</strong>',
+        '        <span id="', base_id, '-error-msg"></span>',
+        '      </div>',
         '    </div>',
-        '  </div>',
-        '  <div id="', base_id, '-prices" style="margin-top: 5px" class="hide">',
-        '    <div class="col-xs-3">',
-        '      <span class="label label-info" style="font-size: small"',
-        '          id="', base_id, '-bid">',
-        '      </span>',
-        '    </div>',
-        '    <div class="col-xs-3">',
-        '      <span class="label label-primary" style="font-size: small" ',
-        '            id="', base_id, '-ask">',
-        '      </span>',
+        '    <div id="', base_id, '-prices" class="hide">',
+        '      <div class="col-xs-3">',
+        '        <span class="label label-info" style="font-size: small"',
+        '            id="', base_id, '-bid">',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-3">',
+        '        <span class="label label-primary" style="font-size: small" ',
+        '              id="', base_id, '-ask">',
+        '        </span>',
+        '      </div>',
         '    </div>',
         '  </div>',
         '</div>'
@@ -415,9 +416,9 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
 
     return $__(
         '<div id="', base_id, '-details" ',
-        '     class="hide separator left-separator exchange-details"',
-        '     style="margin: 10px; margin-left: 25px">',
-        '  <div class="row" style="margin: 25px">',
+        '     class="hide exchange-details"',
+        '     style="margin: 15px;">',
+        '  <div class="row" style="margin: 0px">',
         '    <div class="progress progress-striped active" id="', base_id, '-chart-progress">',
         '      <div class="progress-bar" style="width: 100%">',
         '        Loading chart...',
@@ -426,14 +427,14 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '    <div class="hide price-chart" id="', base_id, '-chart"></div>',
         '    <hr></hr>',
         '  </div>',
-        '  <div id="', base_id, '-details-data" style="margin: 25px">',
+        '  <div id="', base_id, '-details-data" style="margin: 15px">',
         '    <div class="row">',
-        '      <div class="col-xs-5">',
+        '      <div class="col-xs-4">',
         '        <span style="font-size: small;">',
         '          <strong>Last updated:</strong>',
         '        </span>',
         '      </div>',
-        '      <div class="col-xs-7"',
+        '      <div class="col-xs-8"',
         '           id="', base_id, '-last-updated-progress">',
         '        <div class="progress progress-striped active">',
         '          <div class="progress-bar" style="width: 100%">',
@@ -441,7 +442,7 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '        </div>',
         '      </div>',
         '      <div id="', base_id, '-last-updated" class="hide">',
-        '        <div class="col-xs-7">',
+        '        <div class="col-xs-8">',
         '          <span id="', base_id, '-last-updated-date" style="font-size: small;">',
         '          </span>',
         '          <span id="', base_id, '-last-updated-ago" style="font-size: small;">',
@@ -596,7 +597,7 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
 
     var field_body = {
         published_on: __(
-            '<div class="col-xs-7">',
+            '<div class="col-xs-8">',
             '  <span id="', base_id, '-last-published-date" style="font-size: small;">',
             '  </span>',
             '  <span id="', base_id, '-last-published-ago" style="font-size: small;">',
@@ -604,19 +605,19 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
             '</div>'
         ),
         volume24: __(
-            '<div class="col-xs-7">',
+            '<div class="col-xs-8">',
             '  <span id="', base_id, '-volume24-value" style="font-size: small;">',
             '  </span>',
             '</div>'
         ),
         high24: __(
-            '<div class="col-xs-7">',
+            '<div class="col-xs-8">',
             '  <span id="', base_id, '-high24-value" style="font-size: small;">',
             '  </span>',
             '</div>'
         ),
         low24: __(
-            '<div class="col-xs-7">',
+            '<div class="col-xs-8">',
             '  <span id="', base_id, '-low24-value" style="font-size: small;">',
             '  </span>',
             '</div>'
@@ -625,7 +626,7 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
 
     return $__(
         '<div class="row" id="', base_id, '-', field, '">',
-        '  <div class="col-xs-5">',
+        '  <div class="col-xs-4">',
         '    <span style="font-size: small;">',
         '      <strong>', field_desc[field], '</strong>',
         '    </span>',
@@ -1392,15 +1393,6 @@ GlobalController.prototype.start = function() {
 };
 
 GlobalController.prototype.onPriceUpdated = function (price) {
-    // TODO: add support for selecting symbol and exchange
-
-    if (price.symbol != 'BTCUSD')
-        return;
-
-    if (price.exchange != 'bitstamp')
-        return;
-
-    this.view.setWindowTitle('($' + price.ask + ') - Price Tracker');
 };
 
 function init_app () {

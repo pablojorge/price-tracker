@@ -75,6 +75,17 @@ body {
   border-right-width: 1px;
 }
 
+/* don't display left and right separators on mobile */
+@media (max-width: 768px) {
+  .left-separator {
+    border-left-width: 0px;
+  }
+
+  .right-separator {
+    border-right-width: 0px;
+  }
+}
+
 .padded-15 {
   padding: 15px;
 }
@@ -95,6 +106,11 @@ body {
   background-color: #428bca;
 }
 
+.custom-nav-selected > a > span {
+  color: #fff;
+  background-color: #428bca;
+}
+
 .custom-nav-hover {
   color: #428bca;
   background-color: #eee;
@@ -103,6 +119,10 @@ body {
 .custom-nav-not-selected {
   color: #428bca;
   background-color: #fff;
+}
+
+hr {
+  margin: 10px;
 }
 
 /*
