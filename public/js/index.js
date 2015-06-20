@@ -855,43 +855,33 @@ function init_app () {
     quotes_controller.start();
 }
 
-function setup_client(client) {
-    client.addHandler("onConnect", function() {
-        quotes_controller.onConnect();
-        this.requestExchanges();
-    });
-
-    client.addHandler("onExchangesListReceived", function(exchanges) {
-        this.requestPrices(exchanges);
-    });
-
-    client.addHandler("onPriceUpdated", function(price) {
-        quotes_controller.onPriceUpdated(price);
-    });
-
-    client.addHandler("onError", function (error) {
-        quotes_controller.onError(error);
-    });
-}
-
 function init_client () {
     var url = location.origin.replace(/^http/, 'ws');
 
     var wsclient = new WSClient(url);
 
-    setup_client(wsclient);
-
-    wsclient.addHandler("onDisconnect", function() {
-        if (!wsclient.connected) {
-            var restclient = new RESTClient(location.origin, 60);
-            setup_client(restclient);
-            restclient.connect();
-        } else {
-            quotes_controller.onError({message:'Disconnected'});
-        }
+    wsclient.addHandler("onConnect", function() {
+        quotes_controller.onConnect();
+        this.requestExchanges();
     });
 
-    wsclient.connect();
+    wsclient.addHandler("onDisconnect", function() {
+        quotes_controller.onError({message:'Disconnected'});
+    });
+
+    wsclient.addHandler("onExchangesListReceived", function(exchanges) {
+        this.requestPrices(exchanges);
+    });
+
+    wsclient.addHandler("onPriceUpdated", function(price) {
+        quotes_controller.onPriceUpdated(price);
+    });
+
+    wsclient.addHandler("onError", function (error) {
+        quotes_controller.onError(error);
+    });
+
+    wsclient.start();
 }
 
 $(document).ready(function() {

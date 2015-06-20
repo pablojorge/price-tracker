@@ -47,11 +47,17 @@ function WSClient(host) {
     this.connected = false;
 }
 
-WSClient.WATCHDOG_INTERVAL = 10;
+WSClient.WATCHDOG_INTERVAL = 1;
 WSClient.MAX_INACTIVITY = 60;
 
 WSClient.prototype = Object.create(Client.prototype);
 WSClient.prototype.constructor = WSClient;
+
+WSClient.prototype.start = function() {
+    setTimeout(this.watchdog.bind(this),
+               WSClient.WATCHDOG_INTERVAL * 1000);
+    this.connect();
+};
 
 WSClient.prototype.connect = function() {
     var self = this;
@@ -62,8 +68,6 @@ WSClient.prototype.connect = function() {
         self.connected = true;
         self.emit("onConnect");
         self.updated_on = new Date();
-        setTimeout(self.watchdog.bind(self),
-                   WSClient.WATCHDOG_INTERVAL * 1000);
     };
 
     self.socket.onmessage = function (event) {
@@ -91,19 +95,41 @@ WSClient.prototype.connect = function() {
     };
 };
 
+WSClient.prototype.disconnect = function () {
+    var CONNECTING = 0, // The connection is not yet open.
+        OPEN = 1, // The connection is open and ready to communicate.
+        CLOSING = 2, // The connection is in the process of closing.
+        CLOSED = 3; // The connection is closed or couldn't be opened.
+
+    try {
+        if (this.socket) {
+            if (this.socket.readyState == OPEN)
+                this.socket.close();
+            this.socket = undefined;
+            this.connected = false;
+        }
+    } catch(e) {
+        console.log("WARN: WSClient.disconnect: ", e);
+    }
+};
+
 WSClient.prototype.watchdog = function () {
     var inactive_for = ((new Date()) - this.updated_on) / 1000;
 
     console.log('Watchdog: inactive for', inactive_for, 'seconds');
 
-    if (inactive_for > WSClient.MAX_INACTIVITY) {
-        console.log('Watchdog: excessive inactivity, restarting connection');
-        this.socket.close();
+    if (!this.connected) {
+        console.log('Watchdog: connection lost, restarting connection');
+        this.disconnect();
         this.connect(this.host);
-    } else {
-        setTimeout(this.watchdog.bind(this), 
-                   WSClient.WATCHDOG_INTERVAL * 1000);
+    } else if (inactive_for > WSClient.MAX_INACTIVITY) {
+        console.log('Watchdog: excessive inactivity, restarting connection');
+        this.disconnect();
+        this.connect(this.host);
     }
+
+    setTimeout(this.watchdog.bind(this),
+               WSClient.WATCHDOG_INTERVAL * 1000);
 };
 
 WSClient.prototype.requestExchanges = function() {
