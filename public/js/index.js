@@ -266,6 +266,8 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
         model.setSelectedSymbol(symbol);
         self.onSymbolSelected(model, symbol);
 
+        self.scrollTo("#main-quotes-prices-column");
+
         return false;
     });
 
@@ -276,6 +278,8 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
             exchange = $(this).attr("target");
         model.setSelectedExchange(symbol, exchange);
         self.onExchangeSelected(model, symbol, exchange);
+
+        self.scrollTo("#main-quotes-details-column");
 
         return false;
     });
@@ -300,6 +304,12 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
 QuotesView.prototype.restoreSelectionStatus = function (model) {
     var symbol = model.getSelectedSymbol() || this.symbol_list[0];
     this.onSymbolSelected(model, symbol);
+};
+
+QuotesView.prototype.scrollTo = function (target) {
+    $('html, body').animate({
+        scrollTop: $(target).offset().top - 50 // account for the fixed top navbar
+    }, 1000);
 };
 
 QuotesView.prototype.renderSymbolPricesBody = function (symbol, info) {
