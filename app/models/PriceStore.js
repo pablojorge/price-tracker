@@ -1,6 +1,7 @@
 var redis = require('redis'),
     url = require('url'),
-    config = require('../../config/config');
+    config = require('../../config/config'),
+    messages = require('../../public/lib/messages.js');
 
 /**
  */
@@ -33,17 +34,41 @@ PriceStore.deleteInstance = function () {
     }
 };
 
+PriceStore.prototype.lastKey = function(exchange, symbol) {
+    return "".concat("last:", symbol, ":", exchange);
+};
+
 PriceStore.prototype.seriesKey = function(exchange, symbol) {
-    return "series:".concat("symbol:", symbol, ":exchange:", exchange);
+    return "".concat("series:", "symbol:", symbol, ":exchange:", exchange);
 };
 
 PriceStore.prototype.listener = function(error, response) {
-    var self = this;
-
     if (error !== null) {
         console.log("PriceStore: WARNING ignoring error:", error);
         return;
     }
+
+    this.updateLast(response);
+    this.updateSeries(response);
+};
+
+PriceStore.prototype.updateLast = function(response) {
+    var self = this;
+
+    var key = this.lastKey(response.data.exchange, response.data.symbol),
+        value = response.toString();
+
+    this.client.set(key, value, function (error, ret) {
+        if (error) {
+            console.log("PriceStore: ERROR saving", key, value, error);
+        } else {
+            console.log("PriceStore: saved", key, value, ":", ret);
+        }
+    });
+};
+
+PriceStore.prototype.updateSeries = function(response) {
+    var self = this;
 
     var key = this.seriesKey(response.data.exchange, response.data.symbol),
         value = {
@@ -97,6 +122,26 @@ PriceStore.prototype.getPrices = function(exchange, symbol, start, end, callback
             value.date = new Date(value.date);
             return value;
         }));
+    });
+};
+
+PriceStore.prototype.getLastPrice = function(exchange, symbol, callback) {
+    this.client.get(this.lastKey(exchange, symbol), function (error, value) {
+        if (error) {
+            callback(error);
+            return;
+        }
+        if (value === null) {
+            callback({
+                exception: "NOT FOUND",
+                info: {
+                    exchange: exchange,
+                    symbol: symbol
+                }
+            });
+            return;
+        }
+        callback(null, messages.Response.fromString(value));
     });
 };
 
