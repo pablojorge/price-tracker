@@ -184,46 +184,33 @@ QuotesView.prototype.render = function() {
     });
 };
 
-QuotesView.prototype.showChart = function(symbol, exchange) {
+QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
     var series_url = (
         location.origin + '/api/v1/symbols/' +
         symbol + '/' + exchange + '/series'
     );
 
-    $__('#', symbol, '-', exchange, '-chart').addClass('hide');
-    $__('#', symbol, '-', exchange, '-chart-progress').removeClass('hide');
+    var chart = $__('#', symbol, '-', exchange, '-chart').highcharts();
+
+    if (chart === undefined)
+        chart = this.renderExchangeChart(symbol, exchange);
+
+    chart.showLoading('Loading data...');
 
     $.getJSON(series_url, function (response) {
         var series = function (name) {
-            return {
-                name : name.toUpperCase(),
-                data: response.data.series.map(function (item) {
-                    return [
-                        new Date(item.date)*1,
-                        item[name]
-                    ];
-                }),
-                tooltip: {
-                    valueDecimals: 2
-                }
-            };
+            return response.data.series.map(function (item) {
+                return [
+                    new Date(item.date)*1,
+                    item[name]
+                ];
+            });
         };
 
-        $__('#', symbol, '-', exchange, '-chart').removeClass('hide');
-        $__('#', symbol, '-', exchange, '-chart-progress').addClass('hide');
+        chart.series[0].setData(series('ask'));
+        chart.series[1].setData(series('bid'));
 
-        $__('#', symbol, '-', exchange, '-chart').highcharts('StockChart', {
-            rangeSelector : {
-                selected : 1
-            },
-            title : {
-                text : symbol + '@' + exchange
-            },
-            series : [
-                series('ask'),
-                series('bid')
-            ]
-        });
+        chart.hideLoading();
     });
 };
 
@@ -253,7 +240,7 @@ QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     $(".exchange-details").addClass("hide");
     $__("#", symbol, '-', exchange, '-details').removeClass("hide");
 
-    this.showChart(symbol, exchange);
+    this.updateExchangeChart(symbol, exchange);
 };
 
 QuotesView.prototype.hookSelectionButtons = function (model) {
@@ -429,14 +416,7 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '     class="hide exchange-details"',
         '     style="margin: 15px;">',
         '  <div class="row" style="margin: 0px">',
-        '    <div class="progress progress-striped active" id="', base_id, '-chart-progress">',
-        '      <div class="progress-bar" style="width: 100%">',
-        '        <span style="font-size: small;">',
-        '          Loading chart...',
-        '        </span>',
-        '      </div>',
-        '    </div>',
-        '    <div class="hide price-chart" id="', base_id, '-chart"></div>',
+        '    <div class="price-chart" id="', base_id, '-chart"></div>',
         '    <hr></hr>',
         '  </div>',
         '  <div id="', base_id, '-details-data" style="margin: 15px">',
@@ -465,6 +445,25 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '  </div>',
         '</div>'
     );  
+};
+
+QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
+    var selector = __('#', symbol, '-', exchange, '-chart');
+
+    $(selector).highcharts('StockChart', {
+        rangeSelector : {
+            selected : 1
+        },
+        title : {
+            text : symbol + '@' + exchange
+        },
+        series : [
+            {name : 'ASK', data: [], tooltip: {valueDecimals: 2}},
+            {name : 'BID', data: [], tooltip: {valueDecimals: 2}},
+        ]
+    });
+
+    return $(selector).highcharts();
 };
 
 QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
