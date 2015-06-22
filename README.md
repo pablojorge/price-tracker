@@ -164,9 +164,9 @@ Fields:
   * **exchange**: Name of the exchange/source
   * **symbol**: Symbol name
   * **series**: List of elements with the following fields:
-    * **date**: Item date
-    * **bid**: Best *buy* offer
-    * **ask**: Best *sell* offer
+    * **date**: Period start date
+    * **bid**: *buy* offers OHLC for this period
+    * **ask**: *sell* offers OHLC for this period
 
 Example:
 
@@ -177,15 +177,34 @@ Example:
         "symbol": "USDARSB",
         "series": [
           {
-            "date": "2015-05-24T15:27:00.531Z",
-            "bid": 11.205,
-            "ask": 11.385
+            "date": "2015-06-17T00:00:00.000Z",
+            "bid": {
+              "open": 12.6,
+              "high": 12.75,
+              "low": 12.6,
+              "close": 12.75
+            },
+            "ask": {
+              "open": 12.8,
+              "high": 12.95,
+              "low": 12.8,
+              "close": 12.95
+            }
           },
-          [...]
           {
-            "date": "2015-05-25T01:27:00.531Z",
-            "bid": 12.45,
-            "ask": 12.65
+            "date": "2015-06-18T00:00:00.000Z",
+            "bid": {
+              "open": 12.75,
+              "high": 12.78,
+              "low": 12.75,
+              "close": 12.78
+            },
+            "ask": {
+              "open": 12.95,
+              "high": 13.08,
+              "low": 12.95,
+              "close": 13.08
+            }
           }
         ]
       }
