@@ -1,5 +1,6 @@
 var Registry = require('../models/Registry.js'),
-    PriceStore = require('../models/PriceStore.js');
+    PriceStore = require('../models/PriceStore.js'),
+    messages = require('../../public/lib/messages.js');
 
 var registry = Registry.getInstance(),
     store = PriceStore.getInstance();
@@ -16,7 +17,14 @@ SymbolRequestHandler.config = {
 
 SymbolRequestHandler.prototype.processRequest = function (callback) {
     try {
-        store.getLastPrice(this.request.exchange, this.request.symbol, callback);
+        store.getLastPrice(this.request.exchange, this.request.symbol, function (error, data) {
+            if (error)
+                return callback(error);
+
+            var symbol = new messages.Symbol();
+            symbol.data = data;
+            callback(null, symbol);
+        });
     } catch(e) {
         callback({
             exception: e,
