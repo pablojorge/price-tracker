@@ -450,19 +450,14 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
 };
 
 QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
-    var selector = __('#', symbol, '-', exchange, '-chart');
+    var self = this,
+        selector = __('#', symbol, '-', exchange, '-chart');
 
     $(selector).highcharts('StockChart', {
         chart: {
             type: 'candlestick',
             zoomType: 'x'
         },
-        // plotOptions: {
-        //     candlestick: {
-        //         color: '#d9534f',
-        //         upColor: '#5cb85c'
-        //     }
-        // },
         rangeSelector : {
             buttons: [{
                 type: 'day',
@@ -498,7 +493,14 @@ QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
             }
         },
         series : [
-            {name : 'Price', data: [], tooltip: {valueDecimals: 2}},
+            {
+                name : 'Price',
+                data: [],
+                tooltip: {
+                    valueDecimals: 2,
+                    valuePrefix: self.symbols[symbol].prefix,
+                }
+            },
         ]
     });
 
