@@ -74,11 +74,11 @@ PriceStore.deleteInstance = function () {
 };
 
 PriceStore.prototype.lastKey = function(exchange, symbol) {
-    return "".concat("last1:", symbol, ":", exchange);
+    return "".concat(symbol, ":", exchange, ":", "last");
 };
 
 PriceStore.prototype.seriesKey = function(exchange, symbol, freq, date) {
-    return "".concat("series1:", symbol, ":", exchange, ":", freq, ":", date);
+    return "".concat(symbol, ":", exchange, ":", freq, ":", date);
 };
 
 PriceStore.prototype.delta = function(last, next, date_func) {
@@ -173,7 +173,7 @@ PriceStore.prototype.listener = function(error, response) {
 PriceStore.prototype.getPrices = function(exchange, symbol, start, end, callback) {
     var self = this;
 
-    var query = this.seriesKey(exchange, symbol, 'hourly', '*');
+    var query = this.seriesKey(exchange, symbol, 'daily', '*');
 
     this.client.keys(query, function (error, keys) {
         if (error)
@@ -191,7 +191,7 @@ PriceStore.prototype.getPrices = function(exchange, symbol, start, end, callback
             callback(null, values.map(function (value) {
                 value = JSON.parse(value);
                 return {
-                    date: from_hour_key(value.date),
+                    date: from_day_key(value.date),
                     bid: value.bid,
                     ask: value.ask
                 };
