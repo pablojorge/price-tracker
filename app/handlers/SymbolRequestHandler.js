@@ -1,9 +1,9 @@
-var CachedPriceRequester = require('../models/CachedPriceRequester.js'),
-    Registry = require('../models/Registry.js'),
-    Cache = require('../models/Cache.js');
+var Registry = require('../models/Registry.js'),
+    PriceStore = require('../models/PriceStore.js'),
+    messages = require('../../public/lib/messages.js');
 
 var registry = Registry.getInstance(),
-    cache = Cache.getInstance();
+    store = PriceStore.getInstance();
 
 /**
  */
@@ -15,21 +15,16 @@ SymbolRequestHandler.config = {
     handles: 'SymbolRequest',
 };
 
-SymbolRequestHandler.prototype.getRequester = function() {
-    try {
-        var requester = registry.requesters.create(this.request.exchange,
-                                                  [this.request.symbol,
-                                                   this.request.options]);
-        return new CachedPriceRequester(cache, this.request, requester);
-    } catch(e) {
-        throw ("Unknown exchange: " + this.request.exchange);
-    }
-};
-
 SymbolRequestHandler.prototype.processRequest = function (callback) {
     try {
-        var requester = this.getRequester();
-        requester.doRequest(callback);
+        store.getLastPrice(this.request.exchange, this.request.symbol, function (error, data) {
+            if (error)
+                return callback(error);
+
+            var symbol = new messages.Symbol();
+            symbol.data = data;
+            callback(null, symbol);
+        });
     } catch(e) {
         callback({
             exception: e,

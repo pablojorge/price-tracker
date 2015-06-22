@@ -159,6 +159,16 @@ function QuotesView() {
         }, 
     };
 
+    this.symbol_list = [
+        'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
+        null,
+        'BTCUSD', 'LTCUSD',
+        null,
+        'XAUUSD', 'XAGUSD',
+        null,
+        'USDSLL', 'BTCSLL'
+    ];
+
     Highcharts.setOptions({
         global: {
             useUTC: false
@@ -169,132 +179,179 @@ function QuotesView() {
 QuotesView.prototype.render = function() {
     var self = this;
 
-    for (var symbol in this.symbols) {
-        self.addSymbol(symbol, this.symbols[symbol]);
-    }
-
-    $('.collapse-symbol, .collapse-exchange').hover(
-        function() {
-            $(this).css('color','#428bca');
-        },
-        function() {
-            $(this).css('color','black');
-        }
-    );
+    this.symbol_list.forEach(function(symbol) {
+        self.addSymbol(symbol, self.symbols[symbol]);
+    });
 };
 
-QuotesView.prototype.showChart = function(target) {
-    var match = /([^\-]+)\-(.*)/.exec(target),
-        symbol = match[1],
-        exchange = match[2];
-
+QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
     var series_url = (
         location.origin + '/api/v1/symbols/' +
         symbol + '/' + exchange + '/series'
     );
 
+    var chart = $__('#', symbol, '-', exchange, '-chart').highcharts();
+
+    if (chart === undefined)
+        chart = this.renderExchangeChart(symbol, exchange);
+
+    chart.showLoading('Loading data...');
+
     $.getJSON(series_url, function (response) {
         var series = function (name) {
-            return {
-                name : name.toUpperCase(),
-                data: response.data.series.map(function (item) {
-                    return [
-                        new Date(item.date)*1,
-                        item[name]
-                    ];
-                }),
-                tooltip: {
-                    valueDecimals: 2
-                }
-            };
+            return response.data.series.map(function (item) {
+                return [
+                    new Date(item.date) * 1,
+                    item[name].open,
+                    item[name].high,
+                    item[name].low,
+                    item[name].close,
+                ];
+            });
         };
 
-        $__('#', target, '-chart').highcharts('StockChart', {
-            rangeSelector : {
-                selected : 1
-            },
-            title : {
-                text : symbol + '@' + exchange
-            },
-            series : [
-                series('ask'),
-                series('bid')
-            ]
-        });
+        chart.series[0].setData(series('ask'));
+
+        chart.hideLoading();
     });
 };
 
-QuotesView.prototype.hookCollapseButtons = function (model) {
+QuotesView.prototype.onSymbolSelected = function(model, symbol) {
+    var exchange = (
+        model.getSelectedExchange(symbol) ||
+        this.symbols[symbol].exchanges[0]
+    );
+
+    $(".select-symbol").removeClass("active");
+    $__("#select-symbol-", symbol).addClass("active");
+
+    $(".prices-body").addClass("hide");
+    $__("#prices-body-", symbol).removeClass("hide");
+
+    this.onExchangeSelected(model, symbol, exchange);
+};
+
+QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
+    $(".select-exchange").removeClass('custom-nav-selected');
+    $(".select-exchange").addClass('custom-nav-not-selected');
+
+    $__("#select-exchange-", symbol, '-', exchange).removeClass('custom-nav-not-selected');
+    $__("#select-exchange-", symbol, '-', exchange).removeClass('custom-nav-hover');
+    $__("#select-exchange-", symbol, '-', exchange).addClass('custom-nav-selected');
+
+    $(".exchange-details").addClass("hide");
+    $__("#", symbol, '-', exchange, '-details').removeClass("hide");
+
+    this.updateExchangeChart(symbol, exchange);
+};
+
+QuotesView.prototype.hookSelectionButtons = function (model) {
     var self = this;
 
-    $(".collapse-symbol").bind('click', function(event) {
+    $(".select-symbol").bind('click', function(event) {
         event.preventDefault();
 
-        if (!model.isSymbolCollapsed($(this).attr("target"))) {
-            model.setSymbolCollapsed($(this).attr("target"), true);
-            $__("#prices-body-", $(this).attr("target")).slideUp();
-        } else {
-            model.setSymbolCollapsed($(this).attr("target"), false);
-            $__("#prices-body-", $(this).attr("target")).slideDown();
-        }
+        var symbol = $(this).attr("target");
+        model.setSelectedSymbol(symbol);
+        self.onSymbolSelected(model, symbol);
+
+        self.scrollTo("#main-quotes-prices-column");
 
         return false;
     });
 
-    $(".collapse-exchange").bind('click', function(event) {
+    $(".select-exchange").bind('click', function(event) {
         event.preventDefault();
 
-        if (!model.isExchangeCollapsed($(this).attr("target"))) {
-            model.setExchangeCollapsed($(this).attr("target"), true);
-            $__('#', $(this).attr("target"), '-details').slideUp();
-            self.hideChart($(this).attr("target"));
-        } else {
-            model.setExchangeCollapsed($(this).attr("target"), false);
-            $__('#', $(this).attr("target"), '-details').slideDown();
-            self.showChart($(this).attr("target"));
-        }
+        var symbol = model.getSelectedSymbol(),
+            exchange = $(this).attr("target");
+        model.setSelectedExchange(symbol, exchange);
+        self.onExchangeSelected(model, symbol, exchange);
+
+        self.scrollTo("#main-quotes-details-column");
 
         return false;
     });
-};
 
-QuotesView.prototype.restoreCollapseStatus = function (model) {
-    var self = this;
-
-    for (var symbol in this.symbols) {
-        if (model.isSymbolCollapsed(symbol)) { // expanded by default
-            $__("#prices-body-", symbol).slideUp();
-        }
-        this.symbols[symbol].exchanges.forEach(function (exchange) {
-            var exchange_id = __(symbol, '-', exchange);
-            if (!model.isExchangeCollapsed(exchange_id)) { // collapsed by default
-                $__('#', exchange_id, '-details').slideDown();
-                self.showChart(exchange_id);
+    $('.select-exchange').hover(
+        function() {
+            if (!$(this).hasClass('custom-nav-selected')) {
+                $(this).removeClass('custom-nav-not-selected');
+                $(this).addClass('custom-nav-hover');
             }
-        });
-    }
+        },
+        function() {
+            $(this).removeClass('custom-nav-hover');
+
+            if (!$(this).hasClass('custom-nav-selected')) {
+                $(this).addClass('custom-nav-not-selected');
+            }
+        }
+    );
 };
 
-QuotesView.prototype.renderSymbol = function (symbol, info) {
+QuotesView.prototype.restoreSelectionStatus = function (model) {
+    var symbol = model.getSelectedSymbol() || this.symbol_list[0];
+    this.onSymbolSelected(model, symbol);
+};
+
+QuotesView.prototype.scrollTo = function (target) {
+    $('html, body').animate({
+        scrollTop: $(target).offset().top - 50 // account for the fixed top navbar
+    }, 1000);
+};
+
+QuotesView.prototype.renderSymbolPricesBody = function (symbol, info) {
     return $__(
         '<div class="row">',
-        '    <span target="', symbol, '"',
-        '          class="collapse-symbol"',
-        '          style="font-size: small;">',
-        '      <img src="img/symbol/', symbol, '.png" ',
-        '           width=32 height=32> </img>', 
-        '      <span style="font-size: x-large">', symbol, '</span>',
-        '    </span> ',
-        '    <small>', info.description, '</small>',
-        '  <div style="margin-top: 10px" ',
+        '  <div class="hide prices-body" ',
         '       id="prices-body-', symbol, '">',
         '  </div>',
         '</div>'
     );
 };
 
+QuotesView.prototype.renderSymbolDetailsBody = function (symbol, info) {
+    return $__(
+        '<div class="row">',
+        '  <div id="details-body-', symbol, '">',
+        '  </div>',
+        '</div>'
+    );
+};
+
+QuotesView.prototype.renderSymbolNav = function (symbol, info) {
+    return $__(
+        '<li role="presentation" ',
+        '    target="', symbol, '" ',
+        '    class="select-symbol" ',
+        '    id="select-symbol-', symbol,'">',
+        '  <a>',
+        '    <img src="img/symbol/', symbol, '.png" width=32 height=32></img>',
+        '    <large>', symbol, '</large> <small>', info.description, '</small>',
+        '  </a>',
+        '</li>'
+    );
+};
+
+QuotesView.prototype.renderSymbolNavSep = function () {
+    return $__(
+        '<li role="presentation" class="separator bottom-separator">',
+        '</li>',
+        '<li>',
+        '</li>'
+    );
+};
+
 QuotesView.prototype.addSymbol = function (symbol, info) {
-    $__("#main-quotes-", info.column).append(this.renderSymbol(symbol, info));
+    if (!symbol) {
+        $__("#main-quotes-symbol-nav-bar").append(this.renderSymbolNavSep());
+        return;
+    }
+
+    $__("#main-quotes-symbol-nav-bar").append(this.renderSymbolNav(symbol, info));
+    $__("#main-quotes-prices-column").append(this.renderSymbolPricesBody(symbol, info));
+    $__("#main-quotes-details-column").append(this.renderSymbolDetailsBody(symbol, info));
 
     var self = this;
     info.exchanges.forEach(function(exchange) {
@@ -302,15 +359,15 @@ QuotesView.prototype.addSymbol = function (symbol, info) {
     });
 };
 
-QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
+QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
 
     return $__(
-        '<div class="row" style="margin-bottom: 10px; margin-left: 0px;">',
-        '  <div class="col-xs-5">', 
-        '    <span target="', base_id, '"',
-        '          class="collapse-exchange"',
-        '          style="font-size: xx-small;"> ',
+        '<div class="row" style="margin-left: 15px; margin-right: 10px">',
+        '  <div target="', exchange, '"',
+        '       class="col-xs-5 select-exchange custom-nav custom-nav-not-selected"',
+        '       id="select-exchange-', symbol, '-', exchange, '">', 
+        '    <span style="font-size: xx-small;"> ',
         '       <img src="img/exchange/', exchange, '.ico" ',
         '            width=16 height=16> ', 
         '      <span style="font-size: small">', this.exchanges[exchange].description, '</span>',
@@ -321,42 +378,57 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '      </span>',
         '    </a>',
         '  </div>',
-        '  <div class="col-xs-7"',
-        '       id="', base_id, '-progress">',
-        '    <div class="progress progress-striped active">',
-        '      <div class="progress-bar" style="width: 100%">',
+        '  <div style="margin-top: 8px">',
+        '    <div class="col-xs-7"',
+        '         id="', base_id, '-progress">',
+        '      <div class="progress progress-striped active">',
+        '        <div class="progress-bar" style="width: 100%">',
+        '        </div>',
+        '      </div>',
+        '    </div>',
+        '    <div class="col-xs-7 hide"',
+        '         id="', base_id, '-error">',
+        '      <div class="alert alert-danger">',
+        '        <strong>Error</strong>',
+        '        <span id="', base_id, '-error-msg"></span>',
+        '      </div>',
+        '    </div>',
+        '    <div id="', base_id, '-prices" class="hide">',
+        '      <div class="col-xs-3">',
+        '        <span class="label label-info" style="font-size: small"',
+        '            id="', base_id, '-bid">',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-3">',
+        '        <span class="label label-primary" style="font-size: small" ',
+        '              id="', base_id, '-ask">',
+        '        </span>',
         '      </div>',
         '    </div>',
         '  </div>',
-        '  <div class="col-xs-7 hide"',
-        '       id="', base_id, '-error">',
-        '    <div class="alert alert-danger">',
-        '      <strong>Error</strong>',
-        '      <span id="', base_id, '-error-msg"></span>',
-        '    </div>',
+        '</div>'
+    );
+};
+
+QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
+    var base_id = __(symbol, '-', exchange);
+
+    return $__(
+        '<div id="', base_id, '-details" ',
+        '     class="hide exchange-details"',
+        '     style="margin: 15px;">',
+        '  <div class="row" style="margin: 0px">',
+        '    <div class="price-chart" id="', base_id, '-chart"></div>',
+        '    <hr></hr>',
         '  </div>',
-        '  <div id="', base_id, '-prices" class="hide">',
-        '    <div class="col-xs-3">',
-        '      <span class="label label-info" style="font-size: small"',
-        '          id="', base_id, '-bid">',
-        '      </span>',
-        '    </div>',
-        '    <div class="col-xs-3">',
-        '      <span class="label label-primary" style="font-size: small" ',
-        '            id="', base_id, '-ask">',
-        '      </span>',
-        '    </div>',
-        '  </div>',
-        '</div>',
-        '<div id="', base_id, '-details" style="display: none; margin: 10px; margin-left: 25px">',
-        '  <div id="', base_id, '-details-data">',
+        '  <div id="', base_id, '-details-data" style="margin: 15px">',
         '    <div class="row">',
-        '      <div class="col-xs-5">',
+        '      <div class="col-xs-4">',
         '        <span style="font-size: small;">',
         '          <strong>Last updated:</strong>',
         '        </span>',
         '      </div>',
-        '      <div class="col-xs-7"',
+        '      <div class="col-xs-8"',
         '           id="', base_id, '-last-updated-progress">',
         '        <div class="progress progress-striped active">',
         '          <div class="progress-bar" style="width: 100%">',
@@ -364,7 +436,7 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '        </div>',
         '      </div>',
         '      <div id="', base_id, '-last-updated" class="hide">',
-        '        <div class="col-xs-7">',
+        '        <div class="col-xs-8">',
         '          <span id="', base_id, '-last-updated-date" style="font-size: small;">',
         '          </span>',
         '          <span id="', base_id, '-last-updated-ago" style="font-size: small;">',
@@ -373,19 +445,73 @@ QuotesView.prototype.renderExchangeForSymbol = function (symbol, exchange) {
         '      </div>',
         '    </div>',
         '  </div>',
-        '  <div class="row">',
-        '    <hr></hr>',
-        '    <div id="', base_id, '-chart"></div>',
-        '  </div>',
         '</div>'
     );  
 };
 
-QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
-    var base_id = __(symbol, '-', exchange);
+QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
+    var selector = __('#', symbol, '-', exchange, '-chart');
 
+    $(selector).highcharts('StockChart', {
+        chart: {
+            type: 'candlestick',
+            zoomType: 'x'
+        },
+        // plotOptions: {
+        //     candlestick: {
+        //         color: '#d9534f',
+        //         upColor: '#5cb85c'
+        //     }
+        // },
+        rangeSelector : {
+            buttons: [{
+                type: 'day',
+                count: 1,
+                text: '1d'
+            }, {
+                type: 'week',
+                count: 1,
+                text: '1w'
+            }, {
+                type: 'month',
+                count: 1,
+                text: '1m'
+            }, {
+                type: 'year',
+                count: 1,
+                text: '1y'
+            }, {
+                type: 'all',
+                text: 'All'
+            }],
+            inputEnabled: false, // it supports only days
+            selected : 4 // all
+        },
+        title : {
+            text : symbol + '@' + exchange
+        },
+        xAxis: {
+            type: 'datetime',
+            minRange: 3600 * 1000, // one hour
+            title: {
+                text: 'Date'
+            }
+        },
+        series : [
+            {name : 'Price', data: [], tooltip: {valueDecimals: 2}},
+        ]
+    });
+
+    return $(selector).highcharts();
+};
+
+QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
     $__('#prices-body-', symbol).append(
-        this.renderExchangeForSymbol(symbol, exchange)
+        this.renderExchangePrices(symbol, exchange)
+    );
+
+    $__('#details-body-', symbol).append(
+        this.renderExchangeDetails(symbol, exchange)
     );
 };
 
@@ -521,7 +647,7 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
 
     var field_body = {
         published_on: __(
-            '<div class="col-xs-7">',
+            '<div class="col-xs-8">',
             '  <span id="', base_id, '-last-published-date" style="font-size: small;">',
             '  </span>',
             '  <span id="', base_id, '-last-published-ago" style="font-size: small;">',
@@ -529,19 +655,19 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
             '</div>'
         ),
         volume24: __(
-            '<div class="col-xs-7">',
+            '<div class="col-xs-8">',
             '  <span id="', base_id, '-volume24-value" style="font-size: small;">',
             '  </span>',
             '</div>'
         ),
         high24: __(
-            '<div class="col-xs-7">',
+            '<div class="col-xs-8">',
             '  <span id="', base_id, '-high24-value" style="font-size: small;">',
             '  </span>',
             '</div>'
         ),
         low24: __(
-            '<div class="col-xs-7">',
+            '<div class="col-xs-8">',
             '  <span id="', base_id, '-low24-value" style="font-size: small;">',
             '  </span>',
             '</div>'
@@ -550,7 +676,7 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
 
     return $__(
         '<div class="row" id="', base_id, '-', field, '">',
-        '  <div class="col-xs-5">',
+        '  <div class="col-xs-4">',
         '    <span style="font-size: small;">',
         '      <strong>', field_desc[field], '</strong>',
         '    </span>',
@@ -628,41 +754,35 @@ QuotesView.prototype.updateQuoteTimer = function (quote) {
 
 function QuotesModel() {
     this.quotes = {};
-    this.collapsed = undefined;
+    this.selected = undefined;
 }
 
 QuotesModel.prototype.save = function () {
-    localStorage["quotes.collapsed"] = JSON.stringify(this.collapsed);
+    localStorage["quotes.selected"] = JSON.stringify(this.selected);
 };
 
 QuotesModel.prototype.load = function () {
-    this.collapsed = JSON.parse(localStorage["quotes.collapsed"] || null) || {
-        symbol: {},
+    this.selected = JSON.parse(localStorage["quotes.selected"] || null) || {
+        symbol: null,
         exchange: {}
     };
 };
 
-QuotesModel.prototype.isSymbolCollapsed = function (symbol) {
-    if (this.collapsed.symbol[symbol] === undefined)
-        return false; // expanded by default
-
-    return this.collapsed.symbol[symbol];
+QuotesModel.prototype.getSelectedSymbol = function () {
+    return this.selected.symbol;
 };
 
-QuotesModel.prototype.isExchangeCollapsed = function (exchange) {
-    if (this.collapsed.exchange[exchange] === undefined)
-        return true; // collapsed by default
-
-    return this.collapsed.exchange[exchange];
+QuotesModel.prototype.getSelectedExchange = function (symbol) {
+    return this.selected.exchange[symbol];
 };
 
-QuotesModel.prototype.setSymbolCollapsed = function (symbol, collapsed) {
-    this.collapsed.symbol[symbol] = collapsed;
+QuotesModel.prototype.setSelectedSymbol = function (symbol) {
+    this.selected.symbol = symbol;
     this.save();
 };
 
-QuotesModel.prototype.setExchangeCollapsed = function (exchange, collapsed) {
-    this.collapsed.exchange[exchange] = collapsed;
+QuotesModel.prototype.setSelectedExchange = function (symbol, exchange) {
+    this.selected.exchange[symbol] = exchange;
     this.save();
 };
 
@@ -695,8 +815,8 @@ function QuotesController(view, model) {
 QuotesController.prototype.start = function () {
     this.model.load();
     this.view.render();
-    this.view.hookCollapseButtons(this.model);
-    this.view.restoreCollapseStatus(this.model);
+    this.view.hookSelectionButtons(this.model);
+    this.view.restoreSelectionStatus(this.model);
 };
 
 QuotesController.prototype.onPriceUpdated = function (price) {
@@ -748,566 +868,7 @@ QuotesController.prototype.getExchangeDescription = function (exchange) {
     return this.view.exchanges[exchange].description;
 };
 
-function PortfolioModel() {
-    this.portfolios = undefined;
-    this.main_exchange = undefined;
-}
-
-PortfolioModel.prototype.save = function () {
-    localStorage["portfolio.portfolios"] = JSON.stringify(this.portfolios);
-    localStorage["portfolio.main_exchange"] = this.main_exchange;
-};
-
-PortfolioModel.prototype.load = function () {
-    this.portfolios = JSON.parse(localStorage["portfolio.portfolios"] || null) || [];
-    this.main_exchange = localStorage["portfolio.main_exchange"] || 'coinbase';
-};
-
-PortfolioModel.prototype.setMainExchange = function (exchange) {
-    this.main_exchange = exchange;
-    this.save();
-};
-
-PortfolioModel.prototype.savePortfolio = function (portfolio) {
-    this.portfolios.push(portfolio);
-    this.save();
-};
-
-PortfolioModel.prototype.deletePortfolio = function (guid) {
-    var self = this;
-
-    this.portfolios.forEach(function(portfolio, index) {
-        if (portfolio.guid == guid) {
-            self.portfolios.splice(index, 1);
-        }
-    });
-
-    this.save();
-};
-
-PortfolioModel.prototype.saveTrade = function (portfolio, trade) {
-    var self = this;
-
-    this.portfolios.forEach(function(portfolio_) {
-        if (portfolio_.guid == portfolio.guid) {
-            portfolio_.trades.push(trade);
-        }
-    });
-
-    this.save();
-};
-
-PortfolioModel.prototype.deleteTrade = function (guid) {
-    var self = this;
-
-    this.portfolios.forEach(function(portfolio) {
-        portfolio.trades.forEach(function(trade, index) {
-            if (trade.guid == guid) {
-                portfolio.trades.splice(index, 1);
-            }
-        });
-    });
-
-    this.save();
-};
-
-function PortfolioView() {
-    this.controller = undefined;
-}
-
-PortfolioView.prototype.setController = function (controller) {
-    this.controller = controller;
-};
-
-PortfolioView.prototype.render = function (portfolios) {
-    var self = this;
-
-    portfolios.forEach(function(portfolio) {
-        self.addPortfolio(portfolio);
-        portfolio.trades.forEach(function(trade) {
-            self.addTrade(portfolio, trade);
-        });
-    });
-};
-
-PortfolioView.prototype.updateTradeReturn = function(trade, investment) {
-    var selector_base = __('#trade-', trade.guid);
-
-    this.updateInvestment(selector_base, investment);
-};
-
-PortfolioView.prototype.renderTrade = function(portfolio, trade) {
-    return $__(
-        '<li class="list-group-item" ',
-        '    id="trade-', trade.guid, '">', 
-        '  <button type="button" class="close" aria-hidden="true"',
-        '          id="btn-', trade.guid, '-remove">', 
-        '    &times;',
-        '  </button>',
-        '  <div class="row">',
-        '    <div class="col-sm-6">',
-        '      <h5>',
-        '        <strong>', trade.amount, ' BTC</strong> for ',
-        '        <strong>', trade.price, ' USD</strong>',
-        '        (', (trade.price / trade.amount).toFixed(2), ' USD/BTC)',
-        '      </h5>',
-        '      <h5>',
-        '        Value: ',
-        '        <strong>',
-        '          <span id="trade-', trade.guid, '-current-value">',
-        '            ??',
-        '          </span> USD',
-        '        </strong>',
-        '        Profit: <strong>',
-        '          <span id="trade-', trade.guid, '-profit">',
-        '            ??',
-        '          </span> USD',
-        '        </strong>',
-        '      </h5>',
-        '    </div>',
-        '    <div class="col-sm-6">',
-        '      <h4>', 
-        '        <span class="label label-default" ',
-        '              id="trade-', trade.guid, '-gain">',
-        '          ??.??',
-        '        </span>',
-        '      </h4>',
-        '    </div>',
-        '  </div>',
-        '</li>'
-    );
-};
-
-PortfolioView.prototype.addTrade = function(portfolio, trade) {
-    var self = this;
-
-    $__("#portfolio-", portfolio.guid, "-trades").append(
-        this.renderTrade(portfolio, trade)
-    );
-
-    $__("#btn-", trade.guid, "-remove").click(function (event) {
-        event.preventDefault();
-        self.controller.deleteTrade(trade.guid);
-    });
-};
-
-PortfolioView.prototype.removeTrade = function(guid) {
-    $__("#trade-", guid).remove();
-};
-
-PortfolioView.prototype.renderPortfolio = function(portfolio) {
-    return $__(
-        '<div class="panel panel-default" ',
-        '     id="portfolio-', portfolio.guid, '">',
-        '  <div class="panel-heading">',
-        '    <button type="button" class="close" aria-hidden="true"',
-        '            id="btn-', portfolio.guid,'-remove">', 
-        '      &times;',
-        '    </button>',
-        '    <h4>', portfolio.name, 
-        '      <span class="label label-default" style="margin-left: 10px"',
-        '          id="portfolio-', portfolio.guid, '-gain">',
-        '        0.00%',
-        '      </span>',
-        '    </h4>',
-        '  </div>',
-        '  <div class="panel-body" id="portfolio-', portfolio.guid, '-totals">',
-        '    <div class="row">',
-        '      <div class="col-sm-6">',
-        '        <h5>',
-        '          <div>',
-        '            Portfolio holdings: ',
-        '            <strong>', 
-        '              <span id="portfolio-', portfolio.guid, '-holdings"',
-        '                    style="font-size: large;">',
-        '                0',
-        '              </span> BTC',
-        '            </strong>',
-        '          </div>',
-        '          <div>',
-        '            Portfolio cost: ',
-        '            <strong>',
-        '              <span id="portfolio-', portfolio.guid, '-cost">',
-        '                0',
-        '              </span> USD',
-        '            </strong>',
-        '          </div>',
-        '          <div>',
-        '            Avg: ', 
-        '            <span id="portfolio-', portfolio.guid, '-avg-price">',
-        '              0',
-        '            </span> USD/BTC',
-        '          </div>',
-        '          <div>',
-        '            Current: ', 
-        '            <span id="portfolio-', portfolio.guid, '-current-price">',
-        '              0',
-        '            </span> USD/BTC',
-        '          </div>',
-        '        </h5>',
-        '      </div>',
-        '      <div class="col-sm-6">',
-        '        <h5>',
-        '          <div>',
-        '            Current value: ',
-        '            <strong>',
-        '              <span id="portfolio-', portfolio.guid, '-current-value"',
-        '                    style="font-size: large;">',
-        '                0',
-        '              </span> USD',
-        '            </strong>',
-        '          </div>',
-        '          <div>',
-        '            Profit: <strong>',
-        '              <span id="portfolio-', portfolio.guid, '-profit">',
-        '                0',
-        '              </span> USD',
-        '            </strong>',
-        '          </div>',
-        '        </h5>',
-        '      </div>',
-        '    </div>',
-        '  </div>',
-        '  <ul class="list-group" id="portfolio-', portfolio.guid, '-trades">',
-        '  </ul>',
-        '  <ul class="list-group">',
-        '    <li class="list-group-item">',
-        '      <form class="form-inline" role="form">',
-        '        <div class="row">',
-        '          <div class="form-group col-sm-3" ',
-        '               id="input-', portfolio.guid, '-amount">',
-        '            <div class="input-group">',
-        '              <input type="number" step="any" ',
-        '                     class="form-control" ',
-        '                     placeholder="Enter amount">',
-        '              <span class="input-group-addon">BTC</span>',
-        '            </div>',
-        '          </div>',
-        '          <div class="form-group col-sm-3" ',
-        '               id="input-', portfolio.guid, '-price">',
-        '            <div class="input-group">',
-        '              <input type="number" step="any"',
-        '                     class="form-control" ',
-        '                     placeholder="Enter price">',
-        '              <span class="input-group-addon">USD</span>',
-        '            </div>', 
-        '          </div>',
-        '          <div class="col-sm-2">',
-        '            <button class="btn btn-primary"',
-        '                    id="btn-', portfolio.guid, '-add" >',
-        '            <span class="glyphicon glyphicon-plus"></span>',
-        '              Add',
-        '            </button>',
-        '          </div>',
-        '        </div>',
-        '      </form>',
-        '    </li>',
-        '  </ul>',
-        '</div>'
-    );
-};
-
-PortfolioView.prototype.addPortfolio = function(portfolio) {
-    var self = this;
-
-    $("#portfolios").append(this.renderPortfolio(portfolio));
-
-    $__("#btn-", portfolio.guid, "-add").click(function (event) {
-        event.preventDefault();
-
-        var amount_selector = __("#input-", portfolio.guid, "-amount"),
-            price_selector = __("#input-", portfolio.guid, "-price"),
-            amount = parseFloat($__(amount_selector, " > div > :input").val()),
-            price = parseFloat($__(price_selector, " > div > :input").val()),
-            valid = true;
-
-        if (!(amount > 0)) {
-            $(amount_selector).addClass("has-error");
-            valid = false;
-        } else {
-            $(amount_selector).removeClass("has-error");                
-        }
-
-        if (!(price > 0)) {
-            $(price_selector).addClass("has-error");
-            valid = false;
-        } else {
-            $(price_selector).removeClass("has-error");                
-        }
-
-        if (valid) {
-            $__(amount_selector, " > div > :input").val("");
-            $__(price_selector, " > div > :input").val("");
-            self.controller.createTrade(portfolio, amount, price);
-        }
-    });
-
-    $__("#btn-", portfolio.guid, "-remove").click(function (event) {
-        event.preventDefault();
-        self.controller.deletePortfolio(portfolio.guid);
-    });
-};
-
-PortfolioView.prototype.updatePortfolioReturn = function(portfolio, holdings, return_) {
-    var selector_base = __('#portfolio-', portfolio.guid);
-
-    this.updateInvestment(selector_base, holdings, return_);
-};
-
-PortfolioView.prototype.removePortfolio = function(guid) {
-    $__("#portfolio-", guid).remove();
-};
-
-PortfolioView.prototype.updateGlobalReturn = function(holdings, return_) {
-    this.updateInvestment("#global", holdings, return_);
-};
-
-PortfolioView.prototype.updateInvestment = function(selector_base, investment) {
-    if (!investment)
-        return;
-
-    $__(selector_base, '-holdings').html(investment.holdings.toFixed(2));
-    $__(selector_base, '-cost').html(investment.cost.toFixed(2));
-    $__(selector_base, '-avg-price').html(investment.average.toFixed(2));
-    $__(selector_base, '-current-price').html(investment.current_price.toFixed(2));
-    
-    $__(selector_base, '-current-value').html(investment.current_value.toFixed(2));
-    $__(selector_base, '-profit').html(investment.profit.toFixed(2));
-
-    $__(selector_base, '-gain').html(__(
-        investment.gain < 0 ? '' : '+', (investment.gain * 100).toFixed(2), '%'
-    ));
-
-    var classes = ['label-default', 'label-danger', 'label-success'];
-
-    classes.forEach(function (label_class) {
-        $__(selector_base, '-gain').removeClass(label_class);
-    });
-    
-    $__(selector_base, '-gain').addClass(
-        investment.gain < 0 ? 'label-danger' : 'label-success'
-    );
-};
-
-PortfolioView.prototype.start = function(main_exchange) {
-    var self = this;
-
-    this.updateMainExchange(main_exchange);
-
-    self.controller.getExchanges("BTCUSD").forEach(function (exchange) {
-        $('#portfolio-exchanges').append($__(
-            '<li>',
-            '  <a id="btn-portfolio-exchange-', exchange, '">', 
-                 self.controller.getExchangeDescription(exchange), 
-            '    (<span id="portfolio-exchange-', exchange, '-price">',
-            '     ?? </span> USD)',
-            '  </a>',
-            '</li>'
-        ));
-        $__('#btn-portfolio-exchange-', exchange).click(function (event) {
-            event.preventDefault();
-            self.controller.setMainExchange(exchange);
-        });
-    });
-
-    $("#btn-create-portfolio").click(function (event) {
-        event.preventDefault();
-
-        var input_selector = "#input-portfolio-name",
-            value_selector = __(input_selector, " > :input"),
-            portfolio_name = $(value_selector).val();
-
-        if (!portfolio_name) {
-            $(input_selector).addClass("has-error");
-        } else {
-            $(input_selector).removeClass("has-error");
-            $(value_selector).val(""); 
-
-            self.controller.createPortfolio(portfolio_name);
-        }
-    });
-};
-
-PortfolioView.prototype.updateMainExchange = function (exchange) {
-    $("#portfolio-main-exchange").html(
-        this.controller.getExchangeDescription(exchange)
-    );
-};
-
-PortfolioView.prototype.updateExchangePrice = function (exchange, quote) {
-    $__('#portfolio-exchange-', exchange, '-price').html(quote.toFixed(2));
-};
-
-function PortfolioController(view, model) {
-    this.view = view;
-    this.model = model;
-
-    this.view.setController(this);
-    this.quotes_controller = undefined;
-}
-
-PortfolioController.prototype.setQuotesController = function(controller) {
-    this.quotes_controller = controller;
-};
-
-PortfolioController.prototype.start = function () {
-    this.model.load();
-    this.view.start(this.model.main_exchange);
-    this.view.render(this.model.portfolios);
-};
-
-PortfolioController.prototype.getInvestmentInfo = function (investment) {
-    var quote = this.quotes_controller.getQuote('BTCUSD', this.model.main_exchange);
-
-    if (!quote) 
-        return undefined;
-
-    var average = ((investment.amount > 0) 
-                     ? (investment.price / investment.amount) : 0),
-        current_value = investment.amount * quote.bid,
-        profit = current_value - investment.price,
-        gain = ((investment.price > 0 && investment.amount > 0) 
-                 ? (current_value / investment.price) - 1 : 0);
-    
-    return {
-        holdings: investment.amount,
-        cost: investment.price,
-        average: average,
-        current_value: current_value,
-        current_price: quote.bid,
-        profit: profit,
-        gain: gain
-    };
-};
-
-PortfolioController.prototype.getExchanges = function (symbol) {
-    return this.quotes_controller.getExchanges(symbol);
-};
-
-PortfolioController.prototype.getExchangeDescription = function (exchange) {
-    return this.quotes_controller.getExchangeDescription(exchange);
-};
-
-PortfolioController.prototype.onPriceUpdated = function (price) {
-    if (price.symbol != 'BTCUSD')
-        return;
-
-    if (price.exchange == this.model.main_exchange)
-        this.updateInvestments();
-
-    this.updateExchangePrice(price);
-};
-
-PortfolioController.prototype.updateInvestments = function() {
-    var self = this;
-
-    var global_total = {
-        amount: 0,
-        price: 0
-    };
-
-    this.model.portfolios.forEach(function (portfolio) {
-        var portfolio_total = {
-            amount: 0, 
-            price: 0
-        };
-
-        portfolio.trades.forEach(function (trade) {
-            portfolio_total.amount += trade.amount;
-            portfolio_total.price += trade.price;
-
-            self.view.updateTradeReturn(
-                trade, 
-                self.getInvestmentInfo(trade)
-            );
-        });
-
-        global_total.amount += portfolio_total.amount;
-        global_total.price += portfolio_total.price;
-
-        self.view.updatePortfolioReturn(
-            portfolio,
-            self.getInvestmentInfo(portfolio_total)
-        );
-    });
-
-    self.view.updateGlobalReturn(self.getInvestmentInfo(global_total));
-};
-
-PortfolioController.prototype.updateExchangePrice = function(price) {    
-    var quote = this.quotes_controller.getQuote(price.symbol, price.exchange);
-
-    this.view.updateExchangePrice(price.exchange, quote.bid);
-};
-
-PortfolioController.prototype.setMainExchange = function(exchange) {
-    this.model.setMainExchange(exchange);
-    this.updateInvestments();
-    this.view.updateMainExchange(exchange);
-};
-
-PortfolioController.prototype.createPortfolio = function (name) {
-    var portfolio = {
-        guid: guid(),
-        name: name,
-        trades: [],
-    };
-
-    this.model.savePortfolio(portfolio);
-    this.view.addPortfolio(portfolio);
-
-    this.updateInvestments();
-};
-
-PortfolioController.prototype.createTrade = function (portfolio, amount, price) {
-    var trade = {
-        guid: guid(),
-        amount: amount,
-        price: price
-    };
-
-    this.model.saveTrade(portfolio, trade);
-    this.view.addTrade(portfolio, trade);
-
-    this.updateInvestments();
-};
-
-PortfolioController.prototype.deletePortfolio = function (guid) {
-    this.model.deletePortfolio(guid);
-    this.view.removePortfolio(guid);
-
-    this.updateInvestments();
-};
-
-PortfolioController.prototype.deleteTrade = function (guid) {
-    this.model.deleteTrade(guid);
-    this.view.removeTrade(guid);
-
-    this.updateInvestments();
-};
-
 function GlobalView() {}
-
-GlobalView.prototype.hookSidebarButtons = function () {
-    $(".navbar-button").click(function(event) {
-        event.preventDefault();
-
-        // hide all "main" divs
-        $(".main").addClass("hide");
-        // show the div with class "main" and id "main-$target"
-        $__(".main#main-", $(this).attr("target")).removeClass("hide");
-
-        // make all navbar buttons inactive:
-        $(".navbar-button").removeClass("active");
-        // active the current one:
-        $(this).addClass("active");
-    });
-};
-
-GlobalView.prototype.activateSection = function (section) {
-    // activate the main 'quotes' section:
-    $__(".navbar-button[target='", section, "']").click();
-};
 
 GlobalView.prototype.setWindowTitle = function (title) {
     document.title = title;
@@ -1318,20 +879,6 @@ function GlobalController(view) {
 }
 
 GlobalController.prototype.start = function() {
-    this.view.hookSidebarButtons();
-    this.view.activateSection("quotes");
-};
-
-GlobalController.prototype.onPriceUpdated = function (price) {
-    // TODO: add support for selecting symbol and exchange
-
-    if (price.symbol != 'BTCUSD')
-        return;
-
-    if (price.exchange != 'bitstamp')
-        return;
-
-    this.view.setWindowTitle('($' + price.ask + ') - Price Tracker');
 };
 
 function init_app () {
@@ -1342,36 +889,8 @@ function init_app () {
     quotes_model = new QuotesModel();
     quotes_controller = new QuotesController(quotes_view, quotes_model);
 
-    portfolio_view = new PortfolioView();
-    portfolio_model = new PortfolioModel();
-    portfolio_controller = new PortfolioController(portfolio_view, 
-                                                   portfolio_model);
-    portfolio_controller.setQuotesController(quotes_controller);
-
     global_controller.start();
     quotes_controller.start();
-    portfolio_controller.start();
-}
-
-function setup_client(client) {
-    client.addHandler("onConnect", function() {
-        quotes_controller.onConnect();
-        this.requestExchanges();
-    });
-
-    client.addHandler("onExchangesListReceived", function(exchanges) {
-        this.requestPrices(exchanges);
-    });
-
-    client.addHandler("onPriceUpdated", function(price) {
-        global_controller.onPriceUpdated(price);
-        quotes_controller.onPriceUpdated(price);
-        portfolio_controller.onPriceUpdated(price);
-    });
-
-    client.addHandler("onError", function (error) {
-        quotes_controller.onError(error);
-    });
 }
 
 function init_client () {
@@ -1379,19 +898,28 @@ function init_client () {
 
     var wsclient = new WSClient(url);
 
-    setup_client(wsclient);
-
-    wsclient.addHandler("onDisconnect", function() {
-        if (!wsclient.connected) {
-            var restclient = new RESTClient(location.origin, 60);
-            setup_client(restclient);
-            restclient.connect();
-        } else {
-            quotes_controller.onError({message:'Disconnected'});
-        }
+    wsclient.addHandler("onConnect", function() {
+        quotes_controller.onConnect();
+        this.requestExchanges();
     });
 
-    wsclient.connect();
+    wsclient.addHandler("onDisconnect", function() {
+        quotes_controller.onError({message:'Disconnected'});
+    });
+
+    wsclient.addHandler("onExchangesListReceived", function(exchanges) {
+        this.requestPrices(exchanges);
+    });
+
+    wsclient.addHandler("onPriceUpdated", function(price) {
+        quotes_controller.onPriceUpdated(price);
+    });
+
+    wsclient.addHandler("onError", function (error) {
+        quotes_controller.onError(error);
+    });
+
+    wsclient.start();
 }
 
 $(document).ready(function() {

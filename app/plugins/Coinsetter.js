@@ -60,10 +60,10 @@ function CoinsetterStreamer(symbol, callback) {
                  new messages.Symbol("coinsetter",
                                      symbol,
                                      parseFloat(data.bid.price),
-                                     parseFloat(data.ask.price)),
+                                     parseFloat(data.ask.price),
                                      new Date(), {
                                          volume24: parseFloat(data.volume24)
-                                     });
+                                     }));
     });
 }
 
