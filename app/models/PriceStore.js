@@ -98,23 +98,26 @@ PriceStore.prototype.delta = function(last, next, date_func) {
         return {
             date: date_func(next.updated_on),
             bid: {open: last.bid.close,
-                  high: last.bid.close,
-                  low: last.bid.close,
-                  close: last.bid.close},
+                  high: Math.max(last.bid.close, next.bid),
+                  low: Math.min(last.bid.close, next.bid),
+                  close: next.bid},
             ask: {open: last.ask.close,
-                  high: last.ask.close,
-                  low: last.ask.close,
-                  close: last.ask.close},
+                  high: Math.max(last.ask.close, next.ask),
+                  low: Math.min(last.ask.close, next.ask),
+                  close: next.ask},
         };
     } else {
-        last.bid.high = Math.max(last.bid.high, next.bid);
-        last.ask.high = Math.max(last.ask.high, next.ask);
-        last.bid.low = Math.min(last.bid.low, next.bid);
-        last.ask.low = Math.min(last.ask.low, next.ask);
-        last.bid.close = next.bid;
-        last.ask.close = next.ask;
-
-        return last;
+        return {
+            date: date_func(next.updated_on),
+            bid: {open: last.bid.open,
+                  high: Math.max(last.bid.high, next.bid),
+                  low: Math.min(last.bid.low, next.bid),
+                  close: next.bid},
+            ask: {open: last.ask.open,
+                  high: Math.max(last.ask.high, next.ask),
+                  low: Math.min(last.ask.low, next.ask),
+                  close: next.ask},
+        };
     }
 };
 
@@ -145,13 +148,7 @@ PriceStore.prototype.listener = function(error, response) {
             console.log("PriceStore: ERROR getting", last_key, error);
         }
 
-        var last = null;
-
-        try {
-            last = last_val ? JSON.parse(last_val) : null;
-        } catch(e) {
-            console.log("error", e);
-        }
+        var last = last_val ? JSON.parse(last_val) : null;
 
         var value = {
             spot: response.data,
@@ -166,37 +163,10 @@ PriceStore.prototype.listener = function(error, response) {
                 if (error) {
                     console.log("PriceStore: ERROR saving", last_key, value, error);
                 } else {
-                    console.log("PriceStore: saved", last_key, hourly_key, daily_key, value, ":", ret);
+                    console.log("PriceStore: saved", last_key, hourly_key, daily_key, ":", ret);
                 }
             }
         );
-    });
-};
-
-PriceStore.prototype.updateSeries = function(response) {
-    var self = this;
-
-    var key = this.seriesKey(response.data.exchange, response.data.symbol),
-        value = {
-            date: response.data.updated_on * 1,
-            bid: response.data.bid,
-            ask: response.data.ask
-        };
-
-    // Fetch the last element from this series:
-    this.client.lindex(key, -1, function (error, last) {
-        last = (last === null ? last : JSON.parse(last));
-
-        if (self.keepPrice(last, value)) {
-            value = JSON.stringify(value);
-            self.client.rpush(key, value, function (error, index) {
-                if (error) {
-                    console.log("PriceStore: ERROR saving", key, value, error);
-                } else {
-                    console.log("PriceStore: saved", key, value, "at pos", index);
-                }
-            });
-        }
     });
 };
 
@@ -209,23 +179,21 @@ PriceStore.prototype.getPrices = function(exchange, symbol, start, end, callback
         if (error)
             return callback(error);
 
-        console.log('keys:', keys);
-
         if(keys.length === 0)
             return callback(null, []);
+
+        keys.sort();
 
         self.client.mget(keys, function (error, values) {
             if (error)
                 return callback(error);
 
-            console.log('values:', values);
-
             callback(null, values.map(function (value) {
                 value = JSON.parse(value);
                 return {
                     date: from_hour_key(value.date),
-                    bid: value.bid.close,
-                    ask: value.ask.close
+                    bid: value.bid,
+                    ask: value.ask
                 };
             }));
         });

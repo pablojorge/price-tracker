@@ -201,14 +201,16 @@ QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
         var series = function (name) {
             return response.data.series.map(function (item) {
                 return [
-                    new Date(item.date)*1,
-                    item[name]
+                    new Date(item.date) * 1,
+                    item[name].open,
+                    item[name].high,
+                    item[name].low,
+                    item[name].close,
                 ];
             });
         };
 
         chart.series[0].setData(series('ask'));
-        chart.series[1].setData(series('bid'));
 
         chart.hideLoading();
     });
@@ -451,15 +453,52 @@ QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
     var selector = __('#', symbol, '-', exchange, '-chart');
 
     $(selector).highcharts('StockChart', {
+        chart: {
+            type: 'candlestick',
+            zoomType: 'x'
+        },
+        // plotOptions: {
+        //     candlestick: {
+        //         color: '#d9534f',
+        //         upColor: '#5cb85c'
+        //     }
+        // },
         rangeSelector : {
-            selected : 1
+            buttons: [{
+                type: 'day',
+                count: 1,
+                text: '1d'
+            }, {
+                type: 'week',
+                count: 1,
+                text: '1w'
+            }, {
+                type: 'month',
+                count: 1,
+                text: '1m'
+            }, {
+                type: 'year',
+                count: 1,
+                text: '1y'
+            }, {
+                type: 'all',
+                text: 'All'
+            }],
+            inputEnabled: false, // it supports only days
+            selected : 4 // all
         },
         title : {
             text : symbol + '@' + exchange
         },
+        xAxis: {
+            type: 'datetime',
+            minRange: 3600 * 1000, // one hour
+            title: {
+                text: 'Date'
+            }
+        },
         series : [
-            {name : 'ASK', data: [], tooltip: {valueDecimals: 2}},
-            {name : 'BID', data: [], tooltip: {valueDecimals: 2}},
+            {name : 'Price', data: [], tooltip: {valueDecimals: 2}},
         ]
     });
 
