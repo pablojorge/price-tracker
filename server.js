@@ -15,6 +15,9 @@ var app = express(),
 var modules_dirs = ['./app/plugins/',
                     './app/handlers/'];
 
+// Force all dates to be handled in UTC:
+process.env.tz = 'UTC';
+
 modules_dirs.forEach(function (modules_dir) {
     fs.readdir(modules_dir, function (err, files) {
         var extension = '.js';

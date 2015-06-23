@@ -168,12 +168,6 @@ function QuotesView() {
         null,
         'USDSLL', 'BTCSLL'
     ];
-
-    Highcharts.setOptions({
-        global: {
-            useUTC: false
-        }
-    });
 }
 
 QuotesView.prototype.render = function() {
