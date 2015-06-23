@@ -210,11 +210,18 @@ QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
     });
 };
 
+QuotesView.prototype.getSelectedSymbol = function(model) {
+    return model.getSelectedSymbol() ||
+           this.symbol_list[0];
+};
+
+QuotesView.prototype.getSelectedExchange = function(model, symbol) {
+    return model.getSelectedExchange(symbol) ||
+           this.symbols[symbol].exchanges[0];
+};
+
 QuotesView.prototype.onSymbolSelected = function(model, symbol) {
-    var exchange = (
-        model.getSelectedExchange(symbol) ||
-        this.symbols[symbol].exchanges[0]
-    );
+    var exchange = this.getSelectedExchange(model, symbol);
 
     $(".select-symbol").removeClass("active");
     $__("#select-symbol-", symbol).addClass("active");
@@ -257,7 +264,7 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
     $(".select-exchange").bind('click', function(event) {
         event.preventDefault();
 
-        var symbol = model.getSelectedSymbol(),
+        var symbol = self.getSelectedSymbol(model),
             exchange = $(this).attr("target");
         model.setSelectedExchange(symbol, exchange);
         self.onExchangeSelected(model, symbol, exchange);
