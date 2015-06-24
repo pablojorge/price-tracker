@@ -1,11 +1,9 @@
 var Registry = require('../models/Registry.js'),
-    Broadcaster = require('../models/Broadcaster.js'),
     PriceStore = require('../models/PriceStore.js');
 
 module.exports = {
     register: function(requester_cls, streamer_cls) {
         var registry = Registry.getInstance(),
-            broadcaster = Broadcaster.getInstance(),
             store = PriceStore.getInstance();
 
         registry.requesters.register(requester_cls.config.exchange,
@@ -15,10 +13,11 @@ module.exports = {
                                     streamer_cls);
 
         for (var symbol in requester_cls.config.symbol_map) {
-            broadcaster.addListener(
-                requester_cls.config.exchange,
-                symbol,
-                store.listener.bind(store)
+            registry.streamers.create(
+                requester_cls.config.exchange, [
+                    symbol,
+                    store.listener.bind(store)
+                ]
             );
         }
     }

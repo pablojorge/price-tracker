@@ -2,6 +2,8 @@ var redis = require('redis'),
     url = require('url'),
     config = require('../../config/config');
 
+var Broadcaster = require('../models/Broadcaster.js');
+
 function to_hour_key(date) {
     var zp2 = function (n) { return ('0'+n).slice(-2); };
 
@@ -55,6 +57,8 @@ function PriceStore() {
 
     this.client = client;
     this.interval = config.streaming.interval;
+
+    this.broadcaster = Broadcaster.getInstance();
 }
 
 PriceStore.instance = null;
@@ -155,6 +159,9 @@ PriceStore.prototype.listener = function(error, response) {
             hourly: self.delta(last ? last.hourly : null, response.data, to_hour_key),
             daily: self.delta(last ? last.daily : null, response.data, to_day_key),
         };
+
+        // Forward to the broadcaster:
+        self.broadcaster.listener(null, response);
 
         self.client.mset(last_key, JSON.stringify(value),
                          hourly_key, JSON.stringify(value.hourly),
