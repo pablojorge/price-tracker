@@ -36,7 +36,7 @@ VirWoxPriceRequester.prototype.processResponse = function (response, body) {
 /**/
 
 module.exports = {
-    register: function (requesters, streamers, options) {
+    register: function () {
         var VirWoxStreamer = Streamer(VirWoxPriceRequester,
                                       config.streaming.interval);
         Plugin_.register(VirWoxPriceRequester, VirWoxStreamer);
