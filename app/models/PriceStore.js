@@ -1,6 +1,8 @@
 var redis = require('redis'),
     url = require('url'),
-    config = require('../../config/config');
+    config = require('../../config/config'),
+    messages = require('../../public/lib/messages.js'),
+    helpers = require('../../public/lib/helpers.js');
 
 var Broadcaster = require('../models/Broadcaster.js');
 
@@ -85,44 +87,67 @@ PriceStore.prototype.seriesKey = function(exchange, symbol, freq, date) {
     return "".concat(symbol, ":", exchange, ":", freq, ":", date);
 };
 
-PriceStore.prototype.delta = function(last, next, date_func) {
+PriceStore.prototype.accumulate = function(last, current, date_func) {
     if (last === null) {
         return {
-            date: date_func(next.updated_on),
-            bid: {open: next.bid,
-                  high: next.bid,
-                  low: next.bid,
-                  close: next.bid},
-            ask: {open: next.ask,
-                  high: next.ask,
-                  low: next.ask,
-                  close: next.ask},
+            date: date_func(current.updated_on),
+            bid: {open: current.bid,
+                  high: current.bid,
+                  low: current.bid,
+                  close: current.bid},
+            ask: {open: current.ask,
+                  high: current.ask,
+                  low: current.ask,
+                  close: current.ask},
         };
-    } else if (last.date !== date_func(next.updated_on)) {
+    } else if (last.date !== date_func(current.updated_on)) {
         return {
-            date: date_func(next.updated_on),
+            date: date_func(current.updated_on),
             bid: {open: last.bid.close,
-                  high: Math.max(last.bid.close, next.bid),
-                  low: Math.min(last.bid.close, next.bid),
-                  close: next.bid},
+                  high: Math.max(last.bid.close, current.bid),
+                  low: Math.min(last.bid.close, current.bid),
+                  close: current.bid},
             ask: {open: last.ask.close,
-                  high: Math.max(last.ask.close, next.ask),
-                  low: Math.min(last.ask.close, next.ask),
-                  close: next.ask},
+                  high: Math.max(last.ask.close, current.ask),
+                  low: Math.min(last.ask.close, current.ask),
+                  close: current.ask},
         };
     } else {
         return {
-            date: date_func(next.updated_on),
+            date: date_func(current.updated_on),
             bid: {open: last.bid.open,
-                  high: Math.max(last.bid.high, next.bid),
-                  low: Math.min(last.bid.low, next.bid),
-                  close: next.bid},
+                  high: Math.max(last.bid.high, current.bid),
+                  low: Math.min(last.bid.low, current.bid),
+                  close: current.bid},
             ask: {open: last.ask.open,
-                  high: Math.max(last.ask.high, next.ask),
-                  low: Math.min(last.ask.low, next.ask),
-                  close: next.ask},
+                  high: Math.max(last.ask.high, current.ask),
+                  low: Math.min(last.ask.low, current.ask),
+                  close: current.ask},
         };
     }
+};
+
+PriceStore.prototype.merge = function(last, current) {
+    if (last === null)
+        return current;
+
+    return helpers.merge(last, current);
+};
+
+PriceStore.prototype.addStatistics = function(last, value) {
+    value = helpers.deepcopy(value);
+
+    // Inject the delta properties:
+    value.spot.custom.bid_delta = (value.daily.bid.close - value.daily.bid.open);
+    value.spot.custom.ask_delta = (value.daily.ask.close - value.daily.ask.open);
+
+    if (last === null)
+        return value;
+
+    if (value.spot.bid !== last.spot.bid || value.spot.ask !== last.spot.ask)
+        value.spot.custom.last_change = value.spot.updated_on;
+
+    return value;
 };
 
 PriceStore.prototype.listener = function(error, response) {
@@ -155,20 +180,24 @@ PriceStore.prototype.listener = function(error, response) {
         var last = last_val ? JSON.parse(last_val) : null;
 
         var value = {
-            spot: response.data,
-            hourly: self.delta(last ? last.hourly : null, response.data, to_hour_key),
-            daily: self.delta(last ? last.daily : null, response.data, to_day_key),
+            spot: self.merge(last ? last.spot : null, response.data),
+            hourly: self.accumulate(last ? last.hourly : null, response.data, to_hour_key),
+            daily: self.accumulate(last ? last.daily : null, response.data, to_day_key),
         };
 
+        value = self.addStatistics(last, value);
+
         // Forward to the broadcaster:
-        self.broadcaster.listener(null, response);
+        var message = new messages.Symbol();
+        message.data = value.spot;
+        self.broadcaster.listener(null, message);
 
         self.client.mset(last_key, JSON.stringify(value),
                          hourly_key, JSON.stringify(value.hourly),
                          daily_key, JSON.stringify(value.daily),
             function (error, ret) {
                 if (error) {
-                    console.log("PriceStore: ERROR saving", last_key, value, error);
+                    console.log("PriceStore: ERROR saving", last_key, ":", error);
                 } else {
                     console.log("PriceStore: saved", last_key, hourly_key, daily_key, ":", ret);
                 }
@@ -223,7 +252,9 @@ PriceStore.prototype.getLastPrice = function(exchange, symbol, callback) {
             });
             return;
         }
-        callback(null, JSON.parse(value).spot);
+        var message = new messages.Symbol();
+        message.data = JSON.parse(value).spot;
+        callback(null, message);
     });
 };
 
