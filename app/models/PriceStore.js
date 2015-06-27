@@ -134,20 +134,36 @@ PriceStore.prototype.merge = function(last, current) {
     return helpers.merge(last, current);
 };
 
-PriceStore.prototype.addStatistics = function(last, value) {
-    value = helpers.deepcopy(value);
-
-    // Inject the delta properties:
-    value.spot.custom.bid_delta = (value.daily.bid.close - value.daily.bid.open);
-    value.spot.custom.ask_delta = (value.daily.ask.close - value.daily.ask.open);
-
+PriceStore.prototype.registerLastChange = function(last, value) {
     if (last === null)
-        return value;
+        return;
 
-    if (value.spot.bid !== last.spot.bid || value.spot.ask !== last.spot.ask)
-        value.spot.custom.last_change = value.spot.updated_on;
+    if ((value.spot.bid && last.spot.bid && value.spot.bid !== last.spot.bid) ||
+        (value.spot.ask && last.spot.ask && value.spot.ask !== last.spot.ask)) {
+        value.spot = helpers.merge(
+            value.spot, {
+                stats : {
+                    last_change: value.spot.updated_on
+                }
+            }
+        );
+    }
+};
 
-    return value;
+PriceStore.prototype.toSymbol = function(value) {
+    var message = new messages.Symbol();
+    message.data = helpers.merge(
+        value.spot, {
+            stats: {
+                daily: {
+                    date: from_day_key(value.daily.date),
+                    bid: value.daily.bid,
+                    ask: value.daily.ask
+                }
+            }
+        }
+    );
+    return message;
 };
 
 PriceStore.prototype.listener = function(error, response) {
@@ -175,6 +191,7 @@ PriceStore.prototype.listener = function(error, response) {
     self.client.get(last_key, function (error, last_val) {
         if (error) {
             console.log("PriceStore: ERROR getting", last_key, error);
+            return;
         }
 
         var last = last_val ? JSON.parse(last_val) : null;
@@ -185,11 +202,10 @@ PriceStore.prototype.listener = function(error, response) {
             daily: self.accumulate(last ? last.daily : null, response.data, to_day_key),
         };
 
-        value = self.addStatistics(last, value);
+        self.registerLastChange(last, value);
 
         // Forward to the broadcaster:
-        var message = new messages.Symbol();
-        message.data = value.spot;
+        var message = self.toSymbol(value);
         self.broadcaster.listener(null, message);
 
         self.client.mset(last_key, JSON.stringify(value),
@@ -237,6 +253,8 @@ PriceStore.prototype.getPrices = function(exchange, symbol, start, end, callback
 };
 
 PriceStore.prototype.getLastPrice = function(exchange, symbol, callback) {
+    var self = this;
+
     this.client.get(this.lastKey(exchange, symbol), function (error, value) {
         if (error) {
             callback(error);
@@ -252,9 +270,7 @@ PriceStore.prototype.getLastPrice = function(exchange, symbol, callback) {
             });
             return;
         }
-        var message = new messages.Symbol();
-        message.data = JSON.parse(value).spot;
-        callback(null, message);
+        callback(null, self.toSymbol(JSON.parse(value)));
     });
 };
 

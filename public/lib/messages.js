@@ -110,14 +110,15 @@ Error.prototype.constructor = Error;
 
 /**
  */
-function Symbol(exchange, symbol, bid, ask, updated_on, custom) {
+function Symbol(exchange, symbol, bid, ask, updated_on, custom, stats) {
     this.data = {
         exchange: exchange,
         symbol: symbol,
         bid: bid,
         ask: ask,
         updated_on: updated_on || new Date(),
-        custom: custom || {}
+        custom: custom || {},
+        stats: stats || {}
     };
 }
 

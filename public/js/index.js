@@ -617,10 +617,7 @@ QuotesView.prototype.renderCustomFields = function (price) {
             $__(selector_base, '-high24-value').html(
                 __('$', value.toFixed(2))
             );
-        },
-        bid_delta: function (value) {},
-        ask_delta: function (value) {},
-        last_change: function (value) {},
+        }
     };
 
     for (var field in price.custom) {
