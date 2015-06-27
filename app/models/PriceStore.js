@@ -58,7 +58,7 @@ function PriceStore() {
     console.log("PriceStore: connected to " + redisURL.hostname);
 
     this.client = client;
-    this.interval = config.streaming.interval;
+    this.key_prefix = config.redis.key_prefix;
 
     this.broadcaster = Broadcaster.getInstance();
 }
@@ -80,11 +80,11 @@ PriceStore.deleteInstance = function () {
 };
 
 PriceStore.prototype.lastKey = function(exchange, symbol) {
-    return "".concat(symbol, ":", exchange, ":", "last");
+    return this.key_prefix.concat(symbol, ":", exchange, ":", "last");
 };
 
 PriceStore.prototype.seriesKey = function(exchange, symbol, freq, date) {
-    return "".concat(symbol, ":", exchange, ":", freq, ":", date);
+    return this.key_prefix.concat(symbol, ":", exchange, ":", freq, ":", date);
 };
 
 PriceStore.prototype.accumulate = function(last, current, date_func) {
