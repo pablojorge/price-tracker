@@ -22,7 +22,7 @@ AmbitoPriceRequester.config = {
         "USDARSBOL" : "ARSC=BOLSA",
     },
     url_template: (
-        'http://www.ambito.com/economia/mercados/monedas/dolar/info/?ric=<<SYMBOL>>'
+        'http://www.ambito.com.ar/economia/mercados/monedas/dolar/info/?ric=<<SYMBOL>>'
     ),
 };
 

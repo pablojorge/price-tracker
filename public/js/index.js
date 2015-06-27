@@ -38,7 +38,7 @@ function QuotesView() {
         },
         'ambito' : {
             description: 'Ambito.com',
-            link: 'http://www.ambito.com/economia/mercados/monedas/dolar/',
+            link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/',
         },
         'lanacion' : {
             description: 'La Nacion',
