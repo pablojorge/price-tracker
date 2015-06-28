@@ -445,6 +445,10 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '<div id="', base_id, '-details" ',
         '     class="hide exchange-details"',
         '     style="margin: 15px;">',
+        '  <div class="row" style="margin-left: 0px">',
+        '    <h5>', this.exchanges[exchange].description, '/', symbol,' details</h5>',
+        '    <hr>',
+        '  </div>',
         '  <div id="', base_id, '-details-data">',
         '    <div class="row" style="padding-top: 0px;">',
         '      <div class="col-xs-4" style="text-align: right;">',
@@ -453,12 +457,8 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '        </span>',
         '      </div>',
         '      <div class="col-xs-8" style="text-align: right;">',
-        '        <span class="label label-info" ',
-        '              id="', base_id, '-details-bid"',
-        '              style="font-size: small">',
-        '        </span>',
         '        <span class="label label-primary" ',
-        '              id="', base_id, '-details-ask"',
+        '              id="', base_id, '-details-bid-ask"',
         '              style="font-size: small">',
         '        </span>',
         '      </div>',
@@ -466,33 +466,12 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '    <div class="row" style="padding-top: 7px;">',
         '      <div class="col-xs-4" style="text-align: right;">',
         '        <span style="font-size: small;">',
-        '          <strong>Open/Close:</strong>',
+        '          <strong>Daily gain:</strong>',
         '        </span>',
         '      </div>',
         '      <div class="col-xs-8" style="text-align: right;">',
         '        <span class="label label-info" ',
-        '              id="', base_id, '-details-open"',
-        '              style="font-size: small">',
-        '        </span>',
-        '        <span class="label label-primary" ',
-        '              id="', base_id, '-details-close"',
-        '              style="font-size: small">',
-        '        </span>',
-        '      </div>',
-        '    </div>',
-        '    <div class="row" style="padding-top: 7px;">',
-        '      <div class="col-xs-4" style="text-align: right;">',
-        '        <span style="font-size: small;">',
-        '          <strong>Low/High:</strong>',
-        '        </span>',
-        '      </div>',
-        '      <div class="col-xs-8" style="text-align: right;">',
-        '        <span class="label label-info" ',
-        '              id="', base_id, '-details-low"',
-        '              style="font-size: small">',
-        '        </span>',
-        '        <span class="label label-primary" ',
-        '              id="', base_id, '-details-high"',
+        '              id="', base_id, '-details-daily-gain"',
         '              style="font-size: small">',
         '        </span>',
         '      </div>',
@@ -635,7 +614,8 @@ QuotesView.prototype.renderPrice = function (price, prev) {
 QuotesView.prototype.updateLabelsColors = function (price, prev) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
         change_price_selector = __(selector_base, "-change-price"),
-        change_percent_selector = __(selector_base, "-change-percent");
+        change_percent_selector = __(selector_base, "-change-percent"),
+        daily_gain_selector = __(selector_base, "-details-daily-gain");
 
     var set_label_class = function(selector, label_class) {
         $(selector)
@@ -652,41 +632,39 @@ QuotesView.prototype.updateLabelsColors = function (price, prev) {
     if (change > 0) {
         set_label_class(change_price_selector, "success");
         set_label_class(change_percent_selector, "success");
+        set_label_class(daily_gain_selector, "success");
     } else if (change < 0) {
         set_label_class(change_price_selector, "danger");
         set_label_class(change_percent_selector, "danger");
+        set_label_class(daily_gain_selector, "danger");
     } else {
         set_label_class(change_price_selector, "default");
         set_label_class(change_percent_selector, "default");
+        set_label_class(daily_gain_selector, "default");
     }
 };
 
 QuotesView.prototype.renderDetails = function (price) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
-        details_bid_selector = __(selector_base, "-details-bid"),
-        details_ask_selector = __(selector_base, "-details-ask"),
-        details_open_selector = __(selector_base, "-details-open"),
-        details_close_selector = __(selector_base, "-details-close"),
-        details_low_selector = __(selector_base, "-details-low"),
-        details_high_selector = __(selector_base, "-details-high"),
-        last_updated_date_selector = __(selector_base, "-last-updated-date"),
-        last_updated_ago_selector = __(selector_base, "-last-updated-ago"),
-        last_change_date_selector = __(selector_base, "-last-change-date"),
-        last_change_ago_selector = __(selector_base, "-last-change-ago");
-
-    var updated_on = (new Date(price.updated_on)).toLocaleString(),
+        updated_on = (new Date(price.updated_on)).toLocaleString(),
         last_change = (new Date(price.stats.last_change)).toLocaleString(),
         symbol_prefix = this.symbols[price.symbol].prefix;
 
-    $(last_updated_date_selector).html(updated_on);
-    $(last_change_date_selector).html(last_change);
+    var change_price = price.stats.daily.ask.close - price.stats.daily.ask.open,
+        change_percent = change_price / price.stats.daily.ask.open * 100;
 
-    $(details_bid_selector).html(price.bid ? __(symbol_prefix, price.bid.toFixed(2)) : "N/A");
-    $(details_ask_selector).html(price.ask ? __(symbol_prefix, price.ask.toFixed(2)) : "N/A");
-    $(details_open_selector).html(__(symbol_prefix, price.stats.daily.ask.open.toFixed(2)));
-    $(details_close_selector).html(__(symbol_prefix, price.stats.daily.ask.close.toFixed(2)));
-    $(details_low_selector).html(__(symbol_prefix, price.stats.daily.ask.low.toFixed(2)));
-    $(details_high_selector).html(__(symbol_prefix, price.stats.daily.ask.high.toFixed(2)));
+    $__(selector_base, "-last-updated-date").html(updated_on);
+    $__(selector_base, "-last-change-date").html(last_change);
+
+    $__(selector_base, "-details-bid-ask").html(__(
+        price.bid ? __(symbol_prefix, price.bid.toFixed(2)) : "N/A", " - ",
+        price.ask ? __(symbol_prefix, price.ask.toFixed(2)) : "N/A"
+    ));
+
+    $__(selector_base, "-details-daily-gain").html(__(
+        change_price > 0 ? '+' : '', change_price.toFixed(2),
+        ' (', change_percent > 0 ? '+' : '', change_percent.toFixed(2), '%)'
+    ));
 };
 
 QuotesView.prototype.renderCustomFields = function (price) {
@@ -802,10 +780,6 @@ QuotesView.prototype.timedelta = function(last_update) {
     return ret + delta.toFixed(2) + 's';
 };
 
-QuotesView.prototype.updateGlobalTimer = function (last_update) {
-    $("#quotes-updated-ago").html(this.timedelta(last_update));
-};
-
 QuotesView.prototype.updateQuoteTimer = function (quote) {
     var selector_base = __("#", quote.symbol, "-", quote.exchange);
 
@@ -912,8 +886,6 @@ QuotesController.prototype.onError = function (error) {
 };
 
 QuotesController.prototype.watchdog = function () {
-    this.view.updateGlobalTimer(this.updated_on);
-
     for (var symbol in this.model.quotes) {
         for (var exchange in this.model.quotes[symbol]) {
             var quote = this.model.getQuote(symbol, exchange);
