@@ -78,7 +78,7 @@ function QuotesView() {
         },
         'okcoin' : {
             description: 'OKCoin',
-            link: 'https://www.okcoin.com',
+            link: 'https://www.okcoin.com/market.do',
         },
         'bitfinex' : {
             description: 'Bitfinex',
@@ -404,11 +404,6 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
         '            width=16 height=16> ', 
         '      <span style="font-size: small">', this.exchanges[exchange].description, '</span>',
         '    </span>',
-        '    <a href="', this.exchanges[exchange].link,'" target="_blank">',
-        '      <span class="glyphicon glyphicon-share"',
-        '            style="font-size: x-small;"> ',
-        '      </span>',
-        '    </a>',
         '  </div>',
         '  <div style="margin-top: 8px">',
         '    <div class="col-xs-7"',
@@ -426,7 +421,7 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
         '      </div>',
         '    </div>',
         '    <div id="', base_id, '-prices" class="hide" style="text-align: right;">',
-        '      <div class="col-xs-7" style="text-alignt: right; padding-left: 0px;">',
+        '      <div class="col-xs-7" style="text-align: right; padding-left: 0px;">',
         '        <span class="label label-primary" style="font-size: small"',
         '            id="', base_id, '-ask">',
         '        </span>',
@@ -450,33 +445,92 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '<div id="', base_id, '-details" ',
         '     class="hide exchange-details"',
         '     style="margin: 15px;">',
+        '  <div id="', base_id, '-details-data" style="margin: 15px">',
+        '    <div class="row" style="padding-top: 0px;">',
+        '      <div class="col-xs-4" style="text-align: right;>',
+        '        <span style="font-size: small;">',
+        '          <strong>Buy/Sell:</strong>',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-8">',
+        '        <span class="label label-info" ',
+        '              id="', base_id, '-details-bid"',
+        '              style="font-size: small">',
+        '        </span>',
+        '        <span class="label label-primary" ',
+        '              id="', base_id, '-details-ask"',
+        '              style="font-size: small">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '    <div class="row" style="padding-top: 7px;">',
+        '      <div class="col-xs-4" style="text-align: right;>',
+        '        <span style="font-size: small;">',
+        '          <strong>Open/Close:</strong>',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-8">',
+        '        <span class="label label-info" ',
+        '              id="', base_id, '-details-open"',
+        '              style="font-size: small">',
+        '        </span>',
+        '        <span class="label label-primary" ',
+        '              id="', base_id, '-details-close"',
+        '              style="font-size: small">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '    <div class="row" style="padding-top: 7px;">',
+        '      <div class="col-xs-4" style="text-align: right;>',
+        '        <span style="font-size: small;">',
+        '          <strong>Low/High:</strong>',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-8">',
+        '        <span class="label label-info" ',
+        '              id="', base_id, '-details-low"',
+        '              style="font-size: small">',
+        '        </span>',
+        '        <span class="label label-primary" ',
+        '              id="', base_id, '-details-high"',
+        '              style="font-size: small">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '  </div>',
+        '  <div class="row" style="margin: 0px;">',
+        '    <div class="col-xs-4" style="font-size: x-small; font-style: italic; text-align: right;">',
+        '      <span>',
+        '        <strong>Last updated:</strong>',
+        '      </span>',
+        '    </div>',
+        '    <div class="col-xs-8" style="font-size: x-small; font-style: italic;">',
+        '      <span id="', base_id, '-last-updated-date">',
+        '      </span>',
+        '      <span id="', base_id, '-last-updated-ago">',
+        '      </span>',
+        '    </div>',
+        '  </div>',
+        '  <div class="row" style="margin: 0px;">',
+        '    <div class="col-xs-4" style="font-size: x-small; font-style: italic; text-align: right;">',
+        '      <span>',
+        '        <strong>Last change:</strong>',
+        '      </span>',
+        '    </div>',
+        '    <div class="col-xs-8" style="font-size: x-small; font-style: italic;">',
+        '      <span id="', base_id, '-last-change-date">',
+        '      </span>',
+        '      <span id="', base_id, '-last-change-ago">',
+        '      </span>',
+        '    </div>',
+        '  </div>',
+        '  <div class="row" style="margin-left: 0px">',
+        '    <h4>Chart</h4>',
+        '    <hr>',
+        '  </div>',
         '  <div class="row" style="margin: 0px">',
         '    <div class="price-chart" id="', base_id, '-chart"></div>',
         '    <hr></hr>',
-        '  </div>',
-        '  <div id="', base_id, '-details-data" style="margin: 15px">',
-        '    <div class="row">',
-        '      <div class="col-xs-4">',
-        '        <span style="font-size: small;">',
-        '          <strong>Last updated:</strong>',
-        '        </span>',
-        '      </div>',
-        '      <div class="col-xs-8"',
-        '           id="', base_id, '-last-updated-progress">',
-        '        <div class="progress progress-striped active">',
-        '          <div class="progress-bar" style="width: 100%">',
-        '          </div>',
-        '        </div>',
-        '      </div>',
-        '      <div id="', base_id, '-last-updated" class="hide">',
-        '        <div class="col-xs-8">',
-        '          <span id="', base_id, '-last-updated-date" style="font-size: small;">',
-        '          </span>',
-        '          <span id="', base_id, '-last-updated-ago" style="font-size: small;">',
-        '          </span>',
-        '        </div>',
-        '      </div>',
-        '    </div>',
         '  </div>',
         '</div>'
     );  
@@ -492,31 +546,21 @@ QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
             zoomType: 'x'
         },
         rangeSelector : {
-            buttons: [{
-                type: 'day',
-                count: 1,
-                text: '1d'
-            }, {
-                type: 'week',
-                count: 1,
-                text: '1w'
-            }, {
-                type: 'month',
-                count: 1,
-                text: '1m'
-            }, {
-                type: 'year',
-                count: 1,
-                text: '1y'
-            }, {
-                type: 'all',
-                text: 'All'
-            }],
+            buttons: [
+                {type: 'day', count: 1, text: '1d'},
+                {type: 'week', count: 1, text: '1w'},
+                {type: 'month', count: 1, text: '1m'},
+                {type: 'year', count: 1, text: '1y'},
+                {type: 'all', text: 'All'}
+            ],
             inputEnabled: false, // it supports only days
             selected : 4 // all
         },
         title : {
-            text : symbol + '@' + exchange
+            text : __(self.exchanges[exchange].description, '/', symbol)
+        },
+        subtitle : {
+            text : __('<a href="', self.exchanges[exchange].link, '" target="_blank">(Source)</a>')
         },
         xAxis: {
             type: 'datetime',
@@ -568,11 +612,11 @@ QuotesView.prototype.renderPrice = function (price, prev) {
         change_percent = change_price / price.stats.daily.ask.open * 100;
 
     $(change_price_selector).html(
-        __(change_price >= 0 ? '+' : '', change_price.toFixed(2))
+        __(change_price > 0 ? '+' : '', change_price.toFixed(2))
     );
 
     $(change_percent_selector).html(
-        __(change_percent >= 0 ? '+' : '', change_percent.toFixed(2), '%')
+        __(change_percent > 0 ? '+' : '', change_percent.toFixed(2), '%')
     );
 
     if (!prev || prev.bid != price.bid || prev.ask != price.ask) {
@@ -617,44 +661,44 @@ QuotesView.prototype.updateLabelsColors = function (price, prev) {
 
 QuotesView.prototype.renderDetails = function (price) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
-        last_updated_selector = __(selector_base, "-last-updated"),
+        details_bid_selector = __(selector_base, "-details-bid"),
+        details_ask_selector = __(selector_base, "-details-ask"),
+        details_open_selector = __(selector_base, "-details-open"),
+        details_close_selector = __(selector_base, "-details-close"),
+        details_low_selector = __(selector_base, "-details-low"),
+        details_high_selector = __(selector_base, "-details-high"),
         last_updated_date_selector = __(selector_base, "-last-updated-date"),
         last_updated_ago_selector = __(selector_base, "-last-updated-ago"),
-        last_updated_progress_selector = __(selector_base, "-last-updated-progress");
+        last_change_date_selector = __(selector_base, "-last-change-date"),
+        last_change_ago_selector = __(selector_base, "-last-change-ago");
 
-    var updated_on = (new Date(price.updated_on)).toLocaleString();
+    var updated_on = (new Date(price.updated_on)).toLocaleString(),
+        last_change = (new Date(price.stats.last_change)).toLocaleString(),
+        symbol_prefix = this.symbols[price.symbol].prefix;
 
     $(last_updated_date_selector).html(updated_on);
-    $(last_updated_ago_selector).html(__('(0.00s ', 'ago)'));
+    $(last_change_date_selector).html(last_change);
 
-    $(last_updated_selector).removeClass("hide");
-    $(last_updated_progress_selector).addClass("hide");
+    $(details_bid_selector).html(price.bid ? __(symbol_prefix, price.bid.toFixed(2)) : "N/A");
+    $(details_ask_selector).html(price.ask ? __(symbol_prefix, price.ask.toFixed(2)) : "N/A");
+    $(details_open_selector).html(__(symbol_prefix, price.stats.daily.ask.open.toFixed(2)));
+    $(details_close_selector).html(__(symbol_prefix, price.stats.daily.ask.close.toFixed(2)));
+    $(details_low_selector).html(__(symbol_prefix, price.stats.daily.ask.low.toFixed(2)));
+    $(details_high_selector).html(__(symbol_prefix, price.stats.daily.ask.high.toFixed(2)));
 };
 
 QuotesView.prototype.renderCustomFields = function (price) {
     var selector_base = __("#", price.symbol, "-", price.exchange);
 
     var render_func = {
-        published_on: function (value) {
-            $__(selector_base, '-last-published-date').html(
-                (new Date(value)).toLocaleString()
-            );
-        },
+        published_on: function (value) {},
         volume24: function (value) {
             $__(selector_base, '-volume24-value').html(
                 __(value.toFixed(2), ' BTC')
             );
         },
-        low24: function (value) {
-            $__(selector_base, '-low24-value').html(
-                __('$', value.toFixed(2))
-            );
-        },
-        high24: function (value) {
-            $__(selector_base, '-high24-value').html(
-                __('$', value.toFixed(2))
-            );
-        }
+        low24: function (value) {},
+        high24: function (value) {}
     };
 
     for (var field in price.custom) {
@@ -679,44 +723,26 @@ QuotesView.prototype.addCustomField = function (symbol, exchange, field) {
     var base_id = __(symbol, '-', exchange);
 
     var field_desc = {
-        published_on: "Last published:",
-        volume24: 'Volume (24hs):',
-        high24: 'High (24hs)',
-        low24: 'Low (24hs)'
+        volume24: 'Volume:',
     };
 
     var field_body = {
-        published_on: __(
-            '<div class="col-xs-8">',
-            '  <span id="', base_id, '-last-published-date" style="font-size: small;">',
-            '  </span>',
-            '  <span id="', base_id, '-last-published-ago" style="font-size: small;">',
-            '  </span>',
-            '</div>'
-        ),
         volume24: __(
             '<div class="col-xs-8">',
-            '  <span id="', base_id, '-volume24-value" style="font-size: small;">',
+            '  <span class="label label-warning" ',
+            '        id="', base_id, '-volume24-value"',
+            '        style="font-size: small">',
             '  </span>',
             '</div>'
         ),
-        high24: __(
-            '<div class="col-xs-8">',
-            '  <span id="', base_id, '-high24-value" style="font-size: small;">',
-            '  </span>',
-            '</div>'
-        ),
-        low24: __(
-            '<div class="col-xs-8">',
-            '  <span id="', base_id, '-low24-value" style="font-size: small;">',
-            '  </span>',
-            '</div>'
-        )
     };
 
+    if (!(field in field_body))
+        return '';
+
     return $__(
-        '<div class="row" id="', base_id, '-', field, '">',
-        '  <div class="col-xs-4">',
+        '<div class="row" id="', base_id, '-', field, '" style="padding-top: 7px;">',
+        '  <div class="col-xs-4" style="text-align: right;">',
         '    <span style="font-size: small;">',
         '      <strong>', field_desc[field], '</strong>',
         '    </span>',
@@ -785,11 +811,9 @@ QuotesView.prototype.updateQuoteTimer = function (quote) {
         __('(', this.timedelta(new Date(quote.updated_on)), ' ago)')
     );
 
-    if ("published_on" in quote.custom) {
-        $__(selector_base, "-last-published-ago").html(
-            __('(', this.timedelta(new Date(quote.custom.published_on)), ' ago)')
-        );
-    }
+    $__(selector_base, "-last-change-ago").html(
+        __('(', this.timedelta(new Date(quote.stats.last_change)), ' ago)')
+    );
 };
 
 function QuotesModel() {
@@ -870,6 +894,7 @@ QuotesController.prototype.onPriceUpdated = function (price) {
     this.view.renderPrice(price, prev);
     this.view.renderDetails(price);
     this.view.renderCustomFields(price);
+    this.view.updateQuoteTimer(price);
 };
 
 QuotesController.prototype.onConnect = function (error) {
