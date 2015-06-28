@@ -62,7 +62,7 @@ CoinbasePriceRequester.prototype.processResponse = function (response, body) {
 /**/
 
 module.exports = {
-    register: function (requesters, streamers, options) {
+    register: function () {
         var CoinbaseStreamer = Streamer(CoinbasePriceRequester,
                                         config.streaming.interval);
         Plugin_.register(CoinbasePriceRequester, CoinbaseStreamer);

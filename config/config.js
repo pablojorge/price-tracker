@@ -7,12 +7,8 @@ module.exports = {
         interval: parseInt(process.env.STREAMING_INTERVAL),
     },
 
-    cache: {
-        type: process.env.CACHE,
-        ttl: parseInt(process.env.CACHE_TTL),
-    },
-
     redis: {
-        url: process.env.REDISCLOUD_URL
+        url: process.env.REDISCLOUD_URL,
+        key_prefix: process.env.REDIS_KEY_PREFIX || '',
     }
 };

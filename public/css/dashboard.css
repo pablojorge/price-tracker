@@ -90,6 +90,13 @@ body {
   padding: 15px;
 }
 
+/* don't add padding on mobile: */
+@media (max-width: 768px) {
+  .padded-15 {
+    padding: 0px;
+  }
+}
+
 .custom-nav {
   display: inline;
   padding: 10px;

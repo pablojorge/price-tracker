@@ -63,7 +63,7 @@ LaNacionPriceRequester.prototype.processResponse = function (response, body) {
 /**/
 
 module.exports = {
-    register: function (requesters, streamers, options) {
+    register: function () {
         var LaNacionStreamer = Streamer(LaNacionPriceRequester,
                                         config.streaming.interval);
         Plugin_.register(LaNacionPriceRequester, LaNacionStreamer);

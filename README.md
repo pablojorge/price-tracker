@@ -117,6 +117,20 @@ Fields:
     * **high24**: Highest *sell* value in the last 24 hours
     * **low24**: Lowest *sell* value in the last 24 hours
     * **published_on**: Date in which this information was *published* (this is the real date, but it's not always available)
+  * **stats**: Additional info generated from historical data
+    * **last_change**: Date of last registered price change
+    * **daily**: Daily OHLC
+      * **date**: Period starting date
+      * **bid**:
+        * **open**: Period opening bid price
+        * **high**: Period highest bid price
+        * **low**: Period lowest bid price
+        * **closing**: Period closing bid price
+      * **ask**:
+        * **open**: Period opening ask price
+        * **high**: Period highest ask price
+        * **low**: Period lowest ask price
+        * **closing**: Period closing ask price
 
 Example 1:
 
@@ -125,29 +139,60 @@ Example 1:
       "data": {
         "exchange": "bitstamp",
         "symbol": "BTCUSD",
-        "bid": 238.58,
-        "ask": 238.59,
-        "updated_on": "2015-05-24T03:02:03.068Z",
-        "custom": {
-          "volume24": 2592.47046949,
-          "high24": 240.67,
-          "low24": 237.4
+        "bid": 248.15,
+        "ask": 248.35,
+        "updated_on": "2015-06-27T20:55:54.519Z",
+        "custom": {},
+        "stats": {
+          "last_change": "2015-06-27T20:55:54.519Z",
+          "daily": {
+            "date": "2015-06-27T00:00:00.000Z",
+            "bid": {
+              "open": 242.98,
+              "high": 249.18,
+              "low": 242.36,
+              "close": 248.15
+            },
+            "ask": {
+              "open": 243.01,
+              "high": 249.62,
+              "low": 242.37,
+              "close": 248.35
+            }
+          }
         }
       }
     }
 
 Example 2:
 
-    $ curl http://localhost:5000/api/v1/sybols/USDARSB/lanacion
+    $ curl http://localhost:5000/api/v1/symbols/USDARSB/lanacion
     {
       "data": {
         "exchange": "lanacion",
         "symbol": "USDARSB",
-        "bid": 12.45,
-        "ask": 12.65,
-        "updated_on": "2015-05-24T03:02:31.709Z",
+        "bid": 13.4,
+        "ask": 13.6,
+        "updated_on": "2015-06-27T20:56:14.129Z",
         "custom": {
-          "published_on": "2015-05-21T03:00:00.000Z"
+          "published_on": "2015-06-25T03:00:00.000Z"
+        },
+        "stats": {
+          "daily": {
+            "date": "2015-06-27T00:00:00.000Z",
+            "bid": {
+              "open": 13.4,
+              "high": 13.4,
+              "low": 13.4,
+              "close": 13.4
+            },
+            "ask": {
+              "open": 13.6,
+              "high": 13.6,
+              "low": 13.6,
+              "close": 13.6
+            }
+          }
         }
       }
     }
@@ -170,7 +215,7 @@ Fields:
 
 Example:
 
-    $ curl http://localhost:5000/api/v1/sybols/USDARSB/lanacion/series
+    $ curl http://localhost:5000/api/v1/symbols/USDARSB/lanacion/series
     {
       "data": {
         "exchange": "lanacion",
