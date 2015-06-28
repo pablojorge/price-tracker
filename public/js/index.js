@@ -70,7 +70,7 @@ function QuotesView() {
         },
         'bitstamp' : {
             description: 'Bitstamp',
-            link: 'https://www.bitstamp.net',
+            link: 'https://www.bitstamp.net/market/tradeview/',
         },
         'btc-e' : {
             description: 'BTC-e',
@@ -187,7 +187,7 @@ QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
     var chart = $__('#', symbol, '-', exchange, '-chart').highcharts();
 
     if (chart === undefined)
-        chart = this.renderExchangeChart(symbol, exchange);
+        chart = this.generateExchangeChart(symbol, exchange);
 
     chart.showLoading('Loading data...');
 
@@ -226,8 +226,8 @@ QuotesView.prototype.onSymbolSelected = function(model, symbol) {
     $(".select-symbol").removeClass("active");
     $__("#select-symbol-", symbol).addClass("active");
 
-    $(".prices-body").addClass("hide");
-    $__("#prices-body-", symbol).removeClass("hide");
+    $(".exchanges-body").addClass("hide");
+    $__("#exchanges-body-", symbol).removeClass("hide");
 
     this.onExchangeSelected(model, symbol, exchange);
 };
@@ -242,6 +242,9 @@ QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
 
     $(".exchange-details").addClass("hide");
     $__("#", symbol, '-', exchange, '-details').removeClass("hide");
+
+    $(".exchange-chart").addClass("hide");
+    $__("#", symbol, '-', exchange, '-chart').removeClass("hide");
 
     this.updateExchangeChart(symbol, exchange);
 };
@@ -287,7 +290,7 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
         model.setSelectedSymbol(symbol);
         self.onSymbolSelected(model, symbol);
 
-        self.scrollTo("#main-quotes-prices-column");
+        self.scrollTo("#main-quotes-exchanges-column");
 
         return false;
     });
@@ -299,8 +302,6 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
             exchange = $(this).attr("target");
         model.setSelectedExchange(symbol, exchange);
         self.onExchangeSelected(model, symbol, exchange);
-
-        self.scrollTo("#main-quotes-details-column");
 
         return false;
     });
@@ -333,11 +334,11 @@ QuotesView.prototype.scrollTo = function (target) {
     }, 1000);
 };
 
-QuotesView.prototype.renderSymbolPricesBody = function (symbol, info) {
+QuotesView.prototype.renderSymbolExchangesBody = function (symbol, info) {
     return $__(
         '<div class="row">',
-        '  <div class="hide prices-body" ',
-        '       id="prices-body-', symbol, '">',
+        '  <div class="hide exchanges-body" ',
+        '       id="exchanges-body-', symbol, '">',
         '  </div>',
         '</div>'
     );
@@ -347,6 +348,15 @@ QuotesView.prototype.renderSymbolDetailsBody = function (symbol, info) {
     return $__(
         '<div class="row">',
         '  <div id="details-body-', symbol, '">',
+        '  </div>',
+        '</div>'
+    );
+};
+
+QuotesView.prototype.renderSymbolChartsBody = function (symbol, info) {
+    return $__(
+        '<div class="row">',
+        '  <div id="charts-body-', symbol, '">',
         '  </div>',
         '</div>'
     );
@@ -382,8 +392,9 @@ QuotesView.prototype.addSymbol = function (symbol, info) {
     }
 
     $__("#main-quotes-symbol-nav-bar").append(this.renderSymbolNav(symbol, info));
-    $__("#main-quotes-prices-column").append(this.renderSymbolPricesBody(symbol, info));
-    $__("#main-quotes-details-column").append(this.renderSymbolDetailsBody(symbol, info));
+    $__("#main-quotes-exchanges-section").append(this.renderSymbolExchangesBody(symbol, info));
+    $__("#main-quotes-details-section").append(this.renderSymbolDetailsBody(symbol, info));
+    $__("#main-quotes-charts-column").append(this.renderSymbolChartsBody(symbol, info));
 
     var self = this;
     info.exchanges.forEach(function(exchange) {
@@ -444,9 +455,16 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
     return $__(
         '<div id="', base_id, '-details" ',
         '     class="hide exchange-details"',
-        '     style="margin: 15px;">',
+        '     style="margin: 15px; margin-left: 25px;">',
         '  <div class="row" style="margin-left: 0px">',
-        '    <h5>', this.exchanges[exchange].description, '/', symbol,' details</h5>',
+        '    <h5>',
+                 this.exchanges[exchange].description, '/', symbol,
+        '      <a href="', this.exchanges[exchange].link, '" target="_blank">',
+        '        <span class="glyphicon glyphicon-share"',
+        '              style="font-size: x-small;"> ',
+        '        </span>',
+        '      </a>',
+        '    </h5>',
         '    <hr>',
         '  </div>',
         '  <div id="', base_id, '-details-data">',
@@ -505,19 +523,22 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '      </div>',
         '    </div>',
         '  </div>',
-        '  <div class="row" style="margin-left: 0px">',
-        '    <h4>Chart</h4>',
-        '    <hr>',
-        '  </div>',
-        '  <div class="row" style="margin: 0px">',
-        '    <div class="price-chart" id="', base_id, '-chart"></div>',
-        '    <hr></hr>',
-        '  </div>',
         '</div>'
-    );  
+    );
 };
 
 QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
+    var base_id = __(symbol, '-', exchange);
+
+    return $__(
+        '<div id="', base_id, '-chart" ',
+        '     class="hide exchange-chart"',
+        '     style="margin: 15px;">',
+        '</div>'
+    );
+};
+
+QuotesView.prototype.generateExchangeChart = function (symbol, exchange) {
     var self = this,
         selector = __('#', symbol, '-', exchange, '-chart');
 
@@ -539,9 +560,6 @@ QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
         },
         title : {
             text : __(self.exchanges[exchange].description, '/', symbol)
-        },
-        subtitle : {
-            text : __('<a href="', self.exchanges[exchange].link, '" target="_blank">(Source)</a>')
         },
         xAxis: {
             type: 'datetime',
@@ -566,12 +584,16 @@ QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
 };
 
 QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
-    $__('#prices-body-', symbol).append(
+    $__('#exchanges-body-', symbol).append(
         this.renderExchangePrices(symbol, exchange)
     );
 
     $__('#details-body-', symbol).append(
         this.renderExchangeDetails(symbol, exchange)
+    );
+
+    $__('#charts-body-', symbol).append(
+        this.renderExchangeChart(symbol, exchange)
     );
 };
 
@@ -644,7 +666,7 @@ QuotesView.prototype.updateLabelsColors = function (price, prev) {
     }
 };
 
-QuotesView.prototype.renderDetails = function (price) {
+QuotesView.prototype.renderDetails = function (price, prev) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
         updated_on = (new Date(price.updated_on)).toLocaleString(),
         last_change = (new Date(price.stats.last_change)).toLocaleString(),
@@ -665,6 +687,11 @@ QuotesView.prototype.renderDetails = function (price) {
         change_price > 0 ? '+' : '', change_price.toFixed(2),
         ' (', change_percent > 0 ? '+' : '', change_percent.toFixed(2), '%)'
     ));
+
+    if (!prev || prev.bid != price.bid || prev.ask != price.ask) {
+        $__(selector_base, "-details-bid-ask").effect("highlight");
+        $__(selector_base, "-details-daily-gain").effect("highlight");
+    }
 };
 
 QuotesView.prototype.renderCustomFields = function (price) {
@@ -868,7 +895,7 @@ QuotesController.prototype.onPriceUpdated = function (price) {
     this.view.addCustomFields(price);
     this.view.updateLabelsColors(price, prev);
     this.view.renderPrice(price, prev);
-    this.view.renderDetails(price);
+    this.view.renderDetails(price, prev);
     this.view.renderCustomFields(price);
     this.view.updateQuoteTimer(price);
 };
