@@ -583,6 +583,34 @@ QuotesView.prototype.generateExchangeChart = function (symbol, exchange) {
     var self = this,
         selector = __('#', symbol, '-', exchange, '-chart');
 
+    var formatter = function() {
+        var date = Highcharts.dateFormat('%A, %B %e, %Y', (new Date(this.points[0].key))),
+            prefix = self.symbols[symbol].prefix,
+            point = this.points[0].point;
+
+        var change_price = point.close - point.open,
+            change_percent = change_price / point.open * 100,
+            change_color = (change_price > 0 ?
+                             'green' :
+                             (change_price < 0 ?
+                                 'red' :
+                                 'black')),
+            change_symbol = (change_price > 0 ? '+' : (change_price < 0 ? '-' : ''));
+
+        return __(
+            '<span style="font-size: x-small">', date, '</span><br/>',
+            'Open: <b>', prefix, point.open.toFixed(2), '</b><br/>',
+            'High: <b>', prefix, point.high.toFixed(2), '</b><br/>',
+            'Low: <b>', prefix, point.low.toFixed(2), '</b><br/>',
+            'Close: <b>', prefix, point.close.toFixed(2), '</span></b><br/>',
+            '<i>Gain: </i>',
+            '<span style="color: ', change_color,'; font-weight: bold;">',
+            change_symbol, prefix, Math.abs(change_price).toFixed(2),
+            ' (', change_symbol, Math.abs(change_percent).toFixed(2), '%)',
+            '</span>'
+        );
+    };
+
     $(selector).highcharts('StockChart', {
         chart: {
             type: 'candlestick',
@@ -608,6 +636,9 @@ QuotesView.prototype.generateExchangeChart = function (symbol, exchange) {
             title: {
                 text: 'Date'
             }
+        },
+        tooltip: {
+            formatter: formatter
         },
         series : [
             {
@@ -663,12 +694,13 @@ QuotesView.prototype.renderPrice = function (price, prev) {
 
     $(change_price_selector).html(__(
         '<span class="glyphicon ', glyphicon, '" aria-hidden="true"></span> ',
-        Math.abs(change_price.toFixed(2))
+        this.symbols[price.symbol].prefix,
+        Math.abs(change_price).toFixed(2)
     ));
 
     $(change_percent_selector).html(__(
         '<span class="glyphicon ', glyphicon, '" aria-hidden="true"></span> ',
-        Math.abs(change_percent.toFixed(2)), '%'
+        Math.abs(change_percent).toFixed(2), '%'
     ));
 
     if (!prev || prev.bid != price.bid || prev.ask != price.ask) {
@@ -754,8 +786,9 @@ QuotesView.prototype.renderDetails = function (price, prev) {
                     'glyphicon-minus-sign'
                 ),
         '" aria-hidden="true"></span> ',
-              Math.abs(change_price.toFixed(2)),
-        ' (', Math.abs(change_percent.toFixed(2)), '%)'
+        symbol_prefix,
+              Math.abs(change_price).toFixed(2),
+        ' (', Math.abs(change_percent).toFixed(2), '%)'
     ));
 
     $__(selector_base, "-details-open-close").html(__(
