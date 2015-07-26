@@ -458,9 +458,11 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '     style="margin: 15px; margin-left: 25px;">',
         '  <div class="row" style="margin-left: 0px">',
         '    <h5>',
+        '        <span class="glyphicon glyphicon-info-sign"> ',
+        '        </span> ',
                  this.exchanges[exchange].description, '/', symbol,
         '      <a href="', this.exchanges[exchange].link, '" target="_blank">',
-        '        <span class="glyphicon glyphicon-share"',
+        '        <span class="glyphicon glyphicon-link"',
         '              style="font-size: x-small;"> ',
         '        </span>',
         '      </a>',
@@ -490,6 +492,45 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '      <div class="col-xs-8" style="text-align: right;">',
         '        <span class="label label-info" ',
         '              id="', base_id, '-details-daily-gain"',
+        '              style="font-size: small">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '    <div class="row" style="padding-top: 7px;">',
+        '      <div class="col-xs-4" style="text-align: right;">',
+        '        <span style="font-size: small;">',
+        '          <strong>Open/Close:</strong>',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-8" style="text-align: right;">',
+        '        <span class="label label-info" ',
+        '              id="', base_id, '-details-open-close"',
+        '              style="font-size: small">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '    <div class="row" style="padding-top: 7px;">',
+        '      <div class="col-xs-4" style="text-align: right;">',
+        '        <span style="font-size: small;">',
+        '          <strong>Daily High:</strong>',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-8" style="text-align: right;">',
+        '        <span class="label label-info" ',
+        '              id="', base_id, '-details-daily-high"',
+        '              style="font-size: small">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '    <div class="row" style="padding-top: 7px;">',
+        '      <div class="col-xs-4" style="text-align: right;">',
+        '        <span style="font-size: small;">',
+        '          <strong>Daily Low:</strong>',
+        '        </span>',
+        '      </div>',
+        '      <div class="col-xs-8" style="text-align: right;">',
+        '        <span class="label label-info" ',
+        '              id="', base_id, '-details-daily-low"',
         '              style="font-size: small">',
         '        </span>',
         '      </div>',
@@ -542,6 +583,34 @@ QuotesView.prototype.generateExchangeChart = function (symbol, exchange) {
     var self = this,
         selector = __('#', symbol, '-', exchange, '-chart');
 
+    var formatter = function() {
+        var date = Highcharts.dateFormat('%A, %B %e, %Y', (new Date(this.points[0].key))),
+            prefix = self.symbols[symbol].prefix,
+            point = this.points[0].point;
+
+        var change_price = point.close - point.open,
+            change_percent = change_price / point.open * 100,
+            change_color = (change_price > 0 ?
+                             'green' :
+                             (change_price < 0 ?
+                                 'red' :
+                                 'black')),
+            change_symbol = (change_price > 0 ? '+' : (change_price < 0 ? '-' : ''));
+
+        return __(
+            '<span style="font-size: x-small">', date, '</span><br/>',
+            'Open: <b>', prefix, point.open.toFixed(2), '</b><br/>',
+            'High: <b>', prefix, point.high.toFixed(2), '</b><br/>',
+            'Low: <b>', prefix, point.low.toFixed(2), '</b><br/>',
+            'Close: <b>', prefix, point.close.toFixed(2), '</span></b><br/>',
+            '<i>Gain: </i>',
+            '<span style="color: ', change_color,'; font-weight: bold;">',
+            change_symbol, prefix, Math.abs(change_price).toFixed(2),
+            ' (', change_symbol, Math.abs(change_percent).toFixed(2), '%)',
+            '</span>'
+        );
+    };
+
     $(selector).highcharts('StockChart', {
         chart: {
             type: 'candlestick',
@@ -567,6 +636,9 @@ QuotesView.prototype.generateExchangeChart = function (symbol, exchange) {
             title: {
                 text: 'Date'
             }
+        },
+        tooltip: {
+            formatter: formatter
         },
         series : [
             {
@@ -612,15 +684,24 @@ QuotesView.prototype.renderPrice = function (price, prev) {
     ));
 
     var change_price = price.stats.daily.ask.close - price.stats.daily.ask.open,
-        change_percent = change_price / price.stats.daily.ask.open * 100;
+        change_percent = change_price / price.stats.daily.ask.open * 100,
+        glyphicon = change_price > 0 ?
+                        'glyphicon-circle-arrow-up' : (
+                        change_price < 0 ?
+                            'glyphicon-circle-arrow-down' :
+                            'glyphicon-minus-sign'
+                        );
 
-    $(change_price_selector).html(
-        __(change_price > 0 ? '+' : '', change_price.toFixed(2))
-    );
+    $(change_price_selector).html(__(
+        '<span class="glyphicon ', glyphicon, '" aria-hidden="true"></span> ',
+        this.symbols[price.symbol].prefix,
+        Math.abs(change_price).toFixed(2)
+    ));
 
-    $(change_percent_selector).html(
-        __(change_percent > 0 ? '+' : '', change_percent.toFixed(2), '%')
-    );
+    $(change_percent_selector).html(__(
+        '<span class="glyphicon ', glyphicon, '" aria-hidden="true"></span> ',
+        Math.abs(change_percent).toFixed(2), '%'
+    ));
 
     if (!prev || prev.bid != price.bid || prev.ask != price.ask) {
         $(ask_selector).effect("highlight");
@@ -637,7 +718,10 @@ QuotesView.prototype.updateLabelsColors = function (price, prev) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
         change_price_selector = __(selector_base, "-change-price"),
         change_percent_selector = __(selector_base, "-change-percent"),
-        daily_gain_selector = __(selector_base, "-details-daily-gain");
+        daily_gain_selector = __(selector_base, "-details-daily-gain"),
+        open_close_selector = __(selector_base, "-details-open-close"),
+        daily_low_selector = __(selector_base, "-details-daily-low"),
+        daily_high_selector = __(selector_base, "-details-daily-high");
 
     var set_label_class = function(selector, label_class) {
         $(selector)
@@ -655,14 +739,23 @@ QuotesView.prototype.updateLabelsColors = function (price, prev) {
         set_label_class(change_price_selector, "success");
         set_label_class(change_percent_selector, "success");
         set_label_class(daily_gain_selector, "success");
+        set_label_class(open_close_selector, "success");
+        set_label_class(daily_high_selector, "success");
+        set_label_class(daily_low_selector, "success");
     } else if (change < 0) {
         set_label_class(change_price_selector, "danger");
         set_label_class(change_percent_selector, "danger");
         set_label_class(daily_gain_selector, "danger");
+        set_label_class(open_close_selector, "danger");
+        set_label_class(daily_high_selector, "danger");
+        set_label_class(daily_low_selector, "danger");
     } else {
         set_label_class(change_price_selector, "default");
         set_label_class(change_percent_selector, "default");
         set_label_class(daily_gain_selector, "default");
+        set_label_class(open_close_selector, "default");
+        set_label_class(daily_high_selector, "default");
+        set_label_class(daily_low_selector, "default");
     }
 };
 
@@ -679,18 +772,49 @@ QuotesView.prototype.renderDetails = function (price, prev) {
     $__(selector_base, "-last-change-date").html(last_change);
 
     $__(selector_base, "-details-bid-ask").html(__(
-        price.bid ? __(symbol_prefix, price.bid.toFixed(2)) : "N/A", " - ",
+        price.bid ? __(symbol_prefix, price.bid.toFixed(2)) : "N/A", 
+        ' <span class="glyphicon glyphicon-resize-horizontal" aria-hidden="true"></span> ',
         price.ask ? __(symbol_prefix, price.ask.toFixed(2)) : "N/A"
     ));
 
     $__(selector_base, "-details-daily-gain").html(__(
-        change_price > 0 ? '+' : '', change_price.toFixed(2),
-        ' (', change_percent > 0 ? '+' : '', change_percent.toFixed(2), '%)'
+        '<span class="glyphicon ',
+            change_price > 0 ?
+                'glyphicon-circle-arrow-up' : (
+                change_price < 0 ?
+                    'glyphicon-circle-arrow-down' :
+                    'glyphicon-minus-sign'
+                ),
+        '" aria-hidden="true"></span> ',
+        symbol_prefix,
+              Math.abs(change_price).toFixed(2),
+        ' (', Math.abs(change_percent).toFixed(2), '%)'
     ));
 
-    if (!prev || prev.bid != price.bid || prev.ask != price.ask) {
+    $__(selector_base, "-details-open-close").html(__(
+        symbol_prefix, price.stats.daily.ask.open.toFixed(2),
+        ' <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> ',
+        symbol_prefix, price.stats.daily.ask.close.toFixed(2)
+    ));
+
+    $__(selector_base, "-details-daily-high").html(__(
+        '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span> ',
+        symbol_prefix, price.stats.daily.ask.high.toFixed(2)
+    ));
+
+    $__(selector_base, "-details-daily-low").html(__(
+        '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span> ',
+        symbol_prefix, price.stats.daily.ask.low.toFixed(2)
+    ));
+
+    if (!prev ||
+         (prev.bid && price.bid && prev.bid.toFixed(2) != price.bid.toFixed(2)) ||
+         (prev.ask && price.ask && prev.ask.toFixed(2) != price.ask.toFixed(2))) {
         $__(selector_base, "-details-bid-ask").effect("highlight");
         $__(selector_base, "-details-daily-gain").effect("highlight");
+        $__(selector_base, "-details-open-close").effect("highlight");
+        $__(selector_base, "-details-daily-low").effect("highlight");
+        $__(selector_base, "-details-daily-high").effect("highlight");
     }
 };
 
