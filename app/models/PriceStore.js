@@ -174,6 +174,11 @@ PriceStore.prototype.listener = function(error, response) {
         return;
     }
 
+    if (response.data.bid === 0 || response.data.ask === 0) {
+        console.log("PriceStore: WARNING ignoring invalid value:", response.data);
+        return;
+    }
+
     var last_key = self.lastKey(response.data.exchange, response.data.symbol),
         hourly_key = self.seriesKey(
                         response.data.exchange,
