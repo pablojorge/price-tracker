@@ -40,10 +40,6 @@ function QuotesView() {
             description: 'Ambito.com',
             link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/',
         },
-        'lanacion' : {
-            description: 'La Nacion',
-            link: 'http://www.lanacion.com.ar/dolar-hoy-t1369'
-        },
         'clarin' : {
             description: 'Clarin',
             link: 'http://www.ieco.clarin.com/'
@@ -97,13 +93,13 @@ function QuotesView() {
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae', 'clarin'],
+            exchanges: ['ambito', 'cronista', 'infobae', 'clarin'],
             prefix: 'AR$',
             column: '1'
         }, 
         'USDARSB' : {
             description: '(Dolar blue)',
-            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae', 'clarin'],
+            exchanges: ['ambito', 'cronista', 'infobae', 'clarin'],
             prefix: 'AR$',
             column: '1'
         }, 
