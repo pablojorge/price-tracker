@@ -40,10 +40,6 @@ function QuotesView() {
             description: 'Ambito.com',
             link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/',
         },
-        'lanacion' : {
-            description: 'La Nacion',
-            link: 'http://www.lanacion.com.ar/dolar-hoy-t1369'
-        },
         'clarin' : {
             description: 'Clarin',
             link: 'http://www.ieco.clarin.com/'
@@ -88,25 +84,41 @@ function QuotesView() {
             description: 'BullionVault',
             link: 'https://www.bullionvault.com',
         },
+        'kraken' : {
+            description: 'Kraken',
+            link: 'https://www.kraken.com/charts',
+        },
+        'poloniex': {
+            description: 'Poloniex',
+            link: 'https://poloniex.com/exchange',
+        },
         'virwox' : {
             description: 'VirWox',
             link: 'https://www.virwox.com',
+        },
+        'bitpay' : {
+            description: 'Bitpay',
+            link: 'https://bitpay.com/bitcoin-exchange-rates',
+        },
+        'satoshitango' : {
+            description: 'SatoshiTango',
+            link: 'https://satoshitango.com/',
         }
     };
 
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae', 'clarin'],
+            exchanges: ['ambito', 'cronista', 'infobae', 'clarin'],
             prefix: 'AR$',
             column: '1'
-        }, 
+        },
         'USDARSB' : {
             description: '(Dolar blue)',
-            exchanges: ['ambito', 'lanacion', 'cronista', 'infobae', 'clarin'],
+            exchanges: ['ambito', 'cronista', 'infobae', 'clarin'],
             prefix: 'AR$',
             column: '1'
-        }, 
+        },
         'USDARSCL' : {
             description: '(Contado c/liqui)',
             exchanges: ['ambito', 'cronista', 'infobae'],
@@ -123,46 +135,66 @@ function QuotesView() {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e',
                         'okcoin', 'bitfinex',
-                        'coinsetter', 'cexio'],
+                        'coinsetter', 'kraken', 'poloniex', 'cexio'],
             prefix: '$',
-            column: '2'
-        },  
+            column: '2',
+            unit: 'BTC'
+        },
+        'BTCARS' : {
+            description: '(Bitcoin/ARS)',
+            exchanges: ['bitpay', 'satoshitango'],
+            prefix: 'AR$',
+            column: '2',
+            unit: 'BTC'
+        },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'cexio'],
+            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'kraken', 'poloniex', 'cexio'],
             prefix: '$',
-            column: '2'
+            column: '2',
+            unit: 'LTC'
+        },
+        'ETHUSD' : {
+            description: '(Ethereum)',
+            exchanges: ['kraken', 'poloniex'],
+            prefix: '$',
+            column: '2',
+            unit: 'ETH'
         },
         'XAUUSD' : {
             description: '(Gold)',
             exchanges: ['bullionvault', 'amagi'],
             prefix: '$',
-            column: '2'
-        },           
+            column: '2',
+            unit: 'XAU'
+        },
         'XAGUSD' : {
             description: '(Silver)',
             exchanges: ['bullionvault', 'amagi'],
             prefix: '$',
-            column: '2'
-        }, 
+            column: '2',
+            unit: 'XAG'
+        },
         'USDSLL' : {
             description: '(Linden/USD)',
             exchanges: ['virwox'],
             prefix: '',
-            column: '2'
-        }, 
+            column: '2',
+            unit: 'SLL'
+        },
         'BTCSLL' : {
             description: '(Linden/Bitcoin)',
             exchanges: ['virwox'],
             prefix: 'SLL ',
-            column: '2'
-        }, 
+            column: '2',
+            unit: 'BTC'
+        },
     };
 
     this.symbol_list = [
         'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
         null,
-        'BTCUSD', 'LTCUSD',
+        'BTCUSD', 'BTCARS', 'LTCUSD', 'ETHUSD',
         null,
         'XAUUSD', 'XAGUSD',
         null,
@@ -210,6 +242,14 @@ QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
     });
 };
 
+QuotesView.prototype.getDeltaStyle = function(model) {
+    return model.getPreference("delta-style") || "percent";
+};
+
+QuotesView.prototype.setDeltaStyle = function(model, style) {
+    model.setPreference("delta-style", style);
+};
+
 QuotesView.prototype.getSelectedSymbol = function(model) {
     return model.getSelectedSymbol() ||
            this.symbol_list[0];
@@ -249,14 +289,26 @@ QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     this.updateExchangeChart(symbol, exchange);
 };
 
-QuotesView.prototype.hookPriceLabels = function () {
+QuotesView.prototype.onDeltaStyleSelected = function (delta_style) {
+    if (delta_style === "percent") {
+        $(".change-price").addClass('hide');
+        $(".change-percent").removeClass('hide');
+    } else if (delta_style === "nominal") {
+        $(".change-price").removeClass('hide');
+        $(".change-percent").addClass('hide');
+    } else {
+        console.log("Unexpected delta_style", delta_style);
+    }
+};
+
+QuotesView.prototype.hookPriceLabels = function (model) {
     var self = this;
 
     $(".change-price").bind('click', function(event) {
         event.preventDefault();
 
-        $(".change-price").addClass('hide');
-        $(".change-percent").removeClass('hide');
+        self.onDeltaStyleSelected("percent");
+        self.setDeltaStyle(model, "percent");
 
         return false;
     });
@@ -264,8 +316,8 @@ QuotesView.prototype.hookPriceLabels = function () {
     $(".change-percent").bind('click', function(event) {
         event.preventDefault();
 
-        $(".change-price").removeClass('hide');
-        $(".change-percent").addClass('hide');
+        self.onDeltaStyleSelected("nominal");
+        self.setDeltaStyle(model, "nominal");
 
         return false;
     });
@@ -324,8 +376,13 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
 };
 
 QuotesView.prototype.restoreSelectionStatus = function (model) {
-    var symbol = model.getSelectedSymbol() || this.symbol_list[0];
+    var symbol = this.getSelectedSymbol(model);
     this.onSymbolSelected(model, symbol);
+};
+
+QuotesView.prototype.restorePreferences = function (model) {
+    var style = this.getDeltaStyle(model);
+    this.onDeltaStyleSelected(style);
 };
 
 QuotesView.prototype.scrollTo = function (target) {
@@ -819,13 +876,14 @@ QuotesView.prototype.renderDetails = function (price, prev) {
 };
 
 QuotesView.prototype.renderCustomFields = function (price) {
-    var selector_base = __("#", price.symbol, "-", price.exchange);
+    var selector_base = __("#", price.symbol, "-", price.exchange),
+        self = this;
 
     var render_func = {
         published_on: function (value) {},
         volume24: function (value) {
             $__(selector_base, '-volume24-value').html(
-                __(value.toFixed(2), ' BTC')
+                __(value.toFixed(2), ' ', self.symbols[price.symbol].unit)
             );
         },
         low24: function (value) {},
@@ -946,10 +1004,12 @@ QuotesView.prototype.updateQuoteTimer = function (quote) {
 function QuotesModel() {
     this.quotes = {};
     this.selected = undefined;
+    this.preferences = undefined;
 }
 
 QuotesModel.prototype.save = function () {
     localStorage["quotes.selected"] = JSON.stringify(this.selected);
+    localStorage["quotes.preferences"] = JSON.stringify(this.preferences);
 };
 
 QuotesModel.prototype.load = function () {
@@ -957,6 +1017,7 @@ QuotesModel.prototype.load = function () {
         symbol: null,
         exchange: {}
     };
+    this.preferences = JSON.parse(localStorage["quotes.preferences"] || null) || {};
 };
 
 QuotesModel.prototype.getSelectedSymbol = function () {
@@ -965,6 +1026,15 @@ QuotesModel.prototype.getSelectedSymbol = function () {
 
 QuotesModel.prototype.getSelectedExchange = function (symbol) {
     return this.selected.exchange[symbol];
+};
+
+QuotesModel.prototype.getPreference = function (preference) {
+    return this.preferences[preference];
+};
+
+QuotesModel.prototype.setPreference = function (preference, value) {
+    this.preferences[preference] = value;
+    this.save();
 };
 
 QuotesModel.prototype.setSelectedSymbol = function (symbol) {
@@ -1009,6 +1079,7 @@ QuotesController.prototype.start = function () {
     this.view.hookPriceLabels(this.model);
     this.view.hookSelectionButtons(this.model);
     this.view.restoreSelectionStatus(this.model);
+    this.view.restorePreferences(this.model);
 };
 
 QuotesController.prototype.onPriceUpdated = function (price) {

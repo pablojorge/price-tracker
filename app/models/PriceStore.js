@@ -6,27 +6,6 @@ var redis = require('redis'),
 
 var Broadcaster = require('../models/Broadcaster.js');
 
-function to_hour_key(date) {
-    var zp2 = function (n) { return ('0'+n).slice(-2); };
-
-    return "".concat(date.getUTCFullYear(), ".",
-                     zp2(date.getUTCMonth()+1), ".",
-                     zp2(date.getUTCDate()), ".",
-                     zp2(date.getUTCHours()));
-}
-
-function from_hour_key(key) {
-    var tokens = key.split(".");
-    var date = new Date(0);
-
-    date.setUTCFullYear(parseInt(tokens[0]));
-    date.setUTCMonth(parseInt(tokens[1])-1);
-    date.setUTCDate(parseInt(tokens[2]));
-    date.setUTCHours(parseInt(tokens[3]));
-
-    return date;
-}
-
 function to_day_key(date) {
     var zp2 = function (n) { return ('0'+n).slice(-2); };
 
@@ -180,12 +159,6 @@ PriceStore.prototype.listener = function(error, response) {
     }
 
     var last_key = self.lastKey(response.data.exchange, response.data.symbol),
-        hourly_key = self.seriesKey(
-                        response.data.exchange,
-                        response.data.symbol,
-                        "hourly",
-                        to_hour_key(response.data.updated_on)
-                     ),
         daily_key = self.seriesKey(
                         response.data.exchange,
                         response.data.symbol,
@@ -203,7 +176,6 @@ PriceStore.prototype.listener = function(error, response) {
 
         var value = {
             spot: self.merge(last ? last.spot : null, response.data),
-            hourly: self.accumulate(last ? last.hourly : null, response.data, to_hour_key),
             daily: self.accumulate(last ? last.daily : null, response.data, to_day_key),
         };
 
@@ -214,13 +186,12 @@ PriceStore.prototype.listener = function(error, response) {
         self.broadcaster.listener(null, message);
 
         self.client.mset(last_key, JSON.stringify(value),
-                         hourly_key, JSON.stringify(value.hourly),
                          daily_key, JSON.stringify(value.daily),
             function (error, ret) {
                 if (error) {
                     console.log("PriceStore: ERROR saving", last_key, ":", error);
                 } else {
-                    console.log("PriceStore: saved", last_key, hourly_key, daily_key, ":", ret);
+                    console.log("PriceStore: saved", last_key, daily_key, ":", ret);
                 }
             }
         );
