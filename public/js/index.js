@@ -88,6 +88,10 @@ function QuotesView() {
             description: 'Kraken',
             link: 'https://www.kraken.com/charts',
         },
+        'poloniex': {
+            description: 'Poloniex',
+            link: 'https://poloniex.com/exchange',
+        },
         'virwox' : {
             description: 'VirWox',
             link: 'https://www.virwox.com',
@@ -123,21 +127,21 @@ function QuotesView() {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e',
                         'okcoin', 'bitfinex',
-                        'coinsetter', 'kraken', 'cexio'],
+                        'coinsetter', 'kraken', 'poloniex', 'cexio'],
             prefix: '$',
             column: '2',
             unit: 'BTC'
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'kraken', 'cexio'],
+            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'kraken', 'poloniex', 'cexio'],
             prefix: '$',
             column: '2',
             unit: 'LTC'
         },
         'ETHUSD' : {
             description: '(Ethereum)',
-            exchanges: ['kraken'],
+            exchanges: ['kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
