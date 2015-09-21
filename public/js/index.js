@@ -84,6 +84,10 @@ function QuotesView() {
             description: 'BullionVault',
             link: 'https://www.bullionvault.com',
         },
+        'kraken' : {
+            description: 'Kraken',
+            link: 'https://www.kraken.com/charts',
+        },
         'virwox' : {
             description: 'VirWox',
             link: 'https://www.virwox.com',
@@ -96,13 +100,13 @@ function QuotesView() {
             exchanges: ['ambito', 'cronista', 'infobae', 'clarin'],
             prefix: 'AR$',
             column: '1'
-        }, 
+        },
         'USDARSB' : {
             description: '(Dolar blue)',
             exchanges: ['ambito', 'cronista', 'infobae', 'clarin'],
             prefix: 'AR$',
             column: '1'
-        }, 
+        },
         'USDARSCL' : {
             description: '(Contado c/liqui)',
             exchanges: ['ambito', 'cronista', 'infobae'],
@@ -119,46 +123,59 @@ function QuotesView() {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e',
                         'okcoin', 'bitfinex',
-                        'coinsetter', 'cexio'],
+                        'coinsetter', 'kraken', 'cexio'],
             prefix: '$',
-            column: '2'
-        },  
+            column: '2',
+            unit: 'BTC'
+        },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'cexio'],
+            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'kraken', 'cexio'],
             prefix: '$',
-            column: '2'
+            column: '2',
+            unit: 'LTC'
+        },
+        'ETHUSD' : {
+            description: '(Ethereum)',
+            exchanges: ['kraken'],
+            prefix: '$',
+            column: '2',
+            unit: 'ETH'
         },
         'XAUUSD' : {
             description: '(Gold)',
             exchanges: ['bullionvault', 'amagi'],
             prefix: '$',
-            column: '2'
-        },           
+            column: '2',
+            unit: 'XAU'
+        },
         'XAGUSD' : {
             description: '(Silver)',
             exchanges: ['bullionvault', 'amagi'],
             prefix: '$',
-            column: '2'
-        }, 
+            column: '2',
+            unit: 'XAG'
+        },
         'USDSLL' : {
             description: '(Linden/USD)',
             exchanges: ['virwox'],
             prefix: '',
-            column: '2'
-        }, 
+            column: '2',
+            unit: 'SLL'
+        },
         'BTCSLL' : {
             description: '(Linden/Bitcoin)',
             exchanges: ['virwox'],
             prefix: 'SLL ',
-            column: '2'
-        }, 
+            column: '2',
+            unit: 'BTC'
+        },
     };
 
     this.symbol_list = [
         'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
         null,
-        'BTCUSD', 'LTCUSD',
+        'BTCUSD', 'LTCUSD', 'ETHUSD',
         null,
         'XAUUSD', 'XAGUSD',
         null,
@@ -840,13 +857,14 @@ QuotesView.prototype.renderDetails = function (price, prev) {
 };
 
 QuotesView.prototype.renderCustomFields = function (price) {
-    var selector_base = __("#", price.symbol, "-", price.exchange);
+    var selector_base = __("#", price.symbol, "-", price.exchange),
+        self = this;
 
     var render_func = {
         published_on: function (value) {},
         volume24: function (value) {
             $__(selector_base, '-volume24-value').html(
-                __(value.toFixed(2), ' BTC')
+                __(value.toFixed(2), ' ', self.symbols[price.symbol].unit)
             );
         },
         low24: function (value) {},
