@@ -95,6 +95,14 @@ function QuotesView() {
         'virwox' : {
             description: 'VirWox',
             link: 'https://www.virwox.com',
+        },
+        'bitpay' : {
+            description: 'Bitpay',
+            link: 'https://bitpay.com/bitcoin-exchange-rates',
+        },
+        'satoshitango' : {
+            description: 'SatoshiTango',
+            link: 'https://satoshitango.com/',
         }
     };
 
@@ -129,6 +137,13 @@ function QuotesView() {
                         'okcoin', 'bitfinex',
                         'coinsetter', 'kraken', 'poloniex', 'cexio'],
             prefix: '$',
+            column: '2',
+            unit: 'BTC'
+        },
+        'BTCARS' : {
+            description: '(Bitcoin/ARS)',
+            exchanges: ['bitpay', 'satoshitango'],
+            prefix: 'AR$',
             column: '2',
             unit: 'BTC'
         },
@@ -179,7 +194,7 @@ function QuotesView() {
     this.symbol_list = [
         'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
         null,
-        'BTCUSD', 'LTCUSD', 'ETHUSD',
+        'BTCUSD', 'BTCARS', 'LTCUSD', 'ETHUSD',
         null,
         'XAUUSD', 'XAGUSD',
         null,
