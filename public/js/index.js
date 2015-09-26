@@ -34,75 +34,79 @@ function QuotesView() {
     this.exchanges = {
         'amagi' : {
             description: 'Amagi Metals',
-            link: 'https://www.amagimetals.com/',
+            links: [{desc: 'Home', link: 'https://www.amagimetals.com/'}]
         },
         'ambito' : {
             description: 'Ambito.com',
-            link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/',
+            links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
         },
         'clarin' : {
             description: 'Clarin',
-            link: 'http://www.ieco.clarin.com/'
+            links: [{desc: 'Home', link: 'http://www.ieco.clarin.com/'}]
         },
         'cexio' : {
             description: 'Cex.IO',
-            link: 'https://cex.io/'
+            links: [{desc: 'Home', link: 'https://cex.io/'}]
         },
         'cronista' : {
             description: 'Cronista',
-            link: 'http://www.cronista.com'
+            links: [{desc: 'Home', link: 'http://www.cronista.com'}]
         },
         'infobae' : {
             description: 'Infobae',
-            link: 'http://www.infobae.com'
+            links: [
+                {desc: 'Home', link: 'http://www.infobae.com'},
+                {desc: 'Historico', link: 'http://public.tableau.com/shared/YJM3WR6FR?:embed=y&:showVizHome=no'},
+                {desc: 'Infografia', link: 'http://www.infobae.com/adjuntos/servicios/infografias/imagenes/infografia_cepo.html'}
+            ]
         },
         'coinbase' : {
             description: 'Coinbase',
-            link: 'https://coinbase.com/charts',
+            links: [{desc: 'Charts', link: 'https://coinbase.com/charts'}]
         },
         'coinsetter' : {
             description: 'Coinsetter',
-            link: 'https://www.coinsetter.com/',
+            links: [{desc: 'Home', link: 'https://www.coinsetter.com/'}]
         },
         'bitstamp' : {
             description: 'Bitstamp',
-            link: 'https://www.bitstamp.net/market/tradeview/',
+            links: [{desc: 'Trade View', link: 'https://www.bitstamp.net/market/tradeview/'}]
         },
         'btc-e' : {
             description: 'BTC-e',
-            link: 'https://btc-e.com',
+            links: [{desc: 'Home', link: 'https://btc-e.com'}]
         },
         'okcoin' : {
             description: 'OKCoin',
-            link: 'https://www.okcoin.com/market.do',
+            links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
         },
         'bitfinex' : {
             description: 'Bitfinex',
-            link: 'https://www.bitfinex.com/pages/stats',
+            links: [{desc: 'Stats', link: 'https://www.bitfinex.com/pages/stats'}]
         },
         'bullionvault' : {
             description: 'BullionVault',
-            link: 'https://www.bullionvault.com',
+            links: [{desc: 'Home', link: 'https://www.bullionvault.com'}]
         },
         'kraken' : {
             description: 'Kraken',
-            link: 'https://www.kraken.com/charts',
+            links: [{desc: 'Charts', link: 'https://www.kraken.com/charts'}]
         },
         'poloniex': {
             description: 'Poloniex',
-            link: 'https://poloniex.com/exchange',
+            links: [{desc: 'Exchange', link: 'https://poloniex.com/exchange'}]
         },
         'virwox' : {
             description: 'VirWox',
-            link: 'https://www.virwox.com',
+            links: [{desc: 'Home', link: 'https://www.virwox.com'}]
         },
         'bitpay' : {
             description: 'Bitpay',
-            link: 'https://bitpay.com/bitcoin-exchange-rates',
+            links: [{desc: 'Rates', link: 'https://bitpay.com/bitcoin-exchange-rates'}]
         },
         'satoshitango' : {
             description: 'SatoshiTango',
-            link: 'https://satoshitango.com/',
+            links: [{desc: 'Home', link: 'https://satoshitango.com/'}]
         }
     };
 
@@ -509,6 +513,12 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
 QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
 
+    var links = this.exchanges[exchange].links.map(function (value) {
+        return __(
+            '<a href="', value.link, '" target="_blank">', value.desc, '</a>'
+        );
+    });
+
     return $__(
         '<div id="', base_id, '-details" ',
         '     class="hide exchange-details"',
@@ -518,11 +528,7 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '        <span class="glyphicon glyphicon-info-sign"> ',
         '        </span> ',
                  this.exchanges[exchange].description, '/', symbol,
-        '      <a href="', this.exchanges[exchange].link, '" target="_blank">',
-        '        <span class="glyphicon glyphicon-link"',
-        '              style="font-size: x-small;"> ',
-        '        </span>',
-        '      </a>',
+        '    (', links.join(", "), ')',
         '    </h5>',
         '    <hr>',
         '  </div>',
