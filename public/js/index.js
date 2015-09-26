@@ -64,10 +64,6 @@ function QuotesView() {
             description: 'Coinbase',
             links: [{desc: 'Charts', link: 'https://coinbase.com/charts'}]
         },
-        'coinsetter' : {
-            description: 'Coinsetter',
-            links: [{desc: 'Home', link: 'https://www.coinsetter.com/'}]
-        },
         'bitstamp' : {
             description: 'Bitstamp',
             links: [{desc: 'Trade View', link: 'https://www.bitstamp.net/market/tradeview/'}]
@@ -139,7 +135,7 @@ function QuotesView() {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e',
                         'okcoin', 'bitfinex',
-                        'coinsetter', 'kraken', 'poloniex', 'cexio'],
+                        'kraken', 'poloniex', 'cexio'],
             prefix: '$',
             column: '2',
             unit: 'BTC'

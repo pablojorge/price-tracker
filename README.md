@@ -89,7 +89,6 @@ Example:
             "bitstamp",
             "cexio",
             "coinbase",
-            "coinsetter",
             "okcoin"
           ]
         },
