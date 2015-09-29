@@ -30,9 +30,9 @@ CronistaPriceRequester.prototype.constructor = CronistaPriceRequester;
 
 CronistaPriceRequester.prototype.processResponse = function (response, body) {
     var selectors = {
-        USDARS: {pos: 0},
-        USDARSB: {pos: 2},
-        USDARSCL: {pos: 8},
+        USDARS: {pos: 1},
+        USDARSB: {pos: 4},
+        USDARSCL: {pos: 13},
     };
 
     var $ = cheerio.load(body);
