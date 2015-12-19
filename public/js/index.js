@@ -87,6 +87,10 @@ function QuotesView() {
         'satoshitango' : {
             description: 'SatoshiTango',
             links: [{desc: 'Home', link: 'https://satoshitango.com/'}]
+        },
+        'xapo' : {
+            description: 'Xapo',
+            links: [{desc: 'Home', link: 'https://www.xapo.com/'}]
         }
     };
 
@@ -117,7 +121,8 @@ function QuotesView() {
         },
         'BTCUSD' : {
             description: '(Bitcoin)',
-            exchanges: ['bitstamp', 'coinbase', 'btc-e',
+            exchanges: ['bitstamp', 'coinbase',
+                        'xapo', 'btc-e',
                         'okcoin', 'bitfinex',
                         'kraken', 'poloniex'],
             prefix: '$',
