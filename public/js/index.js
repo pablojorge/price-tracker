@@ -32,21 +32,9 @@ $__ = function() {
 
 function QuotesView() {
     this.exchanges = {
-        'amagi' : {
-            description: 'Amagi Metals',
-            links: [{desc: 'Home', link: 'https://www.amagimetals.com/'}]
-        },
         'ambito' : {
             description: 'Ambito.com',
             links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
-        },
-        'clarin' : {
-            description: 'Clarin',
-            links: [{desc: 'Home', link: 'http://www.ieco.clarin.com/'}]
-        },
-        'cexio' : {
-            description: 'Cex.IO',
-            links: [{desc: 'Home', link: 'https://cex.io/'}]
         },
         'cronista' : {
             description: 'Cronista',
@@ -92,10 +80,6 @@ function QuotesView() {
             description: 'Poloniex',
             links: [{desc: 'Exchange', link: 'https://poloniex.com/exchange'}]
         },
-        'virwox' : {
-            description: 'VirWox',
-            links: [{desc: 'Home', link: 'https://www.virwox.com'}]
-        },
         'bitpay' : {
             description: 'Bitpay',
             links: [{desc: 'Rates', link: 'https://bitpay.com/bitcoin-exchange-rates'}]
@@ -109,13 +93,13 @@ function QuotesView() {
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'cronista', 'infobae', 'clarin'],
+            exchanges: ['ambito', 'cronista', 'infobae'],
             prefix: 'AR$',
             column: '1'
         },
         'USDARSB' : {
             description: '(Dolar blue)',
-            exchanges: ['ambito', 'cronista', 'infobae', 'clarin'],
+            exchanges: ['ambito', 'cronista', 'infobae'],
             prefix: 'AR$',
             column: '1'
         },
@@ -135,7 +119,7 @@ function QuotesView() {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase', 'btc-e',
                         'okcoin', 'bitfinex',
-                        'kraken', 'poloniex', 'cexio'],
+                        'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'BTC'
@@ -149,7 +133,7 @@ function QuotesView() {
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'kraken', 'poloniex', 'cexio'],
+            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'LTC'
@@ -163,31 +147,17 @@ function QuotesView() {
         },
         'XAUUSD' : {
             description: '(Gold)',
-            exchanges: ['bullionvault', 'amagi'],
+            exchanges: ['bullionvault'],
             prefix: '$',
             column: '2',
             unit: 'XAU'
         },
         'XAGUSD' : {
             description: '(Silver)',
-            exchanges: ['bullionvault', 'amagi'],
+            exchanges: ['bullionvault'],
             prefix: '$',
             column: '2',
             unit: 'XAG'
-        },
-        'USDSLL' : {
-            description: '(Linden/USD)',
-            exchanges: ['virwox'],
-            prefix: '',
-            column: '2',
-            unit: 'SLL'
-        },
-        'BTCSLL' : {
-            description: '(Linden/Bitcoin)',
-            exchanges: ['virwox'],
-            prefix: 'SLL ',
-            column: '2',
-            unit: 'BTC'
         },
     };
 
@@ -196,9 +166,7 @@ function QuotesView() {
         null,
         'BTCUSD', 'BTCARS', 'LTCUSD', 'ETHUSD',
         null,
-        'XAUUSD', 'XAGUSD',
-        null,
-        'USDSLL', 'BTCSLL'
+        'XAUUSD', 'XAGUSD'
     ];
 }
 

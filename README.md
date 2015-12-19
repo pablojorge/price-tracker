@@ -24,13 +24,6 @@ Example:
     {
       "data": [
         {
-          "exchange": "amagi",
-          "symbols": [
-            "XAUUSD",
-            "XAGUSD"
-          ]
-        },
-        {
           "exchange": "ambito",
           "symbols": [
             "USDARS",
@@ -68,7 +61,6 @@ Example:
         {
           "symbol": "XAUUSD",
           "exchanges": [
-            "amagi",
             "bullionvault"
           ]
         },
@@ -76,7 +68,6 @@ Example:
           "symbol": "USDARSB",
           "exchanges": [
             "ambito",
-            "clarin",
             "cronista",
             "infobae"
           ]
@@ -87,7 +78,6 @@ Example:
             "btc-e",
             "bitfinex",
             "bitstamp",
-            "cexio",
             "coinbase",
             "okcoin"
           ]
