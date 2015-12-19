@@ -99,7 +99,7 @@ function QuotesView() {
         },
         'USDARSB' : {
             description: '(Dolar blue)',
-            exchanges: ['ambito', 'cronista', 'infobae'],
+            exchanges: ['ambito', 'cronista'],
             prefix: 'AR$',
             column: '1'
         },
