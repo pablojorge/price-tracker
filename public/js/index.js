@@ -187,7 +187,7 @@ QuotesView.prototype.render = function() {
     });
 };
 
-QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
+QuotesView.prototype.drawExchangeChart = function(symbol, exchange) {
     var series_url = (
         location.origin + '/api/v1/symbols/' +
         symbol + '/' + exchange + '/series'
@@ -195,8 +195,10 @@ QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
 
     var chart = $__('#', symbol, '-', exchange, '-chart').highcharts();
 
-    if (chart === undefined)
-        chart = this.generateExchangeChart(symbol, exchange);
+    if (chart !== undefined)
+        return;
+
+    chart = this.generateExchangeChart(symbol, exchange);
 
     chart.showLoading('Loading data...');
 
@@ -217,6 +219,30 @@ QuotesView.prototype.updateExchangeChart = function(symbol, exchange) {
 
         chart.hideLoading();
     });
+};
+
+QuotesView.prototype.updateExchangeChart = function(symbol, exchange, ohlc) {
+    var chart = $__('#', symbol, '-', exchange, '-chart').highcharts();
+
+    if (chart === undefined)
+        return;
+
+    var series = chart.series[0],
+        last = series.data[series.data.length - 1],
+        date = new Date(ohlc.date) * 1,
+        point = [
+            date,
+            ohlc.ask.open,
+            ohlc.ask.high,
+            ohlc.ask.low,
+            ohlc.ask.close
+        ];
+
+    if (last.x === date) {
+        last.update(point);
+    } else {
+        series.addPoint(point);
+    }
 };
 
 QuotesView.prototype.getDeltaStyle = function(model) {
@@ -263,7 +289,7 @@ QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     $(".exchange-chart").addClass("hide");
     $__("#", symbol, '-', exchange, '-chart').removeClass("hide");
 
-    this.updateExchangeChart(symbol, exchange);
+    this.drawExchangeChart(symbol, exchange);
 };
 
 QuotesView.prototype.onDeltaStyleSelected = function (delta_style) {
@@ -748,6 +774,8 @@ QuotesView.prototype.renderPrice = function (price, prev) {
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
     $(progress_selector).addClass("hide");
+
+    this.updateExchangeChart(price.symbol, price.exchange, price.stats.daily);
 };
 
 QuotesView.prototype.updateLabelsColors = function (price, prev) {
