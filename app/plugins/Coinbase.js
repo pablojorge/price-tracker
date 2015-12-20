@@ -33,7 +33,7 @@ CoinbasePriceRequester.prototype.doRequest = function (callback) {
         ['http://coinbase.com/api/v1/prices/sell',
          'http://coinbase.com/api/v1/prices/buy'],
         function (item, cb) {
-            self.__doRequest(item, cb);
+            self.__doRequest(item, null, cb);
         },
         function (err, results) {
             if (err !== null) {

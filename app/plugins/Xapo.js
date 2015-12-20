@@ -33,7 +33,7 @@ XapoPriceRequester.prototype.doRequest = function (callback) {
         ['https://api.xapo.com/quote/xbuys',
          'https://api.xapo.com/quote/xsells'],
         function (item, cb) {
-            self.__doRequest(item, cb);
+            self.__doRequest(item, null, cb);
         },
         function (err, results) {
             if (err !== null) {

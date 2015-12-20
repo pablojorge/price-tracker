@@ -36,6 +36,10 @@ function QuotesView() {
             description: 'Ambito.com',
             links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
         },
+        'bna' : {
+            description: 'Banco Nacion',
+            links: [{desc: 'Info', link: 'http://www.bna.com.ar/'}]
+        },
         'cronista' : {
             description: 'Cronista',
             links: [{desc: 'Home', link: 'http://www.cronista.com'}]
@@ -97,7 +101,7 @@ function QuotesView() {
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'cronista', 'infobae'],
+            exchanges: ['ambito', 'cronista', 'infobae', 'bna'],
             prefix: 'AR$',
             column: '1'
         },
