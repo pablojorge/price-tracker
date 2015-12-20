@@ -6,32 +6,32 @@ var async = require('async'),
     Streamer = require('../models/Streamer.js');
 
 /**
- * Coinbase
+ * Xapo
  */
 
-function CoinbasePriceRequester(symbol, options) {
+function XapoPriceRequester(symbol, options) {
     PriceRequester.call(this, symbol, options);
 }
 
-CoinbasePriceRequester.config = {
-    exchange: 'coinbase',
+XapoPriceRequester.config = {
+    exchange: 'xapo',
     symbol_map: {
         "BTCUSD" : undefined
     },
-    url_template: 'http://coinbase.com/api/v1/prices/spot_rate',
+    url_template: 'https://www.xapo.com/',
 };
 
-CoinbasePriceRequester.prototype = Object.create(PriceRequester.prototype);
-CoinbasePriceRequester.prototype.constructor = CoinbasePriceRequester;
+XapoPriceRequester.prototype = Object.create(PriceRequester.prototype);
+XapoPriceRequester.prototype.constructor = XapoPriceRequester;
 
 // We must override doRequest() because two different requests are needed
 // to get the buy and sell prices
-CoinbasePriceRequester.prototype.doRequest = function (callback) {
+XapoPriceRequester.prototype.doRequest = function (callback) {
     var self = this;
 
     async.map(
-        ['http://coinbase.com/api/v1/prices/sell',
-         'http://coinbase.com/api/v1/prices/buy'],
+        ['https://api.xapo.com/quote/xbuys',
+         'https://api.xapo.com/quote/xsells'],
         function (item, cb) {
             self.__doRequest(item, null, cb);
         },
@@ -45,26 +45,25 @@ CoinbasePriceRequester.prototype.doRequest = function (callback) {
                     }
                 });
             } else {
-                // Yes, we want to invert 'buy' and 'sell' here:
                 callback(null,
-                         new messages.Symbol(self.getExchange(), 
-                                             self.symbol, 
-                                             results[0], 
+                         new messages.Symbol(self.getExchange(),
+                                             self.symbol,
+                                             results[0],
                                              results[1]));
             }
         }
     );
 };
 
-CoinbasePriceRequester.prototype.processResponse = function (response, body) {
-    return parseFloat(JSON.parse(body).amount);
+XapoPriceRequester.prototype.processResponse = function (response, body) {
+    return parseFloat(JSON.parse(body).price);
 };
 /**/
 
 module.exports = {
     register: function () {
-        var CoinbaseStreamer = Streamer(CoinbasePriceRequester,
-                                        config.streaming.interval);
-        Plugin_.register(CoinbasePriceRequester, CoinbaseStreamer);
+        var XapoStreamer = Streamer(XapoPriceRequester,
+                                    config.streaming.interval);
+        Plugin_.register(XapoPriceRequester, XapoStreamer);
     }
 };

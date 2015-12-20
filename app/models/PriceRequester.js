@@ -8,11 +8,12 @@ function PriceRequester(symbol, options) {
     this.options = options;
 }
 
-PriceRequester.prototype.__doRequest = function (url, callback) {
+PriceRequester.prototype.__doRequest = function (url, headers, callback) {
     var self = this;
 
     var req_obj = {
         url: url,
+        headers: headers,
         encoding: null
     };
 
@@ -46,7 +47,7 @@ PriceRequester.prototype.__doRequest = function (url, callback) {
 };
 
 PriceRequester.prototype.doRequest = function (callback) {
-    this.__doRequest(this.buildRequest(), callback);
+    this.__doRequest(this.buildRequest(), this.getHeaders(), callback);
 };
 
 PriceRequester.prototype.getExchange = function() {
@@ -63,6 +64,11 @@ PriceRequester.prototype.buildRequest = function() {
 
     return _config.url_template.replace("<<SYMBOL>>", 
                                         _config.symbol_map[this.symbol]);
+};
+
+PriceRequester.prototype.getHeaders = function() {
+    var _config = this.constructor.config;
+    return _config.custom_headers;
 };
 
 PriceRequester.prototype.processResponse = function(response, body) {

@@ -16,7 +16,6 @@ InfobaePriceRequester.config = {
     exchange: 'infobae',
     symbol_map: {
         "USDARS" : undefined,
-        "USDARSB" : undefined,
         "USDARSCL": undefined
     },
     url_template: (
@@ -29,15 +28,17 @@ InfobaePriceRequester.prototype.constructor = InfobaePriceRequester;
 
 InfobaePriceRequester.prototype.processResponse = function (response, body) {
     var selectors = {
-        USDARS: 'dólar oficial',
-        USDARSB: 'dólar blue',
-        USDARSCL: 'contado con liqui'
+        USDARS: {bid: 0, ask: 1},
+        USDARSCL: {bid: -1, ask: 2}
+    };
+
+    var parseValue = function (value) {
+        return parseFloat(value.replace('$', '').replace(',', '.'));
     };
 
     var resp = JSON.parse(body),
-        bid = null,
-        value = resp[0][selectors[this.symbol]].compra.precio,
-        ask = parseFloat(value.replace(',', '.'));
+        bid = selectors[this.symbol].bid >= 0 ? parseValue(resp[selectors[this.symbol].bid].value) : null,
+        ask = selectors[this.symbol].ask >= 0 ? parseValue(resp[selectors[this.symbol].ask].value) : null;
 
     return new messages.Symbol(this.getExchange(),
                                this.symbol,
