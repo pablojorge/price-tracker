@@ -16,7 +16,7 @@ PoloniexPriceRequester.config = {
     exchange: 'poloniex',
     symbol_map: {
         "ETHUSD" : "",
-        "ETHBTC" : "",
+        // "ETHBTC" : "",
         "BTCUSD" : "",
         "LTCUSD" : "",
     },
@@ -29,7 +29,7 @@ PoloniexPriceRequester.prototype.constructor = PoloniexPriceRequester;
 PoloniexPriceRequester.prototype.processResponse = function (response, body) {
     var result_map = {
         "ETHUSD" : "USDT_ETH",
-        "ETHBTC" : "BTC_ETH",
+        // "ETHBTC" : "BTC_ETH",
         "BTCUSD" : "USDT_BTC",
         "LTCUSD" : "USDT_LTC",
     };
