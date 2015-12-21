@@ -32,7 +32,7 @@ CronistaPriceRequester.prototype.processResponse = function (response, body) {
     var selectors = {
         USDARS: {pos: 1},
         USDARSB: {pos: 4},
-        USDARSCL: {pos: 13},
+        USDARSCL: {pos: 7},
     };
 
     var $ = cheerio.load(body);
