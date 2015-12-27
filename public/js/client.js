@@ -47,8 +47,15 @@ function WSClient(host) {
     this.connected = false;
 }
 
-WSClient.WATCHDOG_INTERVAL = 1;
+WSClient.WATCHDOG_INTERVAL = 5;
 WSClient.MAX_INACTIVITY = 60;
+
+WSClient.State = {
+    CONNECTING : 0, // The connection is not yet open.
+    OPEN : 1,       // The connection is open and ready to communicate.
+    CLOSING : 2,    // The connection is in the process of closing.
+    CLOSED : 3,     // The connection is closed or couldn't be opened.
+};
 
 WSClient.prototype = Object.create(Client.prototype);
 WSClient.prototype.constructor = WSClient;
@@ -66,13 +73,16 @@ WSClient.prototype.connect = function() {
 
     self.socket.onopen = function (event) {
         self.connected = true;
-        self.emit("onConnect");
         self.updated_on = new Date();
+
+        self.emit("onConnect");
     };
 
     self.socket.onmessage = function (event) {
         var object = JSON.parse(event.data);
         console.log("WSClient: onmessage: ", object);
+
+        self.updated_on = new Date();
 
         if (object.type == "Exchanges") {
             self.emit("onExchangesListReceived", [object.response.data]);
@@ -81,13 +91,12 @@ WSClient.prototype.connect = function() {
         } else if (object.type == "Error") {
             self.emit("onError", [object.response]);
         }
-    
-        self.updated_on = new Date();
     };
 
     self.socket.onclose = function (event) {
-        self.emit("onDisconnect");
         self.connected = false;
+
+        self.emit("onDisconnect");
     };
 
     self.socket.onerror = function (event) {
@@ -95,15 +104,35 @@ WSClient.prototype.connect = function() {
     };
 };
 
-WSClient.prototype.disconnect = function () {
-    var CONNECTING = 0, // The connection is not yet open.
-        OPEN = 1, // The connection is open and ready to communicate.
-        CLOSING = 2, // The connection is in the process of closing.
-        CLOSED = 3; // The connection is closed or couldn't be opened.
+WSClient.prototype._waitState = function (state, func) {
+    if (!this.socket) {
+        console.log("WSClient: Invalid socket!");
+        return;
+    }
 
+    console.log("WSClient: current socket state:", this.socket.readyState,
+                "waiting state:", state);
+
+    if (this.socket.readyState != state) {
+        setTimeout(this._waitState.bind(this, state, func),
+                   100);
+    } else {
+        func();
+    }
+};
+
+WSClient.prototype._safeSend = function (data) {
+    var self = this;
+
+    this._waitState(WSClient.State.OPEN, function() {
+        self.socket.send(data);
+    });
+};
+
+WSClient.prototype.disconnect = function () {
     try {
         if (this.socket) {
-            if (this.socket.readyState == OPEN)
+            if (this.socket.readyState == WSClient.State.OPEN)
                 this.socket.close();
             this.socket = undefined;
             this.connected = false;
@@ -134,17 +163,17 @@ WSClient.prototype.watchdog = function () {
 
 WSClient.prototype.requestExchanges = function() {
     console.log("WSClient: requesting exchanges list...");
-    this.socket.send((new ExchangesRequest()).toString());
+    this._safeSend((new ExchangesRequest()).toString());
 };
 
 WSClient.prototype.requestPrice = function(exchange, symbol) {
     console.log("WSClient: requesting price for", symbol, "in", exchange);
-    this.socket.send((new SymbolRequest(symbol, exchange)).toString());
+    this._safeSend((new SymbolRequest(symbol, exchange)).toString());
 };
 
 WSClient.prototype.subscribe = function(exchange, symbol) {
     console.log("WSClient: subscribing to", symbol, "in", exchange);
-    this.socket.send((new SubscribeRequest(exchange, symbol)).toString());
+    this._safeSend((new SubscribeRequest(exchange, symbol)).toString());
 };
 
 /**

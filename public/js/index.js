@@ -238,6 +238,10 @@ QuotesView.prototype.updateExchangeChart = function(symbol, exchange, ohlc) {
             ohlc.ask.close
         ];
 
+    if (last === undefined) {
+        return;
+    }
+
     if (last.x === date) {
         last.update(point);
     } else {
