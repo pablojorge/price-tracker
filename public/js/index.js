@@ -68,6 +68,10 @@ function QuotesView() {
             description: 'OKCoin',
             links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
         },
+        'gemini' : {
+            description: 'Gemini',
+            links: [{desc: 'Home', link: 'https://gemini.com/'}]
+        },
         'bitfinex' : {
             description: 'Bitfinex',
             links: [{desc: 'Stats', link: 'https://www.bitfinex.com/pages/stats'}]
@@ -128,7 +132,8 @@ function QuotesView() {
             exchanges: ['bitstamp', 'coinbase',
                         'xapo', 'btc-e',
                         'okcoin', 'bitfinex',
-                        'kraken', 'poloniex'],
+                        'kraken', 'poloniex',
+                        'gemini'],
             prefix: '$',
             column: '2',
             unit: 'BTC'
