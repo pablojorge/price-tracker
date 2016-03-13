@@ -60,13 +60,27 @@
             </div>
           </div>
           <div class="col-xs-12 col-sm-3 separator right-separator padded-15">
-            <h4><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> Symbol</h4>
+            <h4>
+              <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
+              Symbol
+              <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#symbols-modal">
+                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                Edit
+              </button>
+            </h4>
             <hr>
             <ul class="nav nav-pills nav-stacked" id="main-quotes-symbol-nav-bar">
             </ul>
           </div>
           <div class="col-xs-12 col-sm-4 padded-15" id="main-quotes-exchanges-column">
-            <h4><span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span> Exchange</h4>
+            <h4>
+              <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span>
+              Exchange
+              <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#exchanges-modal">
+                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                Edit
+              </button>
+            </h4>
             <hr>
             <div id="main-quotes-exchanges-section">
             </div>
@@ -74,9 +88,55 @@
             </div>
           </div>
           <div class="col-xs-12 col-sm-5 separator left-separator padded-15" id="main-quotes-charts-column">
-            <h4><span class="glyphicon glyphicon-stats" aria-hidden="true"></span> Chart</h4>
+            <h4>
+              <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
+              Chart
+              <button type="button" class="btn btn-default btn-xs">
+                <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                Reload
+              </button>
+            </h4>
             <hr>
           </div>
+
+          <div class="modal fade" id="symbols-modal" tabindex="-1" role="dialog" aria-labelledby="symbols-modal-label">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="symbols-modal-label">Choose symbols</h4>
+                </div>
+                <div class="modal-body" id="symbols-modal-body">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" data-dismiss="modal" id="symbols-modal-save">
+                    Save changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="exchanges-modal" tabindex="-1" role="dialog" aria-labelledby="exchanges-modal-label">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="exchanges-modal-label">Choose exchanges</h4>
+                </div>
+                <div class="modal-body" id="exchanges-modal-body">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" data-dismiss="modal" id="exchanges-modal-save">
+                    Save changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
