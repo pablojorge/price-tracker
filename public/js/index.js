@@ -33,7 +33,7 @@ $__ = function() {
 function QuotesView() {
     this.exchanges = {
         'ambito' : {
-            description: 'Ambito.com',
+            description: 'Ambito',
             links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
         },
         'bna' : {
@@ -305,7 +305,7 @@ QuotesView.prototype.onDeltaStyleSelected = function (delta_style) {
     if (delta_style === "percent") {
         $(".change-price").addClass('hide');
         $(".change-percent").removeClass('hide');
-    } else if (delta_style === "nominal") {
+    } else if (delta_style === "price") {
         $(".change-price").removeClass('hide');
         $(".change-percent").addClass('hide');
     } else {
@@ -328,8 +328,8 @@ QuotesView.prototype.hookPriceLabels = function (model) {
     $(".change-percent").bind('click', function(event) {
         event.preventDefault();
 
-        self.onDeltaStyleSelected("nominal");
-        self.setDeltaStyle(model, "nominal");
+        self.onDeltaStyleSelected("price");
+        self.setDeltaStyle(model, "price");
 
         return false;
     });
@@ -1078,7 +1078,7 @@ QuotesModel.prototype.getQuote = function(symbol, exchange) {
 
     if (!(exchange in this.quotes[symbol]))
         return;
-    
+
     return this.quotes[symbol][exchange];
 };
 
