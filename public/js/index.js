@@ -192,7 +192,7 @@ QuotesView.prototype.render = function() {
     });
 };
 
-QuotesView.prototype.drawExchangeChart = function(symbol, exchange) {
+QuotesView.prototype.drawExchangeChart = function(symbol, exchange, force) {
     var series_url = (
         location.origin + '/api/v1/symbols/' +
         symbol + '/' + exchange + '/series'
@@ -200,7 +200,7 @@ QuotesView.prototype.drawExchangeChart = function(symbol, exchange) {
 
     var chart = $__('#', symbol, '-', exchange, '-chart').highcharts();
 
-    if (chart !== undefined)
+    if (chart !== undefined && !force)
         return;
 
     chart = this.generateExchangeChart(symbol, exchange);
@@ -224,6 +224,10 @@ QuotesView.prototype.drawExchangeChart = function(symbol, exchange) {
 
         chart.hideLoading();
     });
+};
+
+QuotesView.prototype.redrawExchangeChart = function(symbol, exchange) {
+    this.drawExchangeChart(symbol, exchange, true);
 };
 
 QuotesView.prototype.updateExchangeChart = function(symbol, exchange, ohlc) {
@@ -417,6 +421,14 @@ QuotesView.prototype.hookFixedButtons = function (model) {
         return true;
     });
 
+    $("#chart-reload").bind('click', function(event) {
+        var symbol = self.getSelectedSymbol(model),
+            exchange = self.getSelectedExchange(model, symbol);
+
+        self.redrawExchangeChart(symbol, exchange);
+
+        return false;
+    });
 };
 
 QuotesView.prototype.restoreSelectionStatus = function (model) {
