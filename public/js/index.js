@@ -33,7 +33,7 @@ $__ = function() {
 function QuotesView() {
     this.exchanges = {
         'ambito' : {
-            description: 'Ambito.com',
+            description: 'Ambito',
             links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
         },
         'bna' : {
@@ -67,6 +67,10 @@ function QuotesView() {
         'okcoin' : {
             description: 'OKCoin',
             links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
+        },
+        'gemini' : {
+            description: 'Gemini',
+            links: [{desc: 'Home', link: 'https://gemini.com/'}]
         },
         'bitfinex' : {
             description: 'Bitfinex',
@@ -128,7 +132,8 @@ function QuotesView() {
             exchanges: ['bitstamp', 'coinbase',
                         'xapo', 'btc-e',
                         'okcoin', 'bitfinex',
-                        'kraken', 'poloniex'],
+                        'kraken', 'poloniex',
+                        'gemini'],
             prefix: '$',
             column: '2',
             unit: 'BTC'
@@ -187,7 +192,7 @@ QuotesView.prototype.render = function() {
     });
 };
 
-QuotesView.prototype.drawExchangeChart = function(symbol, exchange) {
+QuotesView.prototype.drawExchangeChart = function(symbol, exchange, force) {
     var series_url = (
         location.origin + '/api/v1/symbols/' +
         symbol + '/' + exchange + '/series'
@@ -195,7 +200,7 @@ QuotesView.prototype.drawExchangeChart = function(symbol, exchange) {
 
     var chart = $__('#', symbol, '-', exchange, '-chart').highcharts();
 
-    if (chart !== undefined)
+    if (chart !== undefined && !force)
         return;
 
     chart = this.generateExchangeChart(symbol, exchange);
@@ -219,6 +224,10 @@ QuotesView.prototype.drawExchangeChart = function(symbol, exchange) {
 
         chart.hideLoading();
     });
+};
+
+QuotesView.prototype.redrawExchangeChart = function(symbol, exchange) {
+    this.drawExchangeChart(symbol, exchange, true);
 };
 
 QuotesView.prototype.updateExchangeChart = function(symbol, exchange, ohlc) {
@@ -276,6 +285,9 @@ QuotesView.prototype.onSymbolSelected = function(model, symbol) {
     $(".exchanges-body").addClass("hide");
     $__("#exchanges-body-", symbol).removeClass("hide");
 
+    $(".exchanges-modal-body").addClass("hide");
+    $__("#exchanges-modal-body-", symbol).removeClass("hide");
+
     this.onExchangeSelected(model, symbol, exchange);
 };
 
@@ -300,7 +312,7 @@ QuotesView.prototype.onDeltaStyleSelected = function (delta_style) {
     if (delta_style === "percent") {
         $(".change-price").addClass('hide');
         $(".change-percent").removeClass('hide');
-    } else if (delta_style === "nominal") {
+    } else if (delta_style === "price") {
         $(".change-price").removeClass('hide');
         $(".change-percent").addClass('hide');
     } else {
@@ -323,8 +335,8 @@ QuotesView.prototype.hookPriceLabels = function (model) {
     $(".change-percent").bind('click', function(event) {
         event.preventDefault();
 
-        self.onDeltaStyleSelected("nominal");
-        self.setDeltaStyle(model, "nominal");
+        self.onDeltaStyleSelected("price");
+        self.setDeltaStyle(model, "price");
 
         return false;
     });
@@ -382,6 +394,43 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
     );
 };
 
+QuotesView.prototype.hookFixedButtons = function (model) {
+    var self = this;
+
+    $("#symbols-modal-save").bind('click', function(event) {
+        self.symbol_list.forEach(function(symbol) {
+            var checkbox = $__("#checkbox-symbol-", symbol);
+            model.setSymbolVisible(symbol, checkbox.prop("checked"));
+        });
+
+        self.restoreVisibility(model);
+
+        return true;
+    });
+
+    $("#exchanges-modal-save").bind('click', function(event) {
+        var symbol = self.getSelectedSymbol(model);
+
+        self.symbols[symbol].exchanges.forEach(function(exchange) {
+            var checkbox = $__("#checkbox-exchange-", symbol, "-", exchange);
+            model.setExchangeVisible(symbol, exchange, checkbox.prop("checked"));
+        });
+
+        self.restoreVisibility(model);
+
+        return true;
+    });
+
+    $("#chart-reload").bind('click', function(event) {
+        var symbol = self.getSelectedSymbol(model),
+            exchange = self.getSelectedExchange(model, symbol);
+
+        self.redrawExchangeChart(symbol, exchange);
+
+        return false;
+    });
+};
+
 QuotesView.prototype.restoreSelectionStatus = function (model) {
     var symbol = this.getSelectedSymbol(model);
     this.onSymbolSelected(model, symbol);
@@ -390,6 +439,39 @@ QuotesView.prototype.restoreSelectionStatus = function (model) {
 QuotesView.prototype.restorePreferences = function (model) {
     var style = this.getDeltaStyle(model);
     this.onDeltaStyleSelected(style);
+};
+
+QuotesView.prototype.restoreVisibility = function (model) {
+    var self = this;
+
+    self.symbol_list.forEach(function(symbol) {
+        if (!symbol)
+            return;
+
+        var checkbox = $__("#checkbox-symbol-", symbol),
+            visible = model.isSymbolVisible(symbol);
+
+        checkbox.prop("checked", visible);
+
+        if (visible) {
+            $__("#select-symbol-", symbol).removeClass("hide");
+        } else {
+            $__("#select-symbol-", symbol).addClass("hide");
+        }
+
+        self.symbols[symbol].exchanges.forEach(function(exchange) {
+            var checkbox = $__("#checkbox-exchange-", symbol, "-", exchange),
+                visible = model.isExchangeVisible(symbol, exchange);
+
+            checkbox.prop("checked", visible);
+
+            if (visible) {
+                $__("#row-exchange-", symbol, '-', exchange).removeClass("hide");
+            } else {
+                $__("#row-exchange-", symbol, '-', exchange).addClass("hide");
+            }
+        });
+    });
 };
 
 QuotesView.prototype.scrollTo = function (target) {
@@ -440,6 +522,25 @@ QuotesView.prototype.renderSymbolNav = function (symbol, info) {
     );
 };
 
+QuotesView.prototype.renderSymbolModalCheckbox = function (symbol, info) {
+    return $__(
+        '<div class="checkbox">',
+        '  <label>',
+        '    <input type="checkbox" id="checkbox-symbol-', symbol, '">',
+        '    <img src="img/symbol/', symbol, '.png" width="32" height="32">',
+        '    <large>', symbol, '</large> <small>', info.description, '</small>',
+        '  </label>',
+        '</div>'
+    );
+};
+
+QuotesView.prototype.renderExchangesModalBody = function (symbol, info) {
+    return $__(
+        '<div id="exchanges-modal-body-', symbol, '" class="exchanges-modal-body">',
+        '</div>'
+    );
+};
+
 QuotesView.prototype.renderSymbolNavSep = function () {
     return $__(
         '<li role="presentation" class="separator bottom-separator">',
@@ -459,6 +560,8 @@ QuotesView.prototype.addSymbol = function (symbol, info) {
     $__("#main-quotes-exchanges-section").append(this.renderSymbolExchangesBody(symbol, info));
     $__("#main-quotes-details-section").append(this.renderSymbolDetailsBody(symbol, info));
     $__("#main-quotes-charts-column").append(this.renderSymbolChartsBody(symbol, info));
+    $__("#symbols-modal-body").append(this.renderSymbolModalCheckbox(symbol, info));
+    $__("#exchanges-modal-body").append(this.renderExchangesModalBody(symbol, info));
 
     var self = this;
     info.exchanges.forEach(function(exchange) {
@@ -470,7 +573,7 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
     var base_id = __(symbol, '-', exchange);
 
     return $__(
-        '<div class="row" style="margin-left: 15px; margin-right: 0px">',
+        '<div class="row" style="margin-left: 15px; margin-right: 0px" id="row-exchange-', symbol, '-', exchange, '">',
         '  <div target="', exchange, '"',
         '       class="col-xs-5 select-exchange custom-nav custom-nav-not-selected"',
         '       id="select-exchange-', symbol, '-', exchange, '">', 
@@ -645,6 +748,19 @@ QuotesView.prototype.renderExchangeChart = function (symbol, exchange) {
     );
 };
 
+QuotesView.prototype.renderExchangeModalCheckbox = function (symbol, exchange) {
+    return $__(
+        '<div class="checkbox">',
+        '  <label>',
+        '    <input type="checkbox" id="checkbox-exchange-', symbol, '-', exchange, '">',
+        '    <img src="img/exchange/', exchange, '.ico" ',
+        '         width=16 height=16> ', 
+        '      <span style="font-size: small">', this.exchanges[exchange].description, '</span>',
+        '  </label>',
+        '</div>'
+    );
+};
+
 QuotesView.prototype.generateExchangeChart = function (symbol, exchange) {
     var self = this,
         selector = __('#', symbol, '-', exchange, '-chart');
@@ -732,6 +848,10 @@ QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
 
     $__('#charts-body-', symbol).append(
         this.renderExchangeChart(symbol, exchange)
+    );
+
+    $__('#exchanges-modal-body-', symbol).append(
+        this.renderExchangeModalCheckbox(symbol, exchange)
     );
 };
 
@@ -1016,11 +1136,13 @@ function QuotesModel() {
     this.quotes = {};
     this.selected = undefined;
     this.preferences = undefined;
+    this.visible = undefined;
 }
 
 QuotesModel.prototype.save = function () {
     localStorage["quotes.selected"] = JSON.stringify(this.selected);
     localStorage["quotes.preferences"] = JSON.stringify(this.preferences);
+    localStorage["quotes.visible"] = JSON.stringify(this.visible);
 };
 
 QuotesModel.prototype.load = function () {
@@ -1029,6 +1151,10 @@ QuotesModel.prototype.load = function () {
         exchange: {}
     };
     this.preferences = JSON.parse(localStorage["quotes.preferences"] || null) || {};
+    this.visible = JSON.parse(localStorage["quotes.visible"] || null) || {
+        symbols: {},
+        exchanges: {},
+    };
 };
 
 QuotesModel.prototype.getSelectedSymbol = function () {
@@ -1058,6 +1184,37 @@ QuotesModel.prototype.setSelectedExchange = function (symbol, exchange) {
     this.save();
 };
 
+QuotesModel.prototype.setSymbolVisible = function (symbol, visible) {
+    this.visible.symbols[symbol] = visible;
+    this.save();
+};
+
+QuotesModel.prototype.setExchangeVisible = function (symbol, exchange, visible) {
+    if (!(symbol in this.visible.exchanges))
+        this.visible.exchanges[symbol] = {};
+
+    this.visible.exchanges[symbol][exchange] = visible;
+
+    this.save();
+};
+
+QuotesModel.prototype.isSymbolVisible = function (symbol) {
+    if (!(symbol in this.visible.symbols))
+        return true;
+
+    return this.visible.symbols[symbol];
+};
+
+QuotesModel.prototype.isExchangeVisible = function (symbol, exchange) {
+    if (!(symbol in this.visible.exchanges))
+        return true;
+
+    if (!(exchange in this.visible.exchanges[symbol]))
+        return true;
+
+    return this.visible.exchanges[symbol][exchange];
+};
+
 QuotesModel.prototype.updateQuote = function(quote) {
     if (!(quote.symbol in this.quotes))
         this.quotes[quote.symbol] = {};
@@ -1073,7 +1230,7 @@ QuotesModel.prototype.getQuote = function(symbol, exchange) {
 
     if (!(exchange in this.quotes[symbol]))
         return;
-    
+
     return this.quotes[symbol][exchange];
 };
 
@@ -1089,8 +1246,10 @@ QuotesController.prototype.start = function () {
     this.view.render();
     this.view.hookPriceLabels(this.model);
     this.view.hookSelectionButtons(this.model);
+    this.view.hookFixedButtons(this.model);
     this.view.restoreSelectionStatus(this.model);
     this.view.restorePreferences(this.model);
+    this.view.restoreVisibility(this.model);
 };
 
 QuotesController.prototype.onPriceUpdated = function (price) {
