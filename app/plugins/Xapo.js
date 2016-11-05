@@ -18,45 +18,20 @@ XapoPriceRequester.config = {
     symbol_map: {
         "BTCUSD" : undefined
     },
-    url_template: 'https://www.xapo.com/',
+    url_template: 'https://xapi.xapo.com/last',
 };
 
 XapoPriceRequester.prototype = Object.create(PriceRequester.prototype);
 XapoPriceRequester.prototype.constructor = XapoPriceRequester;
 
-// We must override doRequest() because two different requests are needed
-// to get the buy and sell prices
-XapoPriceRequester.prototype.doRequest = function (callback) {
-    var self = this;
-
-    async.map(
-        ['https://api.xapo.com/quote/xbuys',
-         'https://api.xapo.com/quote/xsells'],
-        function (item, cb) {
-            self.__doRequest(item, null, cb);
-        },
-        function (err, results) {
-            if (err !== null) {
-                callback({
-                    exception: err,
-                    info: {
-                        exchange: self.getExchange(),
-                        symbol: self.symbol,
-                    }
-                });
-            } else {
-                callback(null,
-                         new messages.Symbol(self.getExchange(),
-                                             self.symbol,
-                                             results[0],
-                                             results[1]));
-            }
-        }
-    );
-};
-
 XapoPriceRequester.prototype.processResponse = function (response, body) {
-    return parseFloat(JSON.parse(body).price);
+    var last = JSON.parse(body),
+        bid = parseFloat(last.buy),
+        ask = parseFloat(last.sell);
+    return new messages.Symbol(this.getExchange(),
+                               this.symbol,
+                               bid,
+                               ask);
 };
 /**/
 
