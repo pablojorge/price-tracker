@@ -18,7 +18,7 @@ SatoshiTangoPriceRequester.config = {
         "BTCUSD" : "",
         "BTCARS" : "",
     },
-    url_template: 'https://satoshitango.com/ticker.json',
+    url_template: 'https://api.satoshitango.com/v2/ticker',
 };
 
 SatoshiTangoPriceRequester.prototype = Object.create(PriceRequester.prototype);
@@ -31,14 +31,14 @@ SatoshiTangoPriceRequester.prototype.processResponse = function (response, body)
     };
 
     var ticker = JSON.parse(body),
-        bid = parseFloat(ticker.venta[result_map[this.symbol]]),
-        ask = parseFloat(ticker.compra[result_map[this.symbol]]);
+        bid = parseFloat(ticker.data.venta[result_map[this.symbol]]),
+        ask = parseFloat(ticker.data.compra[result_map[this.symbol]]);
     return new messages.Symbol(this.getExchange(),
                                this.symbol,
                                bid,
                                ask,
                                new Date(), {
-                                   published_on: new Date(ticker.compra.date)
+                                   published_on: new Date(ticker.data.compra.date)
                                });
 };
 /**/
