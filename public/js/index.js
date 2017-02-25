@@ -42,7 +42,7 @@ function QuotesView() {
         },
         'cronista' : {
             description: 'Cronista',
-            links: [{desc: 'Home', link: 'http://www.cronista.com'}]
+            links: [{desc: 'Home', link: 'http://www.cronista.com/MercadosOnline/monedas.html'}]
         },
         'infobae' : {
             description: 'Infobae',
