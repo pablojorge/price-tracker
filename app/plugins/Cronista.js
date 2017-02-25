@@ -1,5 +1,4 @@
-var cheerio = require('cheerio'),
-    config = require('../../config/config'),
+var config = require('../../config/config'),
     messages = require('../../public/lib/messages.js'),
     Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
@@ -16,12 +15,12 @@ function CronistaPriceRequester(symbol, options) {
 CronistaPriceRequester.config = {
     exchange: 'cronista',
     symbol_map: {
-        "USDARS" : undefined,
-        "USDARSB" : undefined,
-        "USDARSCL" : undefined
+        "USDARS" : "ARS",
+        "USDARSB" : "ARSB",
+        "USDARSCL" : "ARSCONT"
     },
     url_template: (
-        'http://www.cronista.com'
+        'http://www.cronista.com/MercadosOnline/json/getDinamicos.html?tipo=monedas&id=<<SYMBOL>>'
     ),
 };
 
@@ -29,26 +28,24 @@ CronistaPriceRequester.prototype = Object.create(PriceRequester.prototype);
 CronistaPriceRequester.prototype.constructor = CronistaPriceRequester;
 
 CronistaPriceRequester.prototype.processResponse = function (response, body) {
-    var selectors = {
-        USDARS: {pos: 1},
-        USDARSB: {pos: 4},
-        USDARSCL: {pos: 7},
-    };
-
-    var $ = cheerio.load(body);
-
-    var value_extractor = function (pos) {
-        var value = $(".tablaHomeCompraVenta > span")[pos].children[0].data;
-        return parseFloat(value.replace(',','.'));
-    };
-
-    var bid = value_extractor(selectors[this.symbol].pos),
-        ask = value_extractor(selectors[this.symbol].pos + 1);
+    var monedas = JSON.parse(body).monedas,
+        bid = parseFloat(monedas.Compra),
+        ask = parseFloat(monedas.Venta),
+        updated_on = new Date(),
+        published_on = new Date(
+            parseInt(
+                monedas.UltimaActualizacion.
+                    match("^/Date\\((.*)\\)/$")[1]
+            )
+        );
 
     return new messages.Symbol(this.getExchange(),
                                this.symbol,
                                bid,
-                               ask);
+                               ask,
+                               updated_on, {
+                                   published_on: published_on
+                               });
 };
 /**/
 
