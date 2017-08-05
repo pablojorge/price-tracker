@@ -16,6 +16,7 @@ GeminiPriceRequester.config = {
     exchange: 'gemini',
     symbol_map: {
         "BTCUSD" : "btcusd",
+        "ETHUSD" : "ethusd",
     },
     url_template: 'https://api.gemini.com/v1/book/<<SYMBOL>>',
 };

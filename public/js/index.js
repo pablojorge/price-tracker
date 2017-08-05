@@ -60,10 +60,6 @@ function QuotesView() {
             description: 'Bitstamp',
             links: [{desc: 'Trade View', link: 'https://www.bitstamp.net/market/tradeview/'}]
         },
-        'btc-e' : {
-            description: 'BTC-e',
-            links: [{desc: 'Home', link: 'https://btc-e.com'}]
-        },
         'okcoin' : {
             description: 'OKCoin',
             links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
@@ -130,13 +126,20 @@ function QuotesView() {
         'BTCUSD' : {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase',
-                        'xapo', 'btc-e',
+                        'xapo',
                         'okcoin', 'bitfinex',
                         'kraken', 'poloniex',
                         'gemini'],
             prefix: '$',
             column: '2',
             unit: 'BTC'
+        },
+        'BCHUSD' : {
+            description: '(Bitcoin Cash)',
+            exchanges: ['bitfinex', 'kraken'],
+            prefix: '$',
+            column: '2',
+            unit: 'BCH'
         },
         'BTCARS' : {
             description: '(Bitcoin/ARS)',
@@ -147,14 +150,21 @@ function QuotesView() {
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
+            exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'LTC'
         },
         'ETHUSD' : {
             description: '(Ethereum)',
-            exchanges: ['kraken', 'poloniex'],
+            exchanges: ['kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
+            prefix: '$',
+            column: '2',
+            unit: 'ETH'
+        },
+        'ETCUSD' : {
+            description: '(Ethereum Classic)',
+            exchanges: ['poloniex', 'bitfinex'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
@@ -178,7 +188,7 @@ function QuotesView() {
     this.symbol_list = [
         'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
         null,
-        'BTCUSD', 'BTCARS', 'LTCUSD', 'ETHUSD',
+        'BTCUSD', 'BCHUSD', 'BTCARS', 'LTCUSD', 'ETHUSD', 'ETCUSD',
         null,
         'XAUUSD', 'XAGUSD'
     ];

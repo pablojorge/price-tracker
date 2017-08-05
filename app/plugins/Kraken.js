@@ -16,8 +16,8 @@ KrakenPriceRequester.config = {
     exchange: 'kraken',
     symbol_map: {
         "ETHUSD" : "ETHUSD",
-        // "ETHBTC" : "ETHXBT",
         "BTCUSD" : "XBTUSD",
+        "BCHUSD" : "BCHUSD",
         "LTCUSD" : "LTCUSD",
     },
     url_template: 'https://api.kraken.com/0/public/Ticker?pair=<<SYMBOL>>',
@@ -29,8 +29,8 @@ KrakenPriceRequester.prototype.constructor = KrakenPriceRequester;
 KrakenPriceRequester.prototype.processResponse = function (response, body) {
     var result_map = {
         "ETHUSD" : "XETHZUSD",
-        // "ETHBTC" : "XETHXXBT",
         "BTCUSD" : "XXBTZUSD",
+        "BCHUSD" : "BCHUSD",
         "LTCUSD" : "XLTCZUSD",
     };
 
