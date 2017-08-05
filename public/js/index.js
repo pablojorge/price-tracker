@@ -60,10 +60,6 @@ function QuotesView() {
             description: 'Bitstamp',
             links: [{desc: 'Trade View', link: 'https://www.bitstamp.net/market/tradeview/'}]
         },
-        'btc-e' : {
-            description: 'BTC-e',
-            links: [{desc: 'Home', link: 'https://btc-e.com'}]
-        },
         'okcoin' : {
             description: 'OKCoin',
             links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
@@ -130,7 +126,7 @@ function QuotesView() {
         'BTCUSD' : {
             description: '(Bitcoin)',
             exchanges: ['bitstamp', 'coinbase',
-                        'xapo', 'btc-e',
+                        'xapo',
                         'okcoin', 'bitfinex',
                         'kraken', 'poloniex',
                         'gemini'],
@@ -147,7 +143,7 @@ function QuotesView() {
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['btc-e', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
+            exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'LTC'

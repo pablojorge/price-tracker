@@ -33,7 +33,7 @@ Example:
           ]
         },
         {
-          "exchange": "btc-e",
+          "exchange": "kraken",
           "symbols": [
             "BTCUSD",
             "LTCUSD"
@@ -75,7 +75,7 @@ Example:
         {
           "symbol": "BTCUSD",
           "exchanges": [
-            "btc-e",
+            "kraken",
             "bitfinex",
             "bitstamp",
             "coinbase",
@@ -259,7 +259,7 @@ Example:
             "type": "SymbolRequest",
             "request": {
                 "symbol": "LTCUSD",
-                "exchange": "btc-e",
+                "exchange": "kraken",
                 "options": {}
             }
         }');
@@ -268,7 +268,7 @@ Example:
     // Or, using classes:
     ws.onopen = function (event) {
         ws.send((new ExchangesRequest()).toString());
-        ws.send((new SymbolRequest("LTCUSD", "btc-e")).toString());
+        ws.send((new SymbolRequest("LTCUSD", "kraken")).toString());
     };
     
     ws.onmessage = function (event) {
