@@ -16,6 +16,7 @@ OKCoinPriceRequester.config = {
     exchange: 'okcoin',
     symbol_map: {
         "BTCUSD" : "btc_usd",
+        "ETHUSD" : "eth_usd",
         "LTCUSD" : "ltc_usd",
     },
     url_template: 'https://www.okcoin.com/api/ticker.do?symbol=<<SYMBOL>>&ok=1',

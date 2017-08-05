@@ -134,6 +134,13 @@ function QuotesView() {
             column: '2',
             unit: 'BTC'
         },
+        'BCHUSD' : {
+            description: '(Bitcoin Cash)',
+            exchanges: ['bitfinex', 'kraken'],
+            prefix: '$',
+            column: '2',
+            unit: 'BCH'
+        },
         'BTCARS' : {
             description: '(Bitcoin/ARS)',
             exchanges: ['bitpay', 'satoshitango'],
@@ -150,7 +157,14 @@ function QuotesView() {
         },
         'ETHUSD' : {
             description: '(Ethereum)',
-            exchanges: ['kraken', 'poloniex'],
+            exchanges: ['kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
+            prefix: '$',
+            column: '2',
+            unit: 'ETH'
+        },
+        'ETCUSD' : {
+            description: '(Ethereum Classic)',
+            exchanges: ['poloniex', 'bitfinex'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
@@ -174,7 +188,7 @@ function QuotesView() {
     this.symbol_list = [
         'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
         null,
-        'BTCUSD', 'BTCARS', 'LTCUSD', 'ETHUSD',
+        'BTCUSD', 'BCHUSD', 'BTCARS', 'LTCUSD', 'ETHUSD', 'ETCUSD',
         null,
         'XAUUSD', 'XAGUSD'
     ];
