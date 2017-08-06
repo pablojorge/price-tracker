@@ -333,10 +333,9 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
         event.preventDefault();
 
         var symbol = $(this).attr("target");
-        model.setSelectedSymbol(symbol);
         self.onSymbolSelected(model, symbol);
-
         self.scrollTo("#main-quotes-exchanges-column");
+        model.setSelectedSymbol(symbol);
 
         return false;
     });
@@ -346,8 +345,8 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
 
         var symbol = self.getSelectedSymbol(model),
             exchange = $(this).attr("target");
-        model.setSelectedExchange(symbol, exchange);
         self.onExchangeSelected(model, symbol, exchange);
+        model.setSelectedExchange(symbol, exchange);
 
         return false;
     });
