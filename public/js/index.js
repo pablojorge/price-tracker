@@ -76,10 +76,6 @@ function QuotesView() {
             description: 'Poloniex',
             links: [{desc: 'Exchange', link: 'https://poloniex.com/exchange'}]
         },
-        'satoshitango' : {
-            description: 'SatoshiTango',
-            links: [{desc: 'Home', link: 'https://satoshitango.com/'}]
-        },
         'xapo' : {
             description: 'Xapo',
             links: [{desc: 'Home', link: 'https://www.xapo.com/'}]
