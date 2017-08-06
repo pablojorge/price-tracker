@@ -113,13 +113,6 @@ function QuotesView() {
             column: '2',
             unit: 'BCH'
         },
-        'BTCARS' : {
-            description: '(Bitcoin/ARS)',
-            exchanges: ['bitpay', 'satoshitango'],
-            prefix: 'AR$',
-            column: '2',
-            unit: 'BTC'
-        },
         'LTCUSD' : {
             description: '(Litecoin)',
             exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
@@ -160,7 +153,7 @@ function QuotesView() {
     this.symbol_list = [
         'USDARSB', 'USDARS',
         null,
-        'BTCUSD', 'BCHUSD', 'BTCARS', 'LTCUSD', 'ETHUSD', 'ETCUSD',
+        'BTCUSD', 'BCHUSD', 'LTCUSD', 'ETHUSD', 'ETCUSD',
         null,
         'XAUUSD', 'XAGUSD'
     ];
