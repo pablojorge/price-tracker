@@ -18,8 +18,6 @@ AmbitoPriceRequester.config = {
     symbol_map: {
         "USDARS" : "ARSSCBCRA",
         "USDARSB" : "ARSB=",
-        "USDARSCL" : "ARSB=CL",
-        "USDARSBOL" : "ARSC=BOLSA",
     },
     url_template: (
         'http://www.ambito.com.ar/economia/mercados/monedas/dolar/info/?ric=<<SYMBOL>>'

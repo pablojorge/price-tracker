@@ -36,61 +36,45 @@ function QuotesView() {
             description: 'Ambito',
             links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
         },
-        'bna' : {
-            description: 'Banco Nacion',
-            links: [{desc: 'Info', link: 'http://www.bna.com.ar/'}]
-        },
-        'cronista' : {
-            description: 'Cronista',
-            links: [{desc: 'Home', link: 'http://www.cronista.com/MercadosOnline/monedas.html'}]
-        },
-        'infobae' : {
-            description: 'Infobae',
-            links: [
-                {desc: 'Home', link: 'http://www.infobae.com'},
-                {desc: 'Historico', link: 'http://public.tableau.com/shared/YJM3WR6FR?:embed=y&:showVizHome=no'},
-                {desc: 'Infografia', link: 'http://www.infobae.com/adjuntos/servicios/infografias/imagenes/infografia_cepo.html'}
-            ]
-        },
-        'coinbase' : {
-            description: 'Coinbase',
-            links: [{desc: 'Charts', link: 'https://coinbase.com/charts'}]
+        'bitfinex' : {
+            description: 'Bitfinex',
+            links: [{desc: 'Stats', link: 'https://www.bitfinex.com/pages/stats'}]
         },
         'bitstamp' : {
             description: 'Bitstamp',
             links: [{desc: 'Trade View', link: 'https://www.bitstamp.net/market/tradeview/'}]
         },
-        'okcoin' : {
-            description: 'OKCoin',
-            links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
-        },
-        'gemini' : {
-            description: 'Gemini',
-            links: [{desc: 'Home', link: 'https://gemini.com/'}]
-        },
-        'bitfinex' : {
-            description: 'Bitfinex',
-            links: [{desc: 'Stats', link: 'https://www.bitfinex.com/pages/stats'}]
+        'bna' : {
+            description: 'Banco Nacion',
+            links: [{desc: 'Info', link: 'http://www.bna.com.ar/'}]
         },
         'bullionvault' : {
             description: 'BullionVault',
             links: [{desc: 'Home', link: 'https://www.bullionvault.com'}]
         },
+        'coinbase' : {
+            description: 'Coinbase',
+            links: [{desc: 'Charts', link: 'https://coinbase.com/charts'}]
+        },
+        'cronista' : {
+            description: 'Cronista',
+            links: [{desc: 'Home', link: 'http://www.cronista.com/MercadosOnline/monedas.html'}]
+        },
+        'gemini' : {
+            description: 'Gemini',
+            links: [{desc: 'Home', link: 'https://gemini.com/'}]
+        },
         'kraken' : {
             description: 'Kraken',
             links: [{desc: 'Charts', link: 'https://www.kraken.com/charts'}]
         },
+        'okcoin' : {
+            description: 'OKCoin',
+            links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
+        },
         'poloniex': {
             description: 'Poloniex',
             links: [{desc: 'Exchange', link: 'https://poloniex.com/exchange'}]
-        },
-        'bitpay' : {
-            description: 'Bitpay',
-            links: [{desc: 'Rates', link: 'https://bitpay.com/bitcoin-exchange-rates'}]
-        },
-        'satoshitango' : {
-            description: 'SatoshiTango',
-            links: [{desc: 'Home', link: 'https://satoshitango.com/'}]
         },
         'xapo' : {
             description: 'Xapo',
@@ -99,29 +83,12 @@ function QuotesView() {
     };
 
     this.symbols = {
-        'USDARS' : {
-            description: '(Dolar oficial)',
-            exchanges: ['ambito', 'cronista', 'infobae', 'bna'],
-            prefix: 'AR$',
-            column: '1'
-        },
-        'USDARSB' : {
-            description: '(Dolar blue)',
-            exchanges: ['ambito', 'cronista'],
-            prefix: 'AR$',
-            column: '1'
-        },
-        'USDARSCL' : {
-            description: '(Contado c/liqui)',
-            exchanges: ['ambito', 'cronista', 'infobae'],
-            prefix: 'AR$',
-            column: '1'
-        },
-        'USDARSBOL' : {
-            description: '(Dolar bolsa)',
-            exchanges: ['ambito'],
-            prefix: 'AR$',
-            column: '1'
+        'BCHUSD' : {
+            description: '(Bitcoin Cash)',
+            exchanges: ['bitfinex', 'kraken'],
+            prefix: '$',
+            column: '2',
+            unit: 'BCH'
         },
         'BTCUSD' : {
             description: '(Bitcoin)',
@@ -134,26 +101,12 @@ function QuotesView() {
             column: '2',
             unit: 'BTC'
         },
-        'BCHUSD' : {
-            description: '(Bitcoin Cash)',
-            exchanges: ['bitfinex', 'kraken'],
+        'ETCUSD' : {
+            description: '(Ethereum Classic)',
+            exchanges: ['poloniex', 'bitfinex'],
             prefix: '$',
             column: '2',
-            unit: 'BCH'
-        },
-        'BTCARS' : {
-            description: '(Bitcoin/ARS)',
-            exchanges: ['bitpay', 'satoshitango'],
-            prefix: 'AR$',
-            column: '2',
-            unit: 'BTC'
-        },
-        'LTCUSD' : {
-            description: '(Litecoin)',
-            exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
-            prefix: '$',
-            column: '2',
-            unit: 'LTC'
+            unit: 'ETH'
         },
         'ETHUSD' : {
             description: '(Ethereum)',
@@ -162,19 +115,24 @@ function QuotesView() {
             column: '2',
             unit: 'ETH'
         },
-        'ETCUSD' : {
-            description: '(Ethereum Classic)',
-            exchanges: ['poloniex', 'bitfinex'],
+        'LTCUSD' : {
+            description: '(Litecoin)',
+            exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
-            unit: 'ETH'
+            unit: 'LTC'
         },
-        'XAUUSD' : {
-            description: '(Gold)',
-            exchanges: ['bullionvault'],
-            prefix: '$',
-            column: '2',
-            unit: 'XAU'
+        'USDARS' : {
+            description: '(Dolar oficial)',
+            exchanges: ['ambito', 'cronista', 'bna'],
+            prefix: 'AR$',
+            column: '1'
+        },
+        'USDARSB' : {
+            description: '(Dolar blue)',
+            exchanges: ['ambito', 'cronista'],
+            prefix: 'AR$',
+            column: '1'
         },
         'XAGUSD' : {
             description: '(Silver)',
@@ -183,12 +141,19 @@ function QuotesView() {
             column: '2',
             unit: 'XAG'
         },
+        'XAUUSD' : {
+            description: '(Gold)',
+            exchanges: ['bullionvault'],
+            prefix: '$',
+            column: '2',
+            unit: 'XAU'
+        },
     };
 
     this.symbol_list = [
-        'USDARSB', 'USDARS', 'USDARSCL', 'USDARSBOL',
+        'USDARSB', 'USDARS',
         null,
-        'BTCUSD', 'BCHUSD', 'BTCARS', 'LTCUSD', 'ETHUSD', 'ETCUSD',
+        'BTCUSD', 'BCHUSD', 'LTCUSD', 'ETHUSD', 'ETCUSD',
         null,
         'XAUUSD', 'XAGUSD'
     ];
@@ -368,10 +333,9 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
         event.preventDefault();
 
         var symbol = $(this).attr("target");
-        model.setSelectedSymbol(symbol);
         self.onSymbolSelected(model, symbol);
-
         self.scrollTo("#main-quotes-exchanges-column");
+        model.setSelectedSymbol(symbol);
 
         return false;
     });
@@ -381,8 +345,8 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
 
         var symbol = self.getSelectedSymbol(model),
             exchange = $(this).attr("target");
-        model.setSelectedExchange(symbol, exchange);
         self.onExchangeSelected(model, symbol, exchange);
+        model.setSelectedExchange(symbol, exchange);
 
         return false;
     });

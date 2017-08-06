@@ -2,7 +2,7 @@
 
 "Price Tracker" is a Node.js app that can be used to obtain the rates of many different symbols at different exchanges. This includes normal currencies, crypto currencies, gold/silver prices, and so on.
 
-It uses [Redis](https://github.com/mranney/node_redis) for caching results, and [cheerio](https://github.com/MatthewMueller/cheerio) (server-side jQuery)
+It uses [Redis](https://github.com/mranney/node_redis) to store data, and [cheerio](https://github.com/MatthewMueller/cheerio) (server-side jQuery) for scraping.
 
 Everything is accesible via both REST and WebSockets APIs.
 
@@ -27,9 +27,7 @@ Example:
           "exchange": "ambito",
           "symbols": [
             "USDARS",
-            "USDARSB",
-            "USDARSCL",
-            "USDARSBOL"
+            "USDARSB"
           ]
         },
         {
@@ -68,8 +66,7 @@ Example:
           "symbol": "USDARSB",
           "exchanges": [
             "ambito",
-            "cronista",
-            "infobae"
+            "cronista"
           ]
         },
         {
@@ -287,6 +284,39 @@ Example:
             console.log("ask:", object.response.data.ask);
         }
     };
+
+## Running
+
+1. Install node:
+
+```
+Ubuntu: $ sudo apt-get install npm
+macOS: $ brew install node
+```
+
+1. Install dependencies:
+
+```
+$ npm install
+```
+
+1. Run Redis: install from source (<https://redis.io/download>) or run it inside a container:
+
+```
+$ docker run -d -p 6379:6379 redis
+```
+
+1. Start the server:
+
+```
+$ node server.js
+```
+
+The server will be ready to accept connections at <http://localhost:5000>. Try with:
+
+```
+$ curl http://localhost:5000/api/v1/symbols/BTCUSD/bitstamp
+```
 
 ## Live site
 

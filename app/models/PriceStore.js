@@ -33,7 +33,9 @@ function PriceStore() {
                                     redisURL.hostname,
                                     {no_ready_check: true});
 
-    client.auth(redisURL.auth.split(':')[1]);
+    if (redisURL.auth)
+        client.auth(redisURL.auth.split(':')[1]);
+
     console.log("PriceStore: connected to " + redisURL.hostname);
 
     this.client = client;
