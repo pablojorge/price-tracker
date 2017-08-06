@@ -68,8 +68,7 @@ Example:
           "symbol": "USDARSB",
           "exchanges": [
             "ambito",
-            "cronista",
-            "infobae"
+            "cronista"
           ]
         },
         {

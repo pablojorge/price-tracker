@@ -44,14 +44,6 @@ function QuotesView() {
             description: 'Cronista',
             links: [{desc: 'Home', link: 'http://www.cronista.com/MercadosOnline/monedas.html'}]
         },
-        'infobae' : {
-            description: 'Infobae',
-            links: [
-                {desc: 'Home', link: 'http://www.infobae.com'},
-                {desc: 'Historico', link: 'http://public.tableau.com/shared/YJM3WR6FR?:embed=y&:showVizHome=no'},
-                {desc: 'Infografia', link: 'http://www.infobae.com/adjuntos/servicios/infografias/imagenes/infografia_cepo.html'}
-            ]
-        },
         'coinbase' : {
             description: 'Coinbase',
             links: [{desc: 'Charts', link: 'https://coinbase.com/charts'}]
@@ -101,7 +93,7 @@ function QuotesView() {
     this.symbols = {
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'cronista', 'infobae', 'bna'],
+            exchanges: ['ambito', 'cronista', 'bna'],
             prefix: 'AR$',
             column: '1'
         },
