@@ -36,41 +36,41 @@ function QuotesView() {
             description: 'Ambito',
             links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
         },
-        'bna' : {
-            description: 'Banco Nacion',
-            links: [{desc: 'Info', link: 'http://www.bna.com.ar/'}]
-        },
-        'cronista' : {
-            description: 'Cronista',
-            links: [{desc: 'Home', link: 'http://www.cronista.com/MercadosOnline/monedas.html'}]
-        },
-        'coinbase' : {
-            description: 'Coinbase',
-            links: [{desc: 'Charts', link: 'https://coinbase.com/charts'}]
+        'bitfinex' : {
+            description: 'Bitfinex',
+            links: [{desc: 'Stats', link: 'https://www.bitfinex.com/pages/stats'}]
         },
         'bitstamp' : {
             description: 'Bitstamp',
             links: [{desc: 'Trade View', link: 'https://www.bitstamp.net/market/tradeview/'}]
         },
-        'okcoin' : {
-            description: 'OKCoin',
-            links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
-        },
-        'gemini' : {
-            description: 'Gemini',
-            links: [{desc: 'Home', link: 'https://gemini.com/'}]
-        },
-        'bitfinex' : {
-            description: 'Bitfinex',
-            links: [{desc: 'Stats', link: 'https://www.bitfinex.com/pages/stats'}]
+        'bna' : {
+            description: 'Banco Nacion',
+            links: [{desc: 'Info', link: 'http://www.bna.com.ar/'}]
         },
         'bullionvault' : {
             description: 'BullionVault',
             links: [{desc: 'Home', link: 'https://www.bullionvault.com'}]
         },
+        'coinbase' : {
+            description: 'Coinbase',
+            links: [{desc: 'Charts', link: 'https://coinbase.com/charts'}]
+        },
+        'cronista' : {
+            description: 'Cronista',
+            links: [{desc: 'Home', link: 'http://www.cronista.com/MercadosOnline/monedas.html'}]
+        },
+        'gemini' : {
+            description: 'Gemini',
+            links: [{desc: 'Home', link: 'https://gemini.com/'}]
+        },
         'kraken' : {
             description: 'Kraken',
             links: [{desc: 'Charts', link: 'https://www.kraken.com/charts'}]
+        },
+        'okcoin' : {
+            description: 'OKCoin',
+            links: [{desc: 'Market', link: 'https://www.okcoin.com/market.do'}]
         },
         'poloniex': {
             description: 'Poloniex',
@@ -83,17 +83,12 @@ function QuotesView() {
     };
 
     this.symbols = {
-        'USDARS' : {
-            description: '(Dolar oficial)',
-            exchanges: ['ambito', 'cronista', 'bna'],
-            prefix: 'AR$',
-            column: '1'
-        },
-        'USDARSB' : {
-            description: '(Dolar blue)',
-            exchanges: ['ambito', 'cronista'],
-            prefix: 'AR$',
-            column: '1'
+        'BCHUSD' : {
+            description: '(Bitcoin Cash)',
+            exchanges: ['bitfinex', 'kraken'],
+            prefix: '$',
+            column: '2',
+            unit: 'BCH'
         },
         'BTCUSD' : {
             description: '(Bitcoin)',
@@ -106,19 +101,12 @@ function QuotesView() {
             column: '2',
             unit: 'BTC'
         },
-        'BCHUSD' : {
-            description: '(Bitcoin Cash)',
-            exchanges: ['bitfinex', 'kraken'],
+        'ETCUSD' : {
+            description: '(Ethereum Classic)',
+            exchanges: ['poloniex', 'bitfinex'],
             prefix: '$',
             column: '2',
-            unit: 'BCH'
-        },
-        'LTCUSD' : {
-            description: '(Litecoin)',
-            exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
-            prefix: '$',
-            column: '2',
-            unit: 'LTC'
+            unit: 'ETH'
         },
         'ETHUSD' : {
             description: '(Ethereum)',
@@ -127,19 +115,24 @@ function QuotesView() {
             column: '2',
             unit: 'ETH'
         },
-        'ETCUSD' : {
-            description: '(Ethereum Classic)',
-            exchanges: ['poloniex', 'bitfinex'],
+        'LTCUSD' : {
+            description: '(Litecoin)',
+            exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
-            unit: 'ETH'
+            unit: 'LTC'
         },
-        'XAUUSD' : {
-            description: '(Gold)',
-            exchanges: ['bullionvault'],
-            prefix: '$',
-            column: '2',
-            unit: 'XAU'
+        'USDARS' : {
+            description: '(Dolar oficial)',
+            exchanges: ['ambito', 'cronista', 'bna'],
+            prefix: 'AR$',
+            column: '1'
+        },
+        'USDARSB' : {
+            description: '(Dolar blue)',
+            exchanges: ['ambito', 'cronista'],
+            prefix: 'AR$',
+            column: '1'
         },
         'XAGUSD' : {
             description: '(Silver)',
@@ -147,6 +140,13 @@ function QuotesView() {
             prefix: '$',
             column: '2',
             unit: 'XAG'
+        },
+        'XAUUSD' : {
+            description: '(Gold)',
+            exchanges: ['bullionvault'],
+            prefix: '$',
+            column: '2',
+            unit: 'XAU'
         },
     };
 
