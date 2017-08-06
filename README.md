@@ -27,9 +27,7 @@ Example:
           "exchange": "ambito",
           "symbols": [
             "USDARS",
-            "USDARSB",
-            "USDARSCL",
-            "USDARSBOL"
+            "USDARSB"
           ]
         },
         {
