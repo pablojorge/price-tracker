@@ -76,10 +76,6 @@ function QuotesView() {
             description: 'Poloniex',
             links: [{desc: 'Exchange', link: 'https://poloniex.com/exchange'}]
         },
-        'bitpay' : {
-            description: 'Bitpay',
-            links: [{desc: 'Rates', link: 'https://bitpay.com/bitcoin-exchange-rates'}]
-        },
         'satoshitango' : {
             description: 'SatoshiTango',
             links: [{desc: 'Home', link: 'https://satoshitango.com/'}]
