@@ -7,6 +7,8 @@ var cheerio = require('cheerio'),
 
 /**
  * BullionVault
+ *
+ * Docs: https://www.bullionvault.com/help/xml_api.html
  */
 
 function BullionVaultPriceRequester(symbol, options) {
@@ -20,7 +22,7 @@ BullionVaultPriceRequester.config = {
         "XAGUSD" : "SILVER" 
     },
     url_template: (
-        'http://live.bullionvault.com/secure/api/v2/view_market_xml.do' +
+        'https://www.bullionvault.com/view_market_xml.do' +
         '?considerationCurrency=USD&securityClassNarrative=<<SYMBOL>>'
     ),
 };
