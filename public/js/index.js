@@ -375,7 +375,6 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
 
         var symbol = $(this).attr("target");
         self.onSymbolSelected(model, symbol);
-        self.scrollTo("#main-quotes-exchanges-column");
         model.setSelectedSymbol(symbol);
 
         return false;
@@ -487,12 +486,6 @@ QuotesView.prototype.restoreVisibility = function (model) {
             }
         });
     });
-};
-
-QuotesView.prototype.scrollTo = function (target) {
-    $('html, body').animate({
-        scrollTop: $(target).offset().top - 50 // account for the fixed top navbar
-    }, 1000);
 };
 
 QuotesView.prototype.renderSymbolExchangesBody = function (symbol, info) {
