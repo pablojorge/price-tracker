@@ -85,7 +85,7 @@ function QuotesView() {
     this.symbols = {
         'BCHUSD' : {
             description: '(Bitcoin Cash)',
-            exchanges: ['bitfinex', 'kraken'],
+            exchanges: ['bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'BCH'
@@ -97,6 +97,13 @@ function QuotesView() {
                         'okcoin', 'bitfinex',
                         'kraken', 'poloniex',
                         'gemini'],
+            prefix: '$',
+            column: '2',
+            unit: 'BTC'
+        },
+        'BTGUSD' : {
+            description: '(Bitcoin Gold)',
+            exchanges: ['bitfinex'],
             prefix: '$',
             column: '2',
             unit: 'BTC'
@@ -121,6 +128,34 @@ function QuotesView() {
             prefix: '$',
             column: '2',
             unit: 'LTC'
+        },
+        'ZECUSD' : {
+            description: '(ZCash)',
+            exchanges: ['kraken', 'poloniex'],
+            prefix: '$',
+            column: '2',
+            unit: 'ZEC'
+        },
+        'XMRUSD' : {
+            description: '(Monero)',
+            exchanges: ['poloniex'],
+            prefix: '$',
+            column: '2',
+            unit: 'XMR'
+        },
+        'XLMUSD' : {
+            description: '(Stellar Lumens)',
+            exchanges: ['poloniex'],
+            prefix: '$',
+            column: '2',
+            unit: 'XLM'
+        },
+        'XRPUSD' : {
+            description: '(Ripple)',
+            exchanges: ['poloniex'],
+            prefix: '$',
+            column: '2',
+            unit: 'XRP'
         },
         'USDARS' : {
             description: '(Dolar oficial)',
@@ -153,7 +188,13 @@ function QuotesView() {
     this.symbol_list = [
         'USDARSB', 'USDARS',
         null,
-        'BTCUSD', 'BCHUSD', 'LTCUSD', 'ETHUSD', 'ETCUSD',
+        'BTCUSD', 'BCHUSD', 'BTGUSD',
+        null,
+        'ETHUSD', 'ETCUSD',
+        null,
+        'LTCUSD', 'XMRUSD', 'ZECUSD',
+        null,
+        'XLMUSD', 'XRPUSD',
         null,
         'XAUUSD', 'XAGUSD'
     ];
