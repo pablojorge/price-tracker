@@ -18,7 +18,12 @@ PoloniexPriceRequester.config = {
         "ETHUSD" : "",
         "ETCUSD" : "",
         "BTCUSD" : "",
+        "BCHUSD" : "",
         "LTCUSD" : "",
+        "ZECUSD" : "",
+        "XLMUSD" : "",
+        "XMRUSD" : "",
+        "XRPUSD" : "",
     },
     url_template: 'https://poloniex.com/public?command=returnTicker',
 };
@@ -32,6 +37,11 @@ PoloniexPriceRequester.prototype.processResponse = function (response, body) {
         "ETCUSD" : "USDT_ETC",
         "BTCUSD" : "USDT_BTC",
         "LTCUSD" : "USDT_LTC",
+        "XLMUSD" : "USDT_STR",
+        "XMRUSD" : "USDT_XMR",
+        "XRPUSD" : "USDT_XRP",
+        "ZECUSD" : "USDT_ZEC",
+        "BCHUSD" : "USDT_BCH",
     };
 
     var ticker = JSON.parse(body)[result_map[this.symbol]],
