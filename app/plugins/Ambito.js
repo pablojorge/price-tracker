@@ -29,16 +29,18 @@ AmbitoPriceRequester.prototype.constructor = AmbitoPriceRequester;
 
 AmbitoPriceRequester.prototype.processResponse = function (response, body) {
     var $ = cheerio.load(body),
-        bid = parseFloat($('#compra > big').text().replace(',','.')),
-        ask = parseFloat($("#venta > big").text().replace(',','.')),
+        bid = parseFloat($('.buy > span').text().replace(',','.')),
+        ask = parseFloat($('.sale > span > strong').text().replace(',','.')),
         updated_on = new Date(),
-        uact_format = /(\d{2})\/(\d{2})\/(\d{4})(\d{2}):(\d{2})/,
-        match = uact_format.exec($(".uact > b").text().trim()),
-        published_on = new Date(parseInt(match[3]),
-                                parseInt(match[2]) - 1,
-                                parseInt(match[1]),
-                                parseInt(match[4]),
-                                parseInt(match[5]));
+        date_format = /(\d{2})\/(\d{2})\/(\d{4})/,
+        hour_format = /(\d{2}):(\d{2})/,
+        date_match = date_format.exec($(".last-update > p > strong").text().trim()),
+        hour_match = hour_format.exec($(".last-update > strong").text().trim()),
+        published_on = new Date(parseInt(date_match[3]),
+                                parseInt(date_match[2]) - 1,
+                                parseInt(date_match[1]),
+                                parseInt(hour_match[1]),
+                                parseInt(hour_match[2]));
     
     return new messages.Symbol(this.getExchange(), 
                                this.symbol, 
