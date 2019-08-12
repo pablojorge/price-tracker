@@ -36,6 +36,10 @@ function QuotesView() {
             description: 'Ambito',
             links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
         },
+        'binance' : {
+            description: 'Binance',
+            links: [{desc: 'Markets', link: 'https://www.binance.com/en/markets'}]
+        },
         'bitfinex' : {
             description: 'Bitfinex',
             links: [{desc: 'Stats', link: 'https://www.bitfinex.com/pages/stats'}]
@@ -85,14 +89,14 @@ function QuotesView() {
     this.symbols = {
         'BCHUSD' : {
             description: '(Bitcoin Cash)',
-            exchanges: ['coinbase', 'kraken'],
+            exchanges: ['coinbase', 'binance', 'kraken'],
             prefix: '$',
             column: '2',
             unit: 'BCH'
         },
         'BTCUSD' : {
             description: '(Bitcoin)',
-            exchanges: ['bitstamp', 'coinbase',
+            exchanges: ['binance', 'bitstamp', 'coinbase',
                         'xapo',
                         'okcoin', 'bitfinex',
                         'kraken', 'poloniex',
@@ -110,49 +114,49 @@ function QuotesView() {
         },
         'ETCUSD' : {
             description: '(Ethereum Classic)',
-            exchanges: ['coinbase', 'poloniex', 'bitfinex'],
+            exchanges: ['coinbase', 'binance', 'poloniex', 'bitfinex'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
         },
         'ETHUSD' : {
             description: '(Ethereum)',
-            exchanges: ['coinbase', 'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
+            exchanges: ['coinbase', 'binance', 'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['coinbase', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
+            exchanges: ['coinbase', 'binance', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'LTC'
         },
         'ZECUSD' : {
             description: '(ZCash)',
-            exchanges: ['coinbase', 'kraken', 'poloniex'],
+            exchanges: ['binance', 'coinbase', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'ZEC'
         },
         'XMRUSD' : {
             description: '(Monero)',
-            exchanges: ['poloniex'],
+            exchanges: ['binance', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XMR'
         },
         'XLMUSD' : {
             description: '(Stellar Lumens)',
-            exchanges: ['coinbase', 'poloniex'],
+            exchanges: ['binance', 'coinbase', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XLM'
         },
         'XRPUSD' : {
             description: '(Ripple)',
-            exchanges: ['coinbase', 'poloniex'],
+            exchanges: ['binance', 'coinbase', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XRP'
