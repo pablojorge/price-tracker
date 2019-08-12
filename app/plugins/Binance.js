@@ -16,7 +16,6 @@ BinancePriceRequester.config = {
     exchange: 'binance',
     symbol_map: {
         "BTCUSD" : "BTCUSDT",
-        "BCHUSD" : "BCHUSDT",
         "LTCUSD" : "LTCUSDT",
         "ETHUSD" : "ETHUSDT",
         "ETCUSD" : "ETCUSDT",

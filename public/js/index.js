@@ -89,7 +89,7 @@ function QuotesView() {
     this.symbols = {
         'BCHUSD' : {
             description: '(Bitcoin Cash)',
-            exchanges: ['coinbase', 'binance', 'kraken'],
+            exchanges: ['coinbase', 'kraken'],
             prefix: '$',
             column: '2',
             unit: 'BCH'
