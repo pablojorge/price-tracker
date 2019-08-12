@@ -36,6 +36,10 @@ function QuotesView() {
             description: 'Ambito',
             links: [{desc: 'Info', link: 'http://www.ambito.com.ar/economia/mercados/monedas/dolar/'}]
         },
+        'binance' : {
+            description: 'Binance',
+            links: [{desc: 'Markets', link: 'https://www.binance.com/en/markets'}]
+        },
         'bitfinex' : {
             description: 'Bitfinex',
             links: [{desc: 'Stats', link: 'https://www.bitfinex.com/pages/stats'}]
@@ -85,14 +89,14 @@ function QuotesView() {
     this.symbols = {
         'BCHUSD' : {
             description: '(Bitcoin Cash)',
-            exchanges: ['bitfinex', 'kraken', 'poloniex'],
+            exchanges: ['coinbase', 'binance', 'kraken'],
             prefix: '$',
             column: '2',
             unit: 'BCH'
         },
         'BTCUSD' : {
             description: '(Bitcoin)',
-            exchanges: ['bitstamp', 'coinbase',
+            exchanges: ['binance', 'bitstamp', 'coinbase',
                         'xapo',
                         'okcoin', 'bitfinex',
                         'kraken', 'poloniex',
@@ -110,49 +114,49 @@ function QuotesView() {
         },
         'ETCUSD' : {
             description: '(Ethereum Classic)',
-            exchanges: ['poloniex', 'bitfinex'],
+            exchanges: ['coinbase', 'binance', 'poloniex', 'bitfinex'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
         },
         'ETHUSD' : {
             description: '(Ethereum)',
-            exchanges: ['kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
+            exchanges: ['coinbase', 'binance', 'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
+            exchanges: ['coinbase', 'binance', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'LTC'
         },
         'ZECUSD' : {
             description: '(ZCash)',
-            exchanges: ['kraken', 'poloniex'],
+            exchanges: ['binance', 'coinbase', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'ZEC'
         },
         'XMRUSD' : {
             description: '(Monero)',
-            exchanges: ['poloniex'],
+            exchanges: ['binance', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XMR'
         },
         'XLMUSD' : {
             description: '(Stellar Lumens)',
-            exchanges: ['poloniex'],
+            exchanges: ['binance', 'coinbase', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XLM'
         },
         'XRPUSD' : {
             description: '(Ripple)',
-            exchanges: ['poloniex'],
+            exchanges: ['binance', 'coinbase', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XRP'
@@ -307,6 +311,126 @@ QuotesView.prototype.onSymbolSelected = function(model, symbol) {
     this.onExchangeSelected(model, symbol, exchange);
 };
 
+QuotesView.prototype.onNextSymbolRequested = function(model) {
+    var self = this;
+    var current_symbol = self.getSelectedSymbol(model);
+    var current_found = false;
+    var next_symbol = null;
+
+    self.symbol_list.forEach(function(symbol) {
+        if (!symbol)
+            return;
+
+        if (!model.isSymbolVisible(symbol))
+            return;
+
+        if (symbol == current_symbol) {
+            current_found = true;
+            return;
+        }
+
+        if (current_found && !next_symbol) {
+            next_symbol = symbol;
+        }
+    });
+
+    self.onSymbolSelected(model, next_symbol);
+    model.setSelectedSymbol(next_symbol);
+};
+
+QuotesView.prototype.onPreviousSymbolRequested = function(model) {
+    var self = this;
+    var current_symbol = self.getSelectedSymbol(model);
+    var current_found = false;
+    var next_symbol = self.symbol_list[0];
+
+    self.symbol_list.forEach(function(symbol) {
+        if (!symbol)
+            return;
+
+        if (!model.isSymbolVisible(symbol))
+            return;
+
+        if (symbol == current_symbol) {
+            current_found = true;
+            return;
+        }
+
+        if (!current_found) {
+            next_symbol = symbol;
+        }
+    });
+
+    self.onSymbolSelected(model, next_symbol);
+    model.setSelectedSymbol(next_symbol);
+};
+
+QuotesView.prototype.onNextExchangeRequested = function(model) {
+    var self = this;
+    var current_symbol = self.getSelectedSymbol(model);
+    var current_exchange = self.getSelectedExchange(model, current_symbol);
+    var current_found = false;
+    var next_exchange = null;
+
+    self.symbols[current_symbol].exchanges.forEach(function(exchange) {
+        if (!model.isExchangeVisible(current_symbol, exchange)) {
+            return;
+        }
+
+        if (exchange == current_exchange) {
+            current_found = true;
+            return;
+        }
+
+        if (current_found && !next_exchange) {
+            next_exchange = exchange;
+        }
+    });
+
+    if (!next_exchange) {
+        return;
+    }
+
+    self.onExchangeSelected(model, current_symbol, next_exchange);
+    model.setSelectedExchange(current_symbol, next_exchange);
+};
+
+QuotesView.prototype.onPreviousExchangeRequested = function(model) {
+    var self = this;
+    var current_symbol = self.getSelectedSymbol(model);
+    var current_exchange = self.getSelectedExchange(model, current_symbol);
+    var current_found = false;
+    var next_exchange = null;
+
+    self.symbols[current_symbol].exchanges.forEach(function(exchange) {
+        if (!model.isExchangeVisible(current_symbol, exchange)){
+            return;
+        }
+
+        if (!next_exchange) {
+            next_exchange = exchange;
+        }
+    });
+
+    self.symbols[current_symbol].exchanges.forEach(function(exchange) {
+        if (!model.isExchangeVisible(current_symbol, exchange)){
+            return;
+        }
+
+        if (exchange == current_exchange) {
+            current_found = true;
+            return;
+        }
+
+        if (!current_found) {
+            next_exchange = exchange;
+        }
+    });
+
+    self.onExchangeSelected(model, current_symbol, next_exchange);
+    model.setSelectedExchange(current_symbol, next_exchange);
+};
+
 QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     $(".select-exchange").removeClass('custom-nav-selected');
     $(".select-exchange").addClass('custom-nav-not-selected');
@@ -406,6 +530,22 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
             }
         }
     );
+};
+
+QuotesView.prototype.hookKeyboardShortcuts = function (model) {
+    var self = this;
+
+    document.body.onkeydown = function(event) {
+        if (event.key == 'j') {
+            self.onNextSymbolRequested(model);
+        } else if (event.key == 'k') {
+            self.onPreviousSymbolRequested(model);
+        } else if (event.key == 'n') {
+            self.onNextExchangeRequested(model);
+        } else if (event.key == 'p') {
+            self.onPreviousExchangeRequested(model);
+        }
+    }
 };
 
 QuotesView.prototype.hookFixedButtons = function (model) {
@@ -1254,6 +1394,7 @@ QuotesController.prototype.start = function () {
     this.view.render();
     this.view.hookPriceLabels(this.model);
     this.view.hookSelectionButtons(this.model);
+    this.view.hookKeyboardShortcuts(this.model);
     this.view.hookFixedButtons(this.model);
     this.view.restoreSelectionStatus(this.model);
     this.view.restorePreferences(this.model);

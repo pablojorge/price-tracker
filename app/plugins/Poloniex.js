@@ -18,7 +18,6 @@ PoloniexPriceRequester.config = {
         "ETHUSD" : "",
         "ETCUSD" : "",
         "BTCUSD" : "",
-        "BCHUSD" : "",
         "LTCUSD" : "",
         "ZECUSD" : "",
         "XLMUSD" : "",
@@ -41,7 +40,6 @@ PoloniexPriceRequester.prototype.processResponse = function (response, body) {
         "XMRUSD" : "USDT_XMR",
         "XRPUSD" : "USDT_XRP",
         "ZECUSD" : "USDT_ZEC",
-        "BCHUSD" : "USDT_BCH",
     };
 
     var ticker = JSON.parse(body)[result_map[this.symbol]],

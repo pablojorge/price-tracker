@@ -19,7 +19,6 @@ BitfinexPriceRequester.config = {
         "LTCUSD" : "LTCUSD",
         "ETHUSD" : "ETHUSD",
         "ETCUSD" : "ETCUSD",
-        "BCHUSD" : "BCHUSD",
         "BTGUSD" : "BTGUSD",
     },
     url_template: 'https://api.bitfinex.com/v1/pubticker/<<SYMBOL>>',
