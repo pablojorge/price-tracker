@@ -18,7 +18,7 @@ CoinbasePriceRequester.config = {
     symbol_map: {
         "BTCUSD" : undefined
     },
-    url_template: 'http://coinbase.com/api/v1/prices/spot_rate',
+    url_template: 'http://api.coinbase.com/',
 };
 
 CoinbasePriceRequester.prototype = Object.create(PriceRequester.prototype);
@@ -29,9 +29,13 @@ CoinbasePriceRequester.prototype.constructor = CoinbasePriceRequester;
 CoinbasePriceRequester.prototype.doRequest = function (callback) {
     var self = this;
 
+    var symbol_map = {
+        "BTCUSD" : "BTC-USD",
+    };
+
     async.map(
-        ['http://coinbase.com/api/v1/prices/sell',
-         'http://coinbase.com/api/v1/prices/buy'],
+        ['http://api.coinbase.com/v2/prices/' + symbol_map[self.symbol] + '/sell',
+         'http://api.coinbase.com/v2/prices/' + symbol_map[self.symbol] + '/buy'],
         function (item, cb) {
             self.__doRequest(item, null, cb);
         },
@@ -57,7 +61,7 @@ CoinbasePriceRequester.prototype.doRequest = function (callback) {
 };
 
 CoinbasePriceRequester.prototype.processResponse = function (response, body) {
-    return parseFloat(JSON.parse(body).amount);
+    return parseFloat(JSON.parse(body).data.amount);
 };
 /**/
 
