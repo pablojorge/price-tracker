@@ -85,7 +85,7 @@ function QuotesView() {
     this.symbols = {
         'BCHUSD' : {
             description: '(Bitcoin Cash)',
-            exchanges: ['kraken'],
+            exchanges: ['coinbase', 'kraken'],
             prefix: '$',
             column: '2',
             unit: 'BCH'
@@ -110,28 +110,28 @@ function QuotesView() {
         },
         'ETCUSD' : {
             description: '(Ethereum Classic)',
-            exchanges: ['poloniex', 'bitfinex'],
+            exchanges: ['coinbase', 'poloniex', 'bitfinex'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
         },
         'ETHUSD' : {
             description: '(Ethereum)',
-            exchanges: ['kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
+            exchanges: ['coinbase', 'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['okcoin', 'bitfinex', 'kraken', 'poloniex'],
+            exchanges: ['coinbase', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'LTC'
         },
         'ZECUSD' : {
             description: '(ZCash)',
-            exchanges: ['kraken', 'poloniex'],
+            exchanges: ['coinbase', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'ZEC'
@@ -145,14 +145,14 @@ function QuotesView() {
         },
         'XLMUSD' : {
             description: '(Stellar Lumens)',
-            exchanges: ['poloniex'],
+            exchanges: ['coinbase', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XLM'
         },
         'XRPUSD' : {
             description: '(Ripple)',
-            exchanges: ['poloniex'],
+            exchanges: ['coinbase', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XRP'

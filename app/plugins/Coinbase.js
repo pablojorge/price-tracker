@@ -16,7 +16,14 @@ function CoinbasePriceRequester(symbol, options) {
 CoinbasePriceRequester.config = {
     exchange: 'coinbase',
     symbol_map: {
-        "BTCUSD" : undefined
+        "BTCUSD" : undefined,
+        "BCHUSD" : undefined,
+        "ETHUSD" : undefined,
+        "ETCUSD" : undefined,
+        "LTCUSD" : undefined,
+        "ZECUSD" : undefined,
+        "XLMUSD" : undefined,
+        "XRPUSD" : undefined,
     },
     url_template: 'http://api.coinbase.com/',
 };
@@ -31,6 +38,13 @@ CoinbasePriceRequester.prototype.doRequest = function (callback) {
 
     var symbol_map = {
         "BTCUSD" : "BTC-USD",
+        "BCHUSD" : "BCH-USD",
+        "ETHUSD" : "ETH-USD",
+        "ETCUSD" : "ETC-USD",
+        "LTCUSD" : "LTC-USD",
+        "ZECUSD" : "ZEC-USD",
+        "XLMUSD" : "XLM-USD",
+        "XRPUSD" : "XRP-USD",
     };
 
     async.map(
