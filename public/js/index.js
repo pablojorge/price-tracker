@@ -80,6 +80,10 @@ function QuotesView() {
             description: 'Poloniex',
             links: [{desc: 'Exchange', link: 'https://poloniex.com/exchange'}]
         },
+        'santander': {
+            description: 'Santander',
+            links: [{desc: 'Home', link: 'https://www.santander.com.ar'}]
+        },
         'xapo' : {
             description: 'Xapo',
             links: [{desc: 'Home', link: 'https://www.xapo.com/'}]
@@ -163,7 +167,7 @@ function QuotesView() {
         },
         'USDARS' : {
             description: '(Dolar oficial)',
-            exchanges: ['ambito', 'cronista', 'bna'],
+            exchanges: ['ambito', 'cronista', 'santander', 'bna'],
             prefix: 'AR$',
             column: '1'
         },
