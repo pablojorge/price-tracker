@@ -82,7 +82,7 @@ function QuotesView() {
         },
         'santander': {
             description: 'Santander',
-            links: [{desc: 'Home', link: 'https://www.santander.com.ar'}]
+            links: [{desc: 'Cotizacion', link: 'https://banco.santanderrio.com.ar/exec/cotizacion/index.jsp'}]
         },
         'xapo' : {
             description: 'Xapo',
