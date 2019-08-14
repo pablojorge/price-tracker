@@ -155,7 +155,9 @@ PriceStore.prototype.listener = function(error, response) {
         return;
     }
 
-    if (response.data.bid === 0 || response.data.ask === 0) {
+    if (response.data.bid === 0 || response.data.ask === 0 ||
+        response.data.bid === null || response.data.ask === null ||
+        isNaN(response.data.bid) || isNaN(response.data.ask)) {
         console.log("PriceStore: WARNING ignoring invalid value:", response.data);
         return;
     }
