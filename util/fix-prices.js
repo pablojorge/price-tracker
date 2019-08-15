@@ -13,7 +13,7 @@ String.prototype.endsWith = function (str) {
 
 client.auth(redisURL.auth.split(':')[1]);
 
-client.keys("USDARS:lanacion:*", function (error, keys) {
+client.keys("USDARS:santander:*", function (error, keys) {
     console.log("Keys obtained, starting...");
 
     keys.sort();
@@ -57,24 +57,29 @@ client.keys("USDARS:lanacion:*", function (error, keys) {
                         object[x].open = object[x].close;
                         fix = object;
                     }
-                    if (object[x].high < Math.max(object[x].open, object[x].close)) {
+                    if (object[x].close === null && object[x].open > 0) {
+                        object[x].close = object[x].open;
+                        fix = object;
+                    }
+                    if ((object[x].high < Math.max(object[x].open, object[x].close)) ||
+                        (object[x].high === 0))  {
                         console.log("Found an invalid high", x, "\n  ", key, "\n  ", value);
                         if (object[x].open && object[x].close) {
                             object[x].high = Math.max(object[x].open, object[x].close);
                             fix = object;
-                        }
-                    }
-                    if (object[x].high === 0) {
-                        console.log("Found a zero high", x, "\n  ", key, "\n  ", value);
-                        if (object[x].open && object[x].close) {
-                            object[x].high = Math.max(object[x].open, object[x].close);
+                        } else if (object[x].open) {
+                            object[x].high = object[x].open;
                             fix = object;
                         }
                     }
-                    if (object[x].low === 0) {
-                        console.log("Found a zero low", x, "\n  ", key, "\n  ", value);
+                    if ((object[x].low < Math.min(object[x].open, object[x].close)) ||
+                        (object[x].low === 0))  {
+                        console.log("Found an invalid low", x, "\n  ", key, "\n  ", value);
                         if (object[x].open && object[x].close) {
                             object[x].low = Math.min(object[x].open, object[x].close);
+                            fix = object;
+                        } else if (object[x].open) {
+                            object[x].low = object[x].open;
                             fix = object;
                         }
                     }
