@@ -82,7 +82,7 @@ function QuotesView() {
         },
         'santander': {
             description: 'Santander',
-            links: [{desc: 'Home', link: 'https://www.santander.com.ar'}]
+            links: [{desc: 'Cotizacion', link: 'https://banco.santanderrio.com.ar/exec/cotizacion/index.jsp'}]
         },
         'xapo' : {
             description: 'Xapo',
@@ -435,6 +435,14 @@ QuotesView.prototype.onPreviousExchangeRequested = function(model) {
     model.setSelectedExchange(current_symbol, next_exchange);
 };
 
+QuotesView.prototype.onReloadRequested = function(model) {
+    var self = this;
+    var symbol = self.getSelectedSymbol(model),
+        exchange = self.getSelectedExchange(model, symbol);
+
+    self.redrawExchangeChart(symbol, exchange);
+}
+
 QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     $(".select-exchange").removeClass('custom-nav-selected');
     $(".select-exchange").addClass('custom-nav-not-selected');
@@ -548,6 +556,14 @@ QuotesView.prototype.hookKeyboardShortcuts = function (model) {
             self.onNextExchangeRequested(model);
         } else if (event.key == 'p') {
             self.onPreviousExchangeRequested(model);
+        } else if (event.key == 's') {
+            $("#symbols-modal").modal('show');
+        } else if (event.key == 'e') {
+            $("#exchanges-modal").modal('show');
+        } else if (event.key == 'r') {
+            self.onReloadRequested(model);
+        } else if (event.key == '?') {
+            $("#keyboard-shortcuts-modal").modal('show');
         }
     }
 };
@@ -580,10 +596,7 @@ QuotesView.prototype.hookFixedButtons = function (model) {
     });
 
     $("#chart-reload").bind('click', function(event) {
-        var symbol = self.getSelectedSymbol(model),
-            exchange = self.getSelectedExchange(model, symbol);
-
-        self.redrawExchangeChart(symbol, exchange);
+        self.onReloadRequested()
 
         return false;
     });
