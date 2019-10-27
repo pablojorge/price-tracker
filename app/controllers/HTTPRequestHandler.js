@@ -1,3 +1,5 @@
+var xmljs = require('xml-js');
+
 var messages = require('../../public/lib/messages.js'),
     Registry = require('../models/Registry.js');
 
@@ -14,7 +16,18 @@ HTTPRequestHandler.prototype.handle = function(request, req, res) {
         function(error, response) {
             if (error === null) {
                 console.log("serveRequest: response sent:", response);
-                res.json(response);
+                if(req.query.as_xml) {
+                    res.type('application/xml');
+                    res.send(xmljs.json2xml(
+                        response, {
+                            compact: true,
+                            ignoreComment: true,
+                            spaces: 4
+                        }
+                    ));
+                } else {
+                    res.json(response);
+                }
             } else {
                 res.status(500);
                 console.log("serverRequest: error sent: ", error.exception);
