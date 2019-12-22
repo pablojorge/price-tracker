@@ -6,7 +6,7 @@
     "url": "git://github.com/pablojorge/price-tracker.git"
   },
   "dependencies": {
-    "ws": "0.4.x",
+    "ws": "7.2.x",
     "async": "0.2.x",
     "express": "3.x",
     "request": "2.30.x",
