@@ -9,7 +9,7 @@
     "ws": "7.2.x",
     "async": "0.2.x",
     "express": "3.x",
-    "request": "2.30.x",
+    "request": "2.88.x",
     "cheerio": "0.13.x",
     "redis": "0.10.x",
     "xml-js": "1.6.x"
