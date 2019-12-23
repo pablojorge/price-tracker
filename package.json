@@ -1,6 +1,6 @@
 {
   "name": "price-tracker",
-  "version": "0.0.1",
+  "version": "v0.9.5",
   "repository": {
     "type": "git",
     "url": "git://github.com/pablojorge/price-tracker.git"
@@ -19,7 +19,7 @@
     "mocha": "*"
   },
   "engines": {
-    "node": "8.1.x",
-    "npm": "5.0.x"
+    "node": "8.16.0",
+    "npm": "6.4.1"
   }
 }
