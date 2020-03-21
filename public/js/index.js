@@ -93,7 +93,7 @@ function QuotesView() {
     this.symbols = {
         'BCHUSD' : {
             description: '(Bitcoin Cash)',
-            exchanges: ['coinbase', 'kraken'],
+            exchanges: ['bitstamp', 'coinbase', 'kraken'],
             prefix: '$',
             column: '2',
             unit: 'BCH'
@@ -125,14 +125,14 @@ function QuotesView() {
         },
         'ETHUSD' : {
             description: '(Ethereum)',
-            exchanges: ['coinbase', 'binance', 'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
+            exchanges: ['bitstamp', 'coinbase', 'binance', 'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
             prefix: '$',
             column: '2',
             unit: 'ETH'
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['coinbase', 'binance', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
+            exchanges: ['bitstamp', 'coinbase', 'binance', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'LTC'
@@ -160,7 +160,7 @@ function QuotesView() {
         },
         'XRPUSD' : {
             description: '(Ripple)',
-            exchanges: ['binance', 'coinbase', 'poloniex'],
+            exchanges: ['bitstamp', 'binance', 'coinbase', 'poloniex'],
             prefix: '$',
             column: '2',
             unit: 'XRP'

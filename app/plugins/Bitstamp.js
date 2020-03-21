@@ -14,7 +14,11 @@ function BitstampPriceRequester(symbol, options) {
 BitstampPriceRequester.config = {
     exchange: 'bitstamp',
     symbol_map: {
-        "BTCUSD" : "btcusd"
+        "BTCUSD" : "btcusd",
+        "BCHUSD" : "bchusd",
+        "XRPUSD" : "xrpusd",
+        "LTCUSD" : "ltcusd",
+        "ETHUSD" : "ethusd",
     },
     url_template: 'http://www.bitstamp.net/api/ticker/',
 };
