@@ -1054,12 +1054,6 @@ QuotesView.prototype.renderPrice = function (price, prev) {
         Math.abs(change_percent).toFixed(2), '%'
     ));
 
-    if (!prev || prev.bid != price.bid || prev.ask != price.ask) {
-        $(ask_selector).effect("highlight");
-        $(change_price_selector).effect("highlight");
-        $(change_percent_selector).effect("highlight");
-    }
-
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
     $(progress_selector).addClass("hide");
@@ -1159,16 +1153,6 @@ QuotesView.prototype.renderDetails = function (price, prev) {
         '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span> ',
         symbol_prefix, price.stats.daily.ask.low.toFixed(2)
     ));
-
-    if (!prev ||
-         (prev.bid && price.bid && prev.bid.toFixed(2) != price.bid.toFixed(2)) ||
-         (prev.ask && price.ask && prev.ask.toFixed(2) != price.ask.toFixed(2))) {
-        $__(selector_base, "-details-bid-ask").effect("highlight");
-        $__(selector_base, "-details-daily-gain").effect("highlight");
-        $__(selector_base, "-details-open-close").effect("highlight");
-        $__(selector_base, "-details-daily-low").effect("highlight");
-        $__(selector_base, "-details-daily-high").effect("highlight");
-    }
 };
 
 QuotesView.prototype.renderCustomFields = function (price) {
