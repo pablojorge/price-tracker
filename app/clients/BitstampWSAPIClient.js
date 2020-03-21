@@ -1,12 +1,11 @@
 const WebSocket = require('ws');
 
 /**
- * Simple client for Pusher
+ * Simple client for Bitstamp WS API
  */
 
-function PusherClient(pusherId, callback) {
-    var url = ("wss://ws.pusherapp.com/app/" + pusherId + 
-               "?protocol=7&client=js&version=2.1.6&flash=false");
+function BitstampWSAPIClient(callback) {
+    var url = ("wss://ws.bitstamp.net");
 
     this.connection = new WebSocket(url);
     this.connection.on('error', function (error) {
@@ -16,12 +15,12 @@ function PusherClient(pusherId, callback) {
     });
 }
 
-PusherClient.prototype.subscribe = function (channel) {
+BitstampWSAPIClient.prototype.subscribe = function (channel) {
     var self = this;
 
     this.connection.on('open', function () {
         var message = {
-            event: "pusher:subscribe",
+            event: "bts:subscribe",
             data: {channel: channel}
         };
 
@@ -29,17 +28,17 @@ PusherClient.prototype.subscribe = function (channel) {
     });
 };
 
-PusherClient.prototype.bind = function (event, handler) {
+BitstampWSAPIClient.prototype.bind = function (event, handler) {
     this.connection.on('message', function (message) {
         var payload = JSON.parse(message);
         if (payload.event === event) {
-            handler(JSON.parse(payload.data));
+            handler(payload.data);
         }
     });
 };
 
-PusherClient.prototype.stop = function () {
+BitstampWSAPIClient.prototype.stop = function () {
     this.connection.close();
 };
 
-module.exports = PusherClient;
+module.exports = BitstampWSAPIClient;
