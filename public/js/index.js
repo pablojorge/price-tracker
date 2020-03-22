@@ -303,8 +303,12 @@ QuotesView.prototype.getSelectedExchange = function(model, symbol) {
 QuotesView.prototype.onSymbolSelected = function(model, symbol) {
     var exchange = this.getSelectedExchange(model, symbol);
 
-    $(".select-symbol").removeClass("active");
-    $__("#select-symbol-", symbol).addClass("active");
+    $(".select-symbol").removeClass('custom-nav-selected');
+    $(".select-symbol").addClass('custom-nav-not-selected');
+
+    $__("#select-symbol-", symbol).removeClass('custom-nav-not-selected');
+    $__("#select-symbol-", symbol).removeClass('custom-nav-hover');
+    $__("#select-symbol-", symbol).addClass('custom-nav-selected');
 
     $(".exchanges-body").addClass("hide");
     $__("#exchanges-body-", symbol).removeClass("hide");
@@ -457,6 +461,9 @@ QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     $(".exchange-chart").addClass("hide");
     $__("#", symbol, '-', exchange, '-chart').removeClass("hide");
 
+    $__(".", symbol, "-prices-view").addClass("hide");
+    $__("#", symbol, '-', exchange, '-symbol-price-view').removeClass("hide");
+
     this.drawExchangeChart(symbol, exchange);
 };
 
@@ -515,6 +522,22 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
 
         return false;
     });
+
+    $('.select-symbol').hover(
+        function() {
+            if (!$(this).hasClass('custom-nav-selected')) {
+                $(this).removeClass('custom-nav-not-selected');
+                $(this).addClass('custom-nav-hover');
+            }
+        },
+        function() {
+            $(this).removeClass('custom-nav-hover');
+
+            if (!$(this).hasClass('custom-nav-selected')) {
+                $(this).addClass('custom-nav-not-selected');
+            }
+        }
+    );
 
     $(".select-exchange").bind('click', function(event) {
         event.preventDefault();
@@ -625,14 +648,15 @@ QuotesView.prototype.restoreVisibility = function (model) {
         checkbox.prop("checked", visible);
 
         if (visible) {
-            $__("#select-symbol-", symbol).removeClass("hide");
+            $__("#row-symbol-", symbol).removeClass("hide");
         } else {
-            $__("#select-symbol-", symbol).addClass("hide");
+            $__("#row-symbol-", symbol).addClass("hide");
         }
 
         self.symbols[symbol].exchanges.forEach(function(exchange) {
             var checkbox = $__("#checkbox-exchange-", symbol, "-", exchange),
-                visible = model.isExchangeVisible(symbol, exchange);
+                visible = model.isExchangeVisible(symbol, exchange),
+                selected = self.getSelectedExchange(model, symbol);
 
             checkbox.prop("checked", visible);
 
@@ -640,6 +664,10 @@ QuotesView.prototype.restoreVisibility = function (model) {
                 $__("#row-exchange-", symbol, '-', exchange).removeClass("hide");
             } else {
                 $__("#row-exchange-", symbol, '-', exchange).addClass("hide");
+            }
+
+            if (selected == exchange) {
+                self.onExchangeSelected(model, symbol, exchange);
             }
         });
     });
@@ -674,16 +702,58 @@ QuotesView.prototype.renderSymbolChartsBody = function (symbol, info) {
 };
 
 QuotesView.prototype.renderSymbolNav = function (symbol, info) {
+    var base_id = __(symbol, '-', 'prices-view');
+
     return $__(
-        '<li role="presentation" ',
-        '    target="', symbol, '" ',
-        '    class="select-symbol" ',
-        '    id="select-symbol-', symbol,'">',
-        '  <a>',
-        '    <img src="img/symbol/', symbol, '.png" width=32 height=32></img>',
-        '    <large>', symbol, '</large> <small>', info.description, '</small>',
-        '  </a>',
-        '</li>'
+        '<div style="margin-left: 0px; margin-right: 0px; margin-top: 5px;"',
+        '    class="row" id="row-symbol-', symbol,'">',
+        '  <div class="col-xs-6 select-symbol custom-nav custom-nav-not-selected"',
+        '       target="', symbol, '" ',
+        '       id="select-symbol-', symbol,'">',
+        '    <span style="font-size: small;"> ',
+        '      <img src="img/symbol/', symbol, '.png" width=16 height=16></img> ',
+               symbol, ' ', info.description,
+        '    </span>',
+        '  </div>',
+        '  <div style="margin-top: 8px" id="', base_id,'">',
+        '  </div>',        
+        '</div>'
+    );
+};
+
+QuotesView.prototype.renderExchangeInSymbolPricesView = function (symbol, exchange) {
+    var base_id = __(symbol, '-', exchange);
+
+    return $__(
+        '  <div style="margin-top: 8px" class="', symbol,'-prices-view hide"',
+        '       id="', base_id,'-symbol-price-view">',
+        '    <div class="col-xs-6 ', base_id, '-progress">',
+        '      <div class="progress progress-striped active">',
+        '        <div class="progress-bar" style="width: 100%">',
+        '        </div>',
+        '      </div>',
+        '    </div>',
+        '    <div class="col-xs-6 hide ', base_id, '-error">',
+        '      <div class="alert alert-danger">',
+        '        <strong>Error</strong>',
+        '        <span class="', base_id, '-error-msg"></span>',
+        '      </div>',
+        '    </div>',
+        '    <div class="', base_id, '-prices hide" style="text-align: right;">',
+        '      <div class="col-xs-6" style="text-align: right; padding-left: 0px;">',
+        '        <img src="img/exchange/', exchange, '.ico" width=16 height=16> ',
+        '        <span style="font-size: small"',
+        '            class="label label-primary ', base_id, '-ask">',
+        '        </span>',
+        '        <span style="font-size: small"',
+        '            class="label label-default hide change-price ', base_id, '-change-price">',
+        '        </span>',
+        '        <span style="font-size: small"',
+        '            class="label label-default change-percent ', base_id, '-change-percent">',
+        '        </span>',
+        '      </div>',
+        '    </div>',
+        '  </div>'
     );
 };
 
@@ -710,8 +780,6 @@ QuotesView.prototype.renderSymbolNavSep = function () {
     return $__(
         '<li role="presentation" class="separator bottom-separator">',
         '</li>',
-        '<li>',
-        '</li>'
     );
 };
 
@@ -749,30 +817,28 @@ QuotesView.prototype.renderExchangePrices = function (symbol, exchange) {
         '    </span>',
         '  </div>',
         '  <div style="margin-top: 8px">',
-        '    <div class="col-xs-7"',
-        '         id="', base_id, '-progress">',
+        '    <div class="col-xs-7 ', base_id, '-progress">',
         '      <div class="progress progress-striped active">',
         '        <div class="progress-bar" style="width: 100%">',
         '        </div>',
         '      </div>',
         '    </div>',
-        '    <div class="col-xs-7 hide"',
-        '         id="', base_id, '-error">',
+        '    <div class="col-xs-7 hide ', base_id, '-error">',
         '      <div class="alert alert-danger">',
         '        <strong>Error</strong>',
-        '        <span id="', base_id, '-error-msg"></span>',
+        '        <span class="', base_id, '-error-msg"></span>',
         '      </div>',
         '    </div>',
-        '    <div id="', base_id, '-prices" class="hide" style="text-align: right;">',
+        '    <div class="', base_id, '-prices hide" style="text-align: right;">',
         '      <div class="col-xs-7" style="text-align: right; padding-left: 0px;">',
-        '        <span class="label label-primary" style="font-size: small"',
-        '            id="', base_id, '-ask">',
+        '        <span style="font-size: small"',
+        '            class="label label-primary ', base_id, '-ask">',
         '        </span>',
-        '        <span class="label label-default hide change-price" style="font-size: small"',
-        '            id="', base_id, '-change-price">',
+        '        <span style="font-size: small"',
+        '            class="label label-default hide change-price ', base_id, '-change-price">',
         '        </span>',
-        '        <span class="label label-default change-percent" style="font-size: small"',
-        '            id="', base_id, '-change-percent">',
+        '        <span style="font-size: small"',
+        '            class="label label-default change-percent ', base_id, '-change-percent">',
         '        </span>',
         '      </div>',
         '    </div>',
@@ -1007,6 +1073,10 @@ QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
         this.renderExchangePrices(symbol, exchange)
     );
 
+    $__('#', symbol, '-', 'prices-view').append(
+        this.renderExchangeInSymbolPricesView(symbol, exchange)
+    );
+
     $__('#details-body-', symbol).append(
         this.renderExchangeDetails(symbol, exchange)
     );
@@ -1021,7 +1091,7 @@ QuotesView.prototype.addExchangeForSymbol = function (symbol, exchange) {
 };
 
 QuotesView.prototype.renderPrice = function (price, prev) {
-    var selector_base = __("#", price.symbol, "-", price.exchange),
+    var selector_base = __(".", price.symbol, "-", price.exchange),
         prices_selector = __(selector_base, "-prices"),
         ask_selector = __(selector_base, "-ask"),
         change_price_selector = __(selector_base, "-change-price"),
@@ -1057,12 +1127,10 @@ QuotesView.prototype.renderPrice = function (price, prev) {
     $(prices_selector).removeClass("hide");
     $(error_selector).addClass("hide");
     $(progress_selector).addClass("hide");
-
-    this.updateExchangeChart(price.symbol, price.exchange, price.stats.daily);
 };
 
 QuotesView.prototype.updateLabelsColors = function (price, prev) {
-    var selector_base = __("#", price.symbol, "-", price.exchange),
+    var selector_base = __(".", price.symbol, "-", price.exchange),
         change_price_selector = __(selector_base, "-change-price"),
         change_percent_selector = __(selector_base, "-change-percent"),
         daily_gain_selector = __(selector_base, "-details-daily-gain"),
@@ -1410,6 +1478,7 @@ QuotesController.prototype.onPriceUpdated = function (price) {
     this.view.addCustomFields(price);
     this.view.updateLabelsColors(price, prev);
     this.view.renderPrice(price, prev);
+    this.view.updateExchangeChart(price.symbol, price.exchange, price.stats.daily);
     this.view.renderDetails(price, prev);
     this.view.renderCustomFields(price);
     this.view.updateQuoteTimer(price);
