@@ -937,26 +937,13 @@ QuotesView.prototype.renderExchangeDetails = function (symbol, exchange) {
         '    <div class="row">',
         '      <div class="col-xs-4" style="font-size: x-small; font-style: italic; text-align: right;">',
         '        <span>',
-        '          <strong>Last updated:</strong>',
+        '          <strong>Last update:</strong>',
         '        </span>',
         '      </div>',
         '      <div class="col-xs-8" style="font-size: x-small; font-style: italic; text-align: right; padding-left: 0px;">',
-        '        <span id="', base_id, '-last-updated-date">',
+        '        <span id="', base_id, '-last-update-date">',
         '        </span>',
-        '        <span id="', base_id, '-last-updated-ago">',
-        '        </span>',
-        '      </div>',
-        '    </div>',
-        '    <div class="row">',
-        '      <div class="col-xs-4" style="font-size: x-small; font-style: italic; text-align: right;">',
-        '        <span>',
-        '          <strong>Last change:</strong>',
-        '        </span>',
-        '      </div>',
-        '      <div class="col-xs-8" style="font-size: x-small; font-style: italic; text-align: right; padding-left: 0px;">',
-        '        <span id="', base_id, '-last-change-date">',
-        '        </span>',
-        '        <span id="', base_id, '-last-change-ago">',
+        '        <span id="', base_id, '-last-update-ago">',
         '        </span>',
         '      </div>',
         '    </div>',
@@ -1173,15 +1160,13 @@ QuotesView.prototype.updateLabelsColors = function (price) {
 
 QuotesView.prototype.renderDetails = function (price) {
     var selector_base = __("#exchange-details-", price.symbol, "-", price.exchange),
-        updated_on = (new Date(price.updated_on)).toLocaleString(),
-        last_change = (new Date(price.stats.last_change)).toLocaleString(),
+        last_update = (new Date(price.stats.last_change || price.updated_on)).toLocaleString(),
         symbol_prefix = this.symbols[price.symbol].prefix;
 
     var change_price = price.stats.daily.ask.close - price.stats.daily.ask.open,
         change_percent = change_price / price.stats.daily.ask.open * 100;
 
-    $__(selector_base, "-last-updated-date").html(updated_on);
-    $__(selector_base, "-last-change-date").html(last_change);
+    $__(selector_base, "-last-update-date").html(last_update);
 
     $__(selector_base, "-bid-ask").html(__(
         price.bid ? __(symbol_prefix, price.bid.toFixed(2)) : "N/A", 
@@ -1335,14 +1320,11 @@ QuotesView.prototype.timedelta = function(last_update) {
 };
 
 QuotesView.prototype.updateQuoteTimer = function (quote) {
-    var selector_base = __("#exchange-details-", quote.symbol, "-", quote.exchange);
+    var selector_base = __("#exchange-details-", quote.symbol, "-", quote.exchange),
+        last_update = (new Date(quote.stats.last_change || quote.updated_on));
 
-    $__(selector_base, "-last-updated-ago").html(
-        __('(', this.timedelta(new Date(quote.updated_on)), ' ago)')
-    );
-
-    $__(selector_base, "-last-change-ago").html(
-        __('(', this.timedelta(new Date(quote.stats.last_change)), ' ago)')
+    $__(selector_base, "-last-update-ago").html(
+        __('(', this.timedelta(last_update), ' ago)')
     );
 };
 
