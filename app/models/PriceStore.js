@@ -116,11 +116,25 @@ PriceStore.prototype.merge = function(last, current) {
 };
 
 PriceStore.prototype.registerLastChange = function(last, value) {
-    if (last === null)
-        return;
+    var key = this.lastKey(value.spot.exchange, value.spot.symbol);
+    if (last === null) {
+        console.log("No previous value for ", key);
+        return true;
+    }
 
     if ((value.spot.bid && last.spot.bid && value.spot.bid !== last.spot.bid) ||
         (value.spot.ask && last.spot.ask && value.spot.ask !== last.spot.ask)) {
+
+        var timedelta = (
+            value.spot.updated_on.getTime() -
+            Date.parse(last.spot.stats.last_change)
+        );
+
+        if (timedelta < config.streaming.resolution) {
+            console.log("Last change for ", key, " received: ", timedelta, "ms ago");
+            return false;
+        }
+
         value.spot = helpers.merge(
             value.spot, {
                 stats : {
@@ -128,7 +142,12 @@ PriceStore.prototype.registerLastChange = function(last, value) {
                 }
             }
         );
+
+        return true;
     }
+
+    console.log("Price didn't change for ", key);
+    return false;
 };
 
 PriceStore.prototype.toSymbol = function(value) {
@@ -183,7 +202,10 @@ PriceStore.prototype.listener = function(error, response) {
             daily: self.accumulate(last ? last.daily : null, response.data, to_day_key),
         };
 
-        self.registerLastChange(last, value);
+        if (!self.registerLastChange(last, value)) {
+            console.log("PriceStore: skipping update");
+            return;
+        }
 
         // Forward to the broadcaster:
         var message = self.toSymbol(value);

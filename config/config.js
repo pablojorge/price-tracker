@@ -5,6 +5,7 @@ module.exports = {
 
     streaming: {
         interval: parseInt(process.env.STREAMING_INTERVAL) || 30,
+        resolution: parseInt(process.env.STREAMING_RESOLUTION) || 1000,
     },
 
     redis: {
