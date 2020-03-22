@@ -1129,7 +1129,7 @@ QuotesView.prototype.renderPrice = function (price, prev) {
     $(progress_selector).addClass("hide");
 };
 
-QuotesView.prototype.updateLabelsColors = function (price, prev) {
+QuotesView.prototype.updateLabelsColors = function (price) {
     var selector_base = __(".", price.symbol, "-", price.exchange),
         change_price_selector = __(selector_base, "-change-price"),
         change_percent_selector = __(selector_base, "-change-percent"),
@@ -1174,7 +1174,7 @@ QuotesView.prototype.updateLabelsColors = function (price, prev) {
     }
 };
 
-QuotesView.prototype.renderDetails = function (price, prev) {
+QuotesView.prototype.renderDetails = function (price) {
     var selector_base = __("#", price.symbol, "-", price.exchange),
         updated_on = (new Date(price.updated_on)).toLocaleString(),
         last_change = (new Date(price.stats.last_change)).toLocaleString(),
@@ -1471,15 +1471,13 @@ QuotesController.prototype.start = function () {
 };
 
 QuotesController.prototype.onPriceUpdated = function (price) {
-    var prev;
-
     this.updated_on = new Date();
-    prev = this.model.updateQuote(price);
+    this.model.updateQuote(price);
     this.view.addCustomFields(price);
-    this.view.updateLabelsColors(price, prev);
-    this.view.renderPrice(price, prev);
+    this.view.updateLabelsColors(price);
+    this.view.renderPrice(price);
     this.view.updateExchangeChart(price.symbol, price.exchange, price.stats.daily);
-    this.view.renderDetails(price, prev);
+    this.view.renderDetails(price);
     this.view.renderCustomFields(price);
     this.view.updateQuoteTimer(price);
 };
