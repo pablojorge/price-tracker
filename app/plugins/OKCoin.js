@@ -43,9 +43,9 @@ OKCoinPriceRequester.prototype.processResponse = function (response, body) {
                 parseFloat(ticker.buy),
                 parseFloat(ticker.sell),
                 new Date(), {
-                    volume24: parseFloat(ticker.vol),
-                    high24: parseFloat(ticker.high),
-                    low24: parseFloat(ticker.low),
+                    volume24: parseFloat(ticker.volume),
+                    high24: parseFloat(ticker.dayHigh),
+                    low24: parseFloat(ticker.dayLow),
                 }
             );
         }
