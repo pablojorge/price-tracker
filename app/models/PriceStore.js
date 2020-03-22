@@ -36,7 +36,7 @@ function PriceStore() {
     if (redisURL.auth)
         client.auth(redisURL.auth.split(':')[1]);
 
-    console.log("PriceStore: connected to " + redisURL.hostname);
+    console.log("PriceStore: connected to", redisURL.hostname);
 
     this.client = client;
     this.key_prefix = config.redis.key_prefix;
@@ -118,7 +118,7 @@ PriceStore.prototype.merge = function(last, current) {
 PriceStore.prototype.registerLastChange = function(last, value) {
     var key = this.lastKey(value.spot.exchange, value.spot.symbol);
     if (last === null) {
-        console.log("No previous value for ", key);
+        console.log("No previous value for", key);
         return true;
     }
 
@@ -131,7 +131,7 @@ PriceStore.prototype.registerLastChange = function(last, value) {
         );
 
         if (timedelta < config.streaming.resolution) {
-            console.log("Last change for ", key, " received: ", timedelta, "ms ago");
+            console.log("Last change for", key, "received:", timedelta, "ms ago");
             return false;
         }
 
@@ -146,7 +146,7 @@ PriceStore.prototype.registerLastChange = function(last, value) {
         return true;
     }
 
-    console.log("Price didn't change for ", key);
+    console.log("Price didn't change for", key);
     return false;
 };
 
