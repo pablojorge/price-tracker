@@ -2,7 +2,7 @@ var messages = require('../../public/lib/messages.js'),
     config = require('../../config/config'),
     Plugin_ = require('../models/Plugin.js'),
     PriceRequester = require('../models/PriceRequester.js'),
-    PusherClient = require('../models/PusherClient.js');
+    BitstampWSAPIClient = require('../clients/BitstampWSAPIClient.js');
 
 /**
  * Bitstamp
@@ -14,7 +14,11 @@ function BitstampPriceRequester(symbol, options) {
 BitstampPriceRequester.config = {
     exchange: 'bitstamp',
     symbol_map: {
-        "BTCUSD" : undefined
+        "BTCUSD" : "btcusd",
+        "BCHUSD" : "bchusd",
+        "XRPUSD" : "xrpusd",
+        "LTCUSD" : "ltcusd",
+        "ETHUSD" : "ethusd",
     },
     url_template: 'http://www.bitstamp.net/api/ticker/',
 };
@@ -47,7 +51,7 @@ BitstampPriceRequester.prototype.processResponse = function (response, body) {
  */
 
 function BitstampStreamer(symbol, callback) {
-    this.client = new PusherClient('de504dc5763aeef9ff52', function (exception) {
+    this.client = new BitstampWSAPIClient(function (exception) {
         callback({
             exception: exception,
             info: {
@@ -56,10 +60,13 @@ function BitstampStreamer(symbol, callback) {
             }
         });
     });
-    this.client.subscribe('order_book');
+    var channel = (
+        'order_book_' + BitstampPriceRequester.config.symbol_map[symbol]
+    );
+    this.client.subscribe(channel);
     this.client.bind('data', function (data) {
         callback(null,
-                 new messages.Symbol("bitstamp", 
+                 new messages.Symbol(BitstampStreamer.config.exchange, 
                                      symbol, 
                                      parseFloat(data.bids[0][0]), 
                                      parseFloat(data.asks[0][0])));
