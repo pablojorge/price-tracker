@@ -342,8 +342,8 @@ QuotesView.prototype.onNextSymbolRequested = function(model) {
         }
     });
 
-    self.onSymbolSelected(model, next_symbol);
     model.setSelectedSymbol(next_symbol);
+    self.onSymbolSelected(model, next_symbol);
 };
 
 QuotesView.prototype.onPreviousSymbolRequested = function(model) {
@@ -369,8 +369,8 @@ QuotesView.prototype.onPreviousSymbolRequested = function(model) {
         }
     });
 
-    self.onSymbolSelected(model, next_symbol);
     model.setSelectedSymbol(next_symbol);
+    self.onSymbolSelected(model, next_symbol);
 };
 
 QuotesView.prototype.onNextExchangeRequested = function(model) {
@@ -399,8 +399,8 @@ QuotesView.prototype.onNextExchangeRequested = function(model) {
         return;
     }
 
-    self.onExchangeSelected(model, current_symbol, next_exchange);
     model.setSelectedExchange(current_symbol, next_exchange);
+    self.onExchangeSelected(model, current_symbol, next_exchange);
 };
 
 QuotesView.prototype.onPreviousExchangeRequested = function(model) {
@@ -435,8 +435,8 @@ QuotesView.prototype.onPreviousExchangeRequested = function(model) {
         }
     });
 
-    self.onExchangeSelected(model, current_symbol, next_exchange);
     model.setSelectedExchange(current_symbol, next_exchange);
+    self.onExchangeSelected(model, current_symbol, next_exchange);
 };
 
 QuotesView.prototype.onReloadRequested = function(model) {
@@ -465,6 +465,9 @@ QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     $__("#symbol-prices-view-", symbol, '-', exchange).removeClass("hide");
 
     this.drawExchangeChart(symbol, exchange);
+    var price = model.getQuote(symbol, exchange);
+    if (price == null) return; // during startup the quotes are not available
+    this.renderWindowTitle(price, model);
 };
 
 QuotesView.prototype.onDeltaStyleSelected = function (delta_style) {
@@ -517,8 +520,8 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
         event.preventDefault();
 
         var symbol = $(this).attr("target");
-        self.onSymbolSelected(model, symbol);
         model.setSelectedSymbol(symbol);
+        self.onSymbolSelected(model, symbol);
 
         return false;
     });
@@ -544,8 +547,8 @@ QuotesView.prototype.hookSelectionButtons = function (model) {
 
         var symbol = self.getSelectedSymbol(model),
             exchange = $(this).attr("target");
-        self.onExchangeSelected(model, symbol, exchange);
         model.setSelectedExchange(symbol, exchange);
+        self.onExchangeSelected(model, symbol, exchange);
 
         return false;
     });
@@ -1328,6 +1331,35 @@ QuotesView.prototype.updateQuoteTimer = function (quote) {
     );
 };
 
+QuotesView.prototype.setWindowTitle = function (title) {
+    document.title = title;
+};
+
+QuotesView.prototype.renderWindowTitle = function (price, model) {
+    if (price.symbol != this.getSelectedSymbol(model))
+        return;
+
+    if (price.exchange != this.getSelectedExchange(model, price.symbol))
+        return;
+
+    this.setWindowTitle(__(
+        this.symbols[price.symbol].prefix,
+        price.ask ? price.ask.toFixed(2) : "N/A",
+        " (", price.symbol, "@", price.exchange, ")"
+    ));
+};
+
+QuotesView.prototype.onPriceUpdated = function (price, model) {
+    this.renderWindowTitle(price, model);
+    this.addCustomFields(price);
+    this.updateLabelsColors(price);
+    this.renderPrice(price);
+    this.updateExchangeChart(price.symbol, price.exchange, price.stats.daily);
+    this.renderDetails(price);
+    this.renderCustomFields(price);
+    this.updateQuoteTimer(price);
+};
+
 function QuotesModel() {
     this.quotes = {};
     this.selected = undefined;
@@ -1452,13 +1484,7 @@ QuotesController.prototype.start = function () {
 QuotesController.prototype.onPriceUpdated = function (price) {
     this.updated_on = new Date();
     this.model.updateQuote(price);
-    this.view.addCustomFields(price);
-    this.view.updateLabelsColors(price);
-    this.view.renderPrice(price);
-    this.view.updateExchangeChart(price.symbol, price.exchange, price.stats.daily);
-    this.view.renderDetails(price);
-    this.view.renderCustomFields(price);
-    this.view.updateQuoteTimer(price);
+    this.view.onPriceUpdated(price, this.model);
 };
 
 QuotesController.prototype.onConnect = function (error) {
@@ -1496,28 +1522,11 @@ QuotesController.prototype.getExchangeDescription = function (exchange) {
     return this.view.exchanges[exchange].description;
 };
 
-function GlobalView() {}
-
-GlobalView.prototype.setWindowTitle = function (title) {
-    document.title = title;
-};
-
-function GlobalController(view) {
-    this.view = view;
-}
-
-GlobalController.prototype.start = function() {
-};
-
 function init_app () {
-    global_view = new GlobalView();
-    global_controller = new GlobalController(global_view);
-
     quotes_view = new QuotesView();
     quotes_model = new QuotesModel();
     quotes_controller = new QuotesController(quotes_view, quotes_model);
 
-    global_controller.start();
     quotes_controller.start();
 }
 
