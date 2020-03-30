@@ -739,7 +739,7 @@ QuotesView.prototype.renderExchangeInSymbolPricesView = function (symbol, exchan
         '      </div>',
         '    </div>',
         '    <div class="', base_id, '-prices hide" style="text-align: right;">',
-        '      <div class="col-xs-6" style="text-align: right; padding-left: 0px;">',
+        '      <div class="col-xs-6" style="text-align: right; padding-left: 0px; padding-right: 0px;">',
         '        <img src="img/exchange/', exchange, '.ico" width=16 height=16> ',
         '        <span style="font-size: small"',
         '            class="label label-primary ', base_id, '-ask">',
