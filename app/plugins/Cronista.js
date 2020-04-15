@@ -17,6 +17,7 @@ CronistaPriceRequester.config = {
     symbol_map: {
         "USDARS" : "ARS",
         "USDARSB" : "ARSB",
+        "USDARSCL" : "ARSCONT",
     },
     url_template: (
         'http://www.cronista.com/MercadosOnline/json/getDinamicos.html?tipo=monedas&id=<<SYMBOL>>'

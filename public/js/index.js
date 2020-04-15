@@ -177,6 +177,12 @@ function QuotesView() {
             prefix: 'AR$',
             column: '1'
         },
+        'USDARSCL' : {
+            description: '(Cont. liqui)',
+            exchanges: ['cronista'],
+            prefix: 'AR$',
+            column: '1'
+        },
         'XAGUSD' : {
             description: '(Silver)',
             exchanges: ['bullionvault'],
@@ -194,7 +200,7 @@ function QuotesView() {
     };
 
     this.symbol_list = [
-        'USDARSB', 'USDARS',
+        'USDARS', 'USDARSB', 'USDARSCL',
         null,
         'BTCUSD', 'BCHUSD', 'BTGUSD',
         null,
