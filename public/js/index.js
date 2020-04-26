@@ -453,6 +453,14 @@ QuotesView.prototype.onReloadRequested = function(model) {
     self.redrawExchangeChart(symbol, exchange);
 }
 
+QuotesView.prototype.onDeltaStyleSwitchRequested = function(model) {
+    var style = this.getDeltaStyle(model),
+        new_style = (style == "percent") ? "price" : "percent";
+
+    this.onDeltaStyleSelected(new_style);
+    this.setDeltaStyle(model, new_style);
+};
+
 QuotesView.prototype.onExchangeSelected = function(model, symbol, exchange) {
     $(".select-exchange").removeClass('custom-nav-selected');
     $(".select-exchange").addClass('custom-nav-not-selected');
@@ -588,6 +596,8 @@ QuotesView.prototype.hookKeyboardShortcuts = function (model) {
             self.onNextExchangeRequested(model);
         } else if (event.key == 'p') {
             self.onPreviousExchangeRequested(model);
+        } else if (event.key == 'c') {
+            self.onDeltaStyleSwitchRequested(model);
         } else if (event.key == 's') {
             $("#symbols-modal").modal('show');
         } else if (event.key == 'e') {
