@@ -94,6 +94,7 @@ function QuotesView() {
         'BCHUSD' : {
             description: '(Bitcoin Cash)',
             exchanges: ['bitstamp', 'coinbase', 'kraken'],
+            icon: 'BCHUSD.png',
             prefix: '$',
             column: '2',
             unit: 'BCH'
@@ -105,6 +106,7 @@ function QuotesView() {
                         'okcoin', 'bitfinex',
                         'kraken', 'poloniex',
                         'gemini'],
+            icon: 'BTCUSD.png',
             prefix: '$',
             column: '2',
             unit: 'BTC'
@@ -112,6 +114,7 @@ function QuotesView() {
         'BTGUSD' : {
             description: '(Bitcoin Gold)',
             exchanges: ['bitfinex'],
+            icon: 'BTGUSD.png',
             prefix: '$',
             column: '2',
             unit: 'BTC'
@@ -119,6 +122,7 @@ function QuotesView() {
         'ETCUSD' : {
             description: '(Ethereum Classic)',
             exchanges: ['coinbase', 'binance', 'poloniex', 'bitfinex'],
+            icon: 'ETCUSD.png',
             prefix: '$',
             column: '2',
             unit: 'ETH'
@@ -126,6 +130,7 @@ function QuotesView() {
         'ETHUSD' : {
             description: '(Ethereum)',
             exchanges: ['bitstamp', 'coinbase', 'binance', 'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
+            icon: 'ETHUSD.png',
             prefix: '$',
             column: '2',
             unit: 'ETH'
@@ -133,6 +138,7 @@ function QuotesView() {
         'LTCUSD' : {
             description: '(Litecoin)',
             exchanges: ['bitstamp', 'coinbase', 'binance', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
+            icon: 'LTCUSD.png',
             prefix: '$',
             column: '2',
             unit: 'LTC'
@@ -140,6 +146,7 @@ function QuotesView() {
         'ZECUSD' : {
             description: '(ZCash)',
             exchanges: ['binance', 'coinbase', 'kraken', 'poloniex'],
+            icon: 'ZECUSD.png',
             prefix: '$',
             column: '2',
             unit: 'ZEC'
@@ -147,6 +154,7 @@ function QuotesView() {
         'XMRUSD' : {
             description: '(Monero)',
             exchanges: ['binance', 'poloniex'],
+            icon: 'XMRUSD.png',
             prefix: '$',
             column: '2',
             unit: 'XMR'
@@ -154,6 +162,7 @@ function QuotesView() {
         'XLMUSD' : {
             description: '(Stellar Lumens)',
             exchanges: ['binance', 'coinbase', 'poloniex'],
+            icon: 'XLMUSD.png',
             prefix: '$',
             column: '2',
             unit: 'XLM'
@@ -161,6 +170,7 @@ function QuotesView() {
         'XRPUSD' : {
             description: '(Ripple)',
             exchanges: ['bitstamp', 'binance', 'coinbase', 'poloniex'],
+            icon: 'XRPUSD.png',
             prefix: '$',
             column: '2',
             unit: 'XRP'
@@ -168,24 +178,28 @@ function QuotesView() {
         'USDARS' : {
             description: '(Dolar oficial)',
             exchanges: ['ambito', 'cronista', 'santander', 'bna'],
+            icon: 'USDARS.png',
             prefix: 'AR$',
             column: '1'
         },
         'USDARSB' : {
             description: '(Dolar blue)',
             exchanges: ['ambito', 'cronista'],
+            icon: 'USDARSB.svg',
             prefix: 'AR$',
             column: '1'
         },
         'USDARSCL' : {
             description: '(Cont. liqui)',
             exchanges: ['cronista'],
+            icon: 'USDARSCL.svg',
             prefix: 'AR$',
             column: '1'
         },
         'XAGUSD' : {
             description: '(Silver)',
             exchanges: ['bullionvault'],
+            icon: 'XAGUSD.png',
             prefix: '$',
             column: '2',
             unit: 'XAG'
@@ -193,6 +207,7 @@ function QuotesView() {
         'XAUUSD' : {
             description: '(Gold)',
             exchanges: ['bullionvault'],
+            icon: 'XAUUSD.png',
             prefix: '$',
             column: '2',
             unit: 'XAU'
@@ -726,7 +741,7 @@ QuotesView.prototype.renderSymbolNav = function (symbol, info) {
         '       target="', symbol, '" ',
         '       id="select-symbol-', symbol,'">',
         '    <span style="font-size: small;"> ',
-        '      <img src="img/symbol/', symbol, '.png" width=16 height=16></img> ',
+        '      <img src="img/symbol/', info.icon, '" width=16 height=16></img> ',
                symbol, ' ', info.description,
         '    </span>',
         '  </div>',
@@ -777,7 +792,7 @@ QuotesView.prototype.renderSymbolModalCheckbox = function (symbol, info) {
         '<div class="checkbox">',
         '  <label>',
         '    <input type="checkbox" id="checkbox-symbol-', symbol, '">',
-        '    <img src="img/symbol/', symbol, '.png" width="32" height="32">',
+        '    <img src="img/symbol/', info.icon, '" width="32" height="32">',
         '    <large>', symbol, '</large> <small>', info.description, '</small>',
         '  </label>',
         '</div>'
