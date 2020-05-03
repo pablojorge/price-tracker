@@ -318,6 +318,18 @@ The server will be ready to accept connections at <http://localhost:5000>. Try w
 $ curl http://localhost:5000/api/v1/symbols/BTCUSD/bitstamp
 ```
 
+## Quick local testing:
+
+Use the `util/run-plugin.js` tool to import a plugin and run it to fetch all supported symbols:
+
+```
+$ cd util
+$ node run-plugin.js ../app/plugins/Cronista.js
+symbol: USDARSCL response: Symbol {...}
+symbol: USDARSCL response: Symbol {...}
+symbol: USDARSCL response: Symbol {...}
+```
+
 ## Live site
 
 The application can be previewed live at <http://price-tracker.herokuapp.com/>

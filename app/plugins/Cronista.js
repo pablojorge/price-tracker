@@ -54,5 +54,6 @@ module.exports = {
         var CronistaStreamer = Streamer(CronistaPriceRequester,
                                         config.streaming.interval);
         Plugin_.register(CronistaPriceRequester, CronistaStreamer);
-    }
+    },
+    type: CronistaPriceRequester,
 };
