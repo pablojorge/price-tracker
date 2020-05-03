@@ -15,12 +15,12 @@ function CronistaPriceRequester(symbol, options) {
 CronistaPriceRequester.config = {
     exchange: 'cronista',
     symbol_map: {
-        "USDARS" : "ARS",
-        "USDARSB" : "ARSB",
-        "USDARSCL" : "ARSCONT",
+        "USDARS" : 1,
+        "USDARSB" : 2,
+        "USDARSCL" : 5,
     },
     url_template: (
-        'http://www.cronista.com/MercadosOnline/json/getDinamicos.html?tipo=monedas&id=<<SYMBOL>>'
+        'https://www.cronista.com/MercadosOnline/json/getValoresCalculadora.html'
     ),
 };
 
@@ -28,16 +28,16 @@ CronistaPriceRequester.prototype = Object.create(PriceRequester.prototype);
 CronistaPriceRequester.prototype.constructor = CronistaPriceRequester;
 
 CronistaPriceRequester.prototype.processResponse = function (response, body) {
-    var monedas = JSON.parse(body).monedas,
-        bid = parseFloat(monedas.Compra),
-        ask = parseFloat(monedas.Venta),
+    var self = this,
+        cotizacion = JSON.parse(body).filter(
+            function (elem) {
+                return elem.Id == CronistaPriceRequester.config.symbol_map[self.symbol];
+            }
+        )[0],
+        bid = cotizacion.Compra,
+        ask = cotizacion.Venta,
         updated_on = new Date(),
-        published_on = new Date(
-            parseInt(
-                monedas.UltimaActualizacion.
-                    match("^/Date\\((.*)\\)/$")[1]
-            )
-        );
+        published_on = new Date(cotizacion.UltimaActualizacion);
 
     return new messages.Symbol(this.getExchange(),
                                this.symbol,
