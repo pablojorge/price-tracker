@@ -20,6 +20,7 @@ KrakenPriceRequester.config = {
         "BCHUSD" : "BCHUSD",
         "LTCUSD" : "LTCUSD",
         "ZECUSD" : "ZECUSD",
+        "PAXGUSD" : "PAXGUSD",
     },
     url_template: 'https://api.kraken.com/0/public/Ticker?pair=<<SYMBOL>>',
 };
@@ -34,6 +35,7 @@ KrakenPriceRequester.prototype.processResponse = function (response, body) {
         "BCHUSD" : "BCHUSD",
         "LTCUSD" : "XLTCZUSD",
         "ZECUSD" : "XZECZUSD",
+        "PAXGUSD" : "PAXGUSD",
     };
 
     var ticker = JSON.parse(body).result[result_map[this.symbol]],

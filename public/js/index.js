@@ -212,6 +212,14 @@ function QuotesView() {
             column: '2',
             unit: 'XAU'
         },
+        'PAXGUSD' : {
+            description: '(Paxos Gold)',
+            exchanges: ['kraken'],
+            icon: 'PAXGUSD.png',
+            prefix: '$',
+            column: '2',
+            unit: 'PAXG'
+        },
     };
 
     this.symbol_list = [
@@ -225,7 +233,7 @@ function QuotesView() {
         null,
         'XLMUSD', 'XRPUSD',
         null,
-        'XAUUSD', 'XAGUSD'
+        'XAUUSD', 'PAXGUSD', 'XAGUSD'
     ];
 }
 
