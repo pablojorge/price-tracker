@@ -285,6 +285,14 @@ Example:
         }
     };
 
+Using [wscat](https://www.npmjs.com/package/wscat):
+
+    $ wscat -c ws://localhost:5000
+    Connected (press CTRL+C to quit)
+    > {"type": "SubscribeRequest", "request": {"symbol": "BTCUSD", "exchange": "bitstamp", "options": {}}}
+    < {"type":"Symbol","response":{"data":{"exchange":"bitstamp","symbol":"BTCUSD","bid":9251.95,"ask":9256.49,"updated_on":"2020-05-23T02:25:05.187Z","custom":{},"stats":{"last_change":"2020-05-23T02:25:05.187Z","daily":{"date":"2020-05-23T00:00:00.000Z","bid":{"open":9164.45,"high":9270.33,"low":9164.45,"close":9251.95},"ask":{"open":9171.96,"high":9276.07,"low":9171.96,"close":9256.49}}}}}}
+    < {"type":"Symbol","response":{"data":{"exchange":"bitstamp","symbol":"BTCUSD","bid":9251.95,"ask":9256.48,"updated_on":"2020-05-23T02:25:07.101Z","custom":{},"stats":{"last_change":"2020-05-23T02:25:07.101Z","daily":{"date":"2020-05-23T00:00:00.000Z","bid":{"open":9164.45,"high":9270.33,"low":9164.45,"close":9251.95},"ask":{"open":9171.96,"high":9276.07,"low":9171.96,"close":9256.48}}}}}}
+
 ## Running
 
 1. Install node:

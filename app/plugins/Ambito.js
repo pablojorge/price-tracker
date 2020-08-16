@@ -44,5 +44,4 @@ module.exports = {
                                       config.streaming.interval);
         Plugin_.register(AmbitoPriceRequester, AmbitoStreamer);
     },
-    type: AmbitoPriceRequester,
 };
