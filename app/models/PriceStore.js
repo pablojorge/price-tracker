@@ -115,7 +115,7 @@ PriceStore.prototype.merge = function(last, current) {
     return helpers.merge(last, current);
 };
 
-PriceStore.prototype.registerLastChange = function(last, value) {
+PriceStore.prototype.registerLastChange = function(last, value, date_func) {
     var key = this.lastKey(value.spot.exchange, value.spot.symbol);
     if (last === null) {
         console.log("No previous value for", key);
@@ -123,7 +123,10 @@ PriceStore.prototype.registerLastChange = function(last, value) {
     }
 
     if ((value.spot.bid && last.spot.bid && value.spot.bid !== last.spot.bid) ||
-        (value.spot.ask && last.spot.ask && value.spot.ask !== last.spot.ask)) {
+        (value.spot.ask && last.spot.ask && value.spot.ask !== last.spot.ask) ||
+        (value.spot.updated_on && last.spot.updated_on && 
+         date_func(value.spot.updated_on) !=
+         date_func(new Date(last.spot.updated_on)))) {
 
         var timedelta = (
             value.spot.updated_on.getTime() -
@@ -202,7 +205,7 @@ PriceStore.prototype.listener = function(error, response) {
             daily: self.accumulate(last ? last.daily : null, response.data, to_day_key),
         };
 
-        if (!self.registerLastChange(last, value)) {
+        if (!self.registerLastChange(last, value, to_day_key)) {
             console.log("PriceStore: skipping update");
             return;
         }
