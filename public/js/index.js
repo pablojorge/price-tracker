@@ -48,6 +48,10 @@ function QuotesView() {
             description: 'Bitstamp',
             links: [{desc: 'Trade View', link: 'https://www.bitstamp.net/market/tradeview/'}]
         },
+        'blockchain' : {
+            description: 'Blockchain',
+            links: [{desc: 'Markets', link: 'https://exchange.blockchain.com/markets'}]
+        },
         'bna' : {
             description: 'Banco Nacion',
             links: [{desc: 'Info', link: 'http://www.bna.com.ar/'}]
@@ -93,7 +97,7 @@ function QuotesView() {
     this.symbols = {
         'BCHUSD' : {
             description: '(Bitcoin Cash)',
-            exchanges: ['bitstamp', 'coinbase', 'kraken'],
+            exchanges: ['bitstamp', 'blockchain', 'coinbase', 'kraken'],
             icon: 'BCHUSD.png',
             prefix: '$',
             column: '2',
@@ -101,7 +105,7 @@ function QuotesView() {
         },
         'BTCUSD' : {
             description: '(Bitcoin)',
-            exchanges: ['binance', 'bitstamp', 'coinbase',
+            exchanges: ['binance', 'bitstamp', 'blockchain', 'coinbase',
                         'xapo',
                         'okcoin', 'bitfinex',
                         'kraken', 'poloniex',
@@ -129,7 +133,8 @@ function QuotesView() {
         },
         'ETHUSD' : {
             description: '(Ethereum)',
-            exchanges: ['bitstamp', 'coinbase', 'binance', 'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
+            exchanges: ['bitstamp', 'blockchain', 'coinbase', 'binance',
+                        'kraken', 'poloniex', 'bitfinex', 'gemini', 'okcoin'],
             icon: 'ETHUSD.png',
             prefix: '$',
             column: '2',
@@ -137,7 +142,8 @@ function QuotesView() {
         },
         'LTCUSD' : {
             description: '(Litecoin)',
-            exchanges: ['bitstamp', 'coinbase', 'binance', 'okcoin', 'bitfinex', 'kraken', 'poloniex'],
+            exchanges: ['bitstamp', 'blockchain', 'coinbase', 'binance', 
+                        'okcoin', 'bitfinex', 'kraken', 'poloniex'],
             icon: 'LTCUSD.png',
             prefix: '$',
             column: '2',
@@ -161,7 +167,7 @@ function QuotesView() {
         },
         'XLMUSD' : {
             description: '(Stellar Lumens)',
-            exchanges: ['binance', 'coinbase', 'poloniex'],
+            exchanges: ['binance', 'blockchain', 'coinbase', 'poloniex'],
             icon: 'XLMUSD.png',
             prefix: '$',
             column: '2',
@@ -169,7 +175,7 @@ function QuotesView() {
         },
         'XRPUSD' : {
             description: '(Ripple)',
-            exchanges: ['bitstamp', 'binance', 'coinbase', 'poloniex'],
+            exchanges: ['bitstamp', 'binance', 'blockchain', 'coinbase', 'poloniex'],
             icon: 'XRPUSD.png',
             prefix: '$',
             column: '2',
