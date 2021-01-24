@@ -18,6 +18,7 @@ OKCoinPriceRequester.config = {
         "BTCUSD" : undefined,
         "ETHUSD" : undefined,
         "LTCUSD" : undefined,
+        "DOTUSD" : undefined,
     },
     url_template: 'https://www.okcoin.com/v2/spot/markets/tickers',
 };
@@ -30,6 +31,7 @@ OKCoinPriceRequester.prototype.processResponse = function (response, body) {
         "BTCUSD" : "btc_usd",
         "ETHUSD" : "eth_usd",
         "LTCUSD" : "ltc_usd",
+        "DOTUSD" : "dot_usd",
     };
     var self = this;
     var tickers = JSON.parse(body).data,

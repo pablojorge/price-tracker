@@ -149,6 +149,15 @@ function QuotesView() {
             column: '2',
             unit: 'LTC'
         },
+        'DOTUSD' : {
+            description: '(Polkadot)',
+            exchanges: ['binance', 'bitfinex', 'kraken', 
+                        'okcoin', 'poloniex'],
+            icon: 'DOTUSD.png',
+            prefix: '$',
+            column: '2',
+            unit: 'DOT'
+        },
         'ZECUSD' : {
             description: '(ZCash)',
             exchanges: ['binance', 'coinbase', 'kraken', 'poloniex'],
@@ -233,7 +242,7 @@ function QuotesView() {
         null,
         'BTCUSD', 'BCHUSD', 'BTGUSD',
         null,
-        'ETHUSD', 'ETCUSD',
+        'ETHUSD', 'ETCUSD', 'DOTUSD',
         null,
         'LTCUSD', 'XMRUSD', 'ZECUSD',
         null,
