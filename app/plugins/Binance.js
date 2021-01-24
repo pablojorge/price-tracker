@@ -18,6 +18,7 @@ BinancePriceRequester.config = {
         "BTCUSD" : "BTCUSDT",
         "LTCUSD" : "LTCUSDT",
         "ETHUSD" : "ETHUSDT",
+        "DOTUSD" : "DOTUSDT",
         "ETCUSD" : "ETCUSDT",
         "ZECUSD" : "ZECUSDT",
         "XMRUSD" : "XMRUSDT",
