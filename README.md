@@ -6,6 +6,8 @@ It uses [Redis](https://github.com/mranney/node_redis) to store data, and [cheer
 
 Everything is accesible via both REST and WebSockets APIs.
 
+The application can be accessed live at <http://price-tracker.herokuapp.com/>
+
 ## REST API
 
 ### Exchanges Collection
@@ -337,8 +339,3 @@ symbol: USDARSCL response: Symbol {...}
 symbol: USDARSCL response: Symbol {...}
 symbol: USDARSCL response: Symbol {...}
 ```
-
-## Live site
-
-The application can be previewed live at <http://price-tracker.herokuapp.com/>
-
